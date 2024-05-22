@@ -30,7 +30,7 @@ func (m *Module) Startup(ctx context.Context, mono monolith.Monolith) error {
 	app = logging.LogApplicationAccess(app, mono.Logger())
 
 	// setup driver adapters
-	if err := rpc.RegisterServer(app, mono.RPC()); err != nil {
+	if err := rpc.RegisterServer(app, mono.Rpc()); err != nil {
 		return err
 	}
 

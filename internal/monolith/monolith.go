@@ -16,7 +16,7 @@ type Monolith interface {
 	DB() *sql.DB
 	Logger() *slog.Logger
 	Mux() *chi.Mux
-	RPC() *grpc.Server
+	Rpc() *grpc.Server
 	Waiter() waiter.Waiter
 }
 

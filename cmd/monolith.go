@@ -43,7 +43,7 @@ func (a *app) Mux() *chi.Mux {
 	return a.mux
 }
 
-func (a *app) RPC() *grpc.Server {
+func (a *app) Rpc() *grpc.Server {
 	return a.rpc
 }
 
@@ -109,7 +109,7 @@ func (a *app) waitForRPC(ctx context.Context) error {
 		slog.Info("rpc server started", "address", a.cfg.Rpc.Address())
 		defer slog.Info("rpc server shutdown")
 
-		if err := a.RPC().Serve(listener); err != nil && err != grpc.ErrServerStopped {
+		if err := a.Rpc().Serve(listener); err != nil && err != grpc.ErrServerStopped {
 			return err
 		}
 
@@ -122,14 +122,14 @@ func (a *app) waitForRPC(ctx context.Context) error {
 
 		stopped := make(chan struct{})
 		go func() {
-			a.RPC().GracefulStop()
+			a.Rpc().GracefulStop()
 			close(stopped)
 		}()
 
 		timeout := time.NewTimer(a.cfg.Timeout)
 		select {
 		case <-timeout.C:
-			a.RPC().Stop()
+			a.Rpc().Stop()
 			return errors.New("rpc server failed to stop gracefully")
 		case <-stopped:
 			return nil

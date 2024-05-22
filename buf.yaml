@@ -1,10 +1,19 @@
-version: v1
-breaking:
-  use:
-    - FILE
+version: v2
 lint:
   use:
     - DEFAULT
   except:
     - PACKAGE_VERSION_SUFFIX
     - PACKAGE_DIRECTORY_MATCH
+    - PACKAGE_NO_IMPORT_CYCLE
+breaking:
+  use:
+    - FILE
+modules:
+  - path: baskets/basketspb
+  - path: customers/customerspb
+  - path: depot/depotpb
+  - path: notifications/notificationspb
+  - path: ordering/orderingpb
+  - path: payments/paymentspb
+  - path: stores/storespb

@@ -2,6 +2,7 @@ package domain
 
 import (
 	"errors"
+	"mall/internal/ddd"
 )
 
 var (
@@ -13,45 +14,8 @@ var (
 	ErrOrderCannotBeCompleted  = errors.New("order cannot be completed")
 )
 
-type OrderStatus string
-
-const (
-	OrderUnknown   OrderStatus = ""
-	OrderPending   OrderStatus = "pending"
-	OrderInProcess OrderStatus = "in-progress"
-	OrderReady     OrderStatus = "ready"
-	OrderCompleted OrderStatus = "completed"
-	OrderCancelled OrderStatus = "cancelled"
-)
-
-func (s OrderStatus) String() string {
-	switch s {
-	case OrderPending, OrderInProcess, OrderReady, OrderCompleted, OrderCancelled:
-		return string(s)
-	default:
-		return ""
-	}
-}
-
-func ToOrderStatus(status string) OrderStatus {
-	switch status {
-	case OrderPending.String():
-		return OrderPending
-	case OrderInProcess.String():
-		return OrderInProcess
-	case OrderReady.String():
-		return OrderReady
-	case OrderCancelled.String():
-		return OrderCancelled
-	case OrderCompleted.String():
-		return OrderCompleted
-	default:
-		return OrderUnknown
-	}
-}
-
 type Order struct {
-	ID         string
+	ddd.AggregateBase
 	CustomerID string
 	PaymentID  string
 	InvoiceID  string
@@ -74,32 +38,38 @@ func CreateOrder(id, customerID, paymentID string, items []*Item) (*Order, error
 	}
 
 	order := &Order{
-		ID:         id,
-		CustomerID: customerID,
-		PaymentID:  paymentID,
-		Items:      items,
-		Status:     OrderPending,
+		AggregateBase: ddd.AggregateBase{ID: id},
+		CustomerID:    customerID,
+		PaymentID:     paymentID,
+		Items:         items,
+		Status:        OrderIsPending,
 	}
+
+	order.AddEvent(&OrderCreated{Order: order})
 
 	return order, nil
 }
 
 func (o *Order) Cancel() error {
-	if o.Status != OrderPending {
+	if o.Status != OrderIsPending {
 		return ErrOrderCannotBeCancelled
 	}
 
-	o.Status = OrderCancelled
+	o.Status = OrderIsCanceled
+
+	o.AddEvent(&OrderCanceled{Order: o})
 
 	return nil
 }
 
 func (o *Order) Ready() error {
-	if o.Status != OrderPending {
+	if o.Status != OrderIsPending {
 		return ErrOrderCannotBeReady
 	}
 
-	o.Status = OrderReady
+	o.Status = OrderIsReady
+
+	o.AddEvent(&OrderReadied{Order: o})
 
 	return nil
 }
@@ -107,12 +77,14 @@ func (o *Order) Ready() error {
 func (o *Order) Complete(invoiceID string) error {
 	// validate invoice exists
 
-	if o.Status != OrderReady {
+	if o.Status != OrderIsReady {
 		return ErrOrderCannotBeCompleted
 	}
 
 	o.InvoiceID = invoiceID
-	o.Status = OrderCompleted
+	o.Status = OrderIsCompleted
+
+	o.AddEvent(&OrderCompleted{Order: o})
 
 	return nil
 }

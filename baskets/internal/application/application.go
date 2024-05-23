@@ -40,7 +40,7 @@ type GetBasket struct {
 type App interface {
 	StartBasket(ctx context.Context, cmd StartBasket) error
 	CancelBasket(ctx context.Context, cmd CancelBasket) error
-	CheckoutBasket(ctx context.Context, cmd CheckoutBasket) error
+	CheckoutBasket(ctx context.Context, cmd CheckoutBasket) (string, error)
 	AddItem(ctx context.Context, cmd AddItem) error
 	RemoveItem(ctx context.Context, cmd RemoveItem) error
 	GetBasket(ctx context.Context, query GetBasket) (*domain.Basket, error)
@@ -87,24 +87,29 @@ func (a Application) CancelBasket(ctx context.Context, cmd CancelBasket) error {
 	return a.baskets.Update(ctx, basket)
 }
 
-func (a Application) CheckoutBasket(ctx context.Context, cmd CheckoutBasket) error {
+func (a Application) CheckoutBasket(ctx context.Context, cmd CheckoutBasket) (string, error) {
 	basket, err := a.baskets.Find(ctx, cmd.ID)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	err = basket.Checkout(cmd.PaymentID)
 	if err != nil {
-		return fmt.Errorf("baskets checkout: %w", err)
+		return "", fmt.Errorf("baskets checkout: %w", err)
 	}
 
 	// submit the basket to the order module
-	_, err = a.orders.Save(ctx, basket)
+	orderID, err := a.orders.Save(ctx, basket)
 	if err != nil {
-		return fmt.Errorf("baskets checkout: %w", err)
+		return "", fmt.Errorf("baskets checkout: %w", err)
 	}
 
-	return a.baskets.Update(ctx, basket)
+	err = a.baskets.Update(ctx, basket)
+	if err != nil {
+		return "", fmt.Errorf("baskets checkout: %w", err)
+	}
+
+	return orderID, nil
 }
 
 func (a Application) AddItem(ctx context.Context, cmd AddItem) error {

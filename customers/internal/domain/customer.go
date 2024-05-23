@@ -34,7 +34,7 @@ func RegisterCustomer(id string, name string, smsNumber string) (*Customer, erro
 		ID:        id,
 		Name:      name,
 		SmsNumber: smsNumber,
-		Enabled:   true,
+		Enabled:   false,
 	}, nil
 }
 

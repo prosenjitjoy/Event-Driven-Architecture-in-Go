@@ -47,7 +47,9 @@ message CheckoutBasketRequest {
   string id = 1;
   string payment_id = 2;
 }
-message CheckoutBasketResponse {}
+message CheckoutBasketResponse {
+  string order_id = 1;
+}
 
 message AddItemRequest {
   string id = 1;

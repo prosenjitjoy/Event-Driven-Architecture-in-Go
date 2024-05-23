@@ -39,7 +39,7 @@ func (a Application) CancelBasket(ctx context.Context, cancel application.Cancel
 	return a.App.CancelBasket(ctx, cancel)
 }
 
-func (a Application) CheckoutBasket(ctx context.Context, checkout application.CheckoutBasket) error {
+func (a Application) CheckoutBasket(ctx context.Context, checkout application.CheckoutBasket) (string, error) {
 	a.logger.Info("--> Baskets.CheckoutBasket")
 	defer func() {
 		a.logger.Info("<-- Baskets.CheckoutBasket")

@@ -7,5 +7,9 @@ http:
       body: "*"
     - selector: orderingpb.OrderingService.GetOrder
       get: /api/ordering/{id}
+    - selector: orderingpb.OrderingService.ReadyOrder
+      put: /api/ordering/{id}/ready
+      body: "*"
     - selector: orderingpb.OrderingService.CancelOrder
       delete: /api/ordering/{id}
+

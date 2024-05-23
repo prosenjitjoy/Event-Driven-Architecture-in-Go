@@ -52,7 +52,7 @@ func (s server) CancelBasket(ctx context.Context, request *basketspb.CancelBaske
 
 func (s server) CheckoutBasket(ctx context.Context, request *basketspb.CheckoutBasketRequest,
 ) (*basketspb.CheckoutBasketResponse, error) {
-	err := s.app.CheckoutBasket(ctx, application.CheckoutBasket{
+	orderID, err := s.app.CheckoutBasket(ctx, application.CheckoutBasket{
 		ID:        request.GetId(),
 		PaymentID: request.GetPaymentId(),
 	})
@@ -60,7 +60,7 @@ func (s server) CheckoutBasket(ctx context.Context, request *basketspb.CheckoutB
 		return nil, err
 	}
 
-	return &basketspb.CheckoutBasketResponse{}, nil
+	return &basketspb.CheckoutBasketResponse{OrderId: orderID}, nil
 }
 
 func (s server) AddItem(ctx context.Context, request *basketspb.AddItemRequest) (*basketspb.AddItemResponse, error) {

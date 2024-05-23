@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"mall/internal/ddd"
 	"mall/ordering/internal/domain"
 )
 
@@ -40,24 +41,16 @@ type App interface {
 }
 
 type Application struct {
-	orders        domain.OrderRepository
-	customers     domain.CustomerRepository
-	payments      domain.PaymentRepository
-	invoices      domain.InvoiceRepository
-	shopping      domain.ShoppingRepository
-	notifications domain.NotificationRepository
+	orders          domain.OrderRepository
+	domainPublisher ddd.EventPublisher
 }
 
 var _ App = (*Application)(nil)
 
-func New(orders domain.OrderRepository, customers domain.CustomerRepository, payments domain.PaymentRepository, invoices domain.InvoiceRepository, shopping domain.ShoppingRepository, notifications domain.NotificationRepository) *Application {
+func New(orders domain.OrderRepository, domainPublisher ddd.EventPublisher) *Application {
 	return &Application{
-		orders:        orders,
-		customers:     customers,
-		payments:      payments,
-		invoices:      invoices,
-		shopping:      shopping,
-		notifications: notifications,
+		orders:          orders,
+		domainPublisher: domainPublisher,
 	}
 }
 
@@ -67,23 +60,8 @@ func (a Application) CreateOrder(ctx context.Context, cmd CreateOrder) error {
 		return fmt.Errorf("create order command: %w", err)
 	}
 
-	// authorizeCustomer
-	if err = a.customers.Authorize(ctx, order.CustomerID); err != nil {
-		return fmt.Errorf("order customer authorization: %w", err)
-	}
-
-	// validatePayment
-	if err = a.payments.Confirm(ctx, order.PaymentID); err != nil {
-		return fmt.Errorf("order payment confirmation: %w", err)
-	}
-
-	// scheduleShopping
-	if order.ShoppingID, err = a.shopping.Create(ctx, order); err != nil {
-		return fmt.Errorf("order shopping scheduling: %w", err)
-	}
-
-	// notifyOrderCreated
-	if err = a.notifications.NotifyOrderCreated(ctx, order.ID, order.CustomerID); err != nil {
+	// publish domain events
+	if err = a.domainPublisher.Publish(ctx, order.GetEvents()...); err != nil {
 		return err
 	}
 
@@ -105,15 +83,16 @@ func (a Application) CancelOrder(ctx context.Context, cmd CancelOrder) error {
 		return err
 	}
 
-	if err = a.shopping.Cancel(ctx, order.ShoppingID); err != nil {
+	// publish domain events
+	if err = a.domainPublisher.Publish(ctx, order.GetEvents()...); err != nil {
 		return err
 	}
 
-	if err = a.notifications.NotifyOrderCanceled(ctx, order.ID, order.CustomerID); err != nil {
+	if err = a.orders.Update(ctx, order); err != nil {
 		return err
 	}
 
-	return a.orders.Update(ctx, order)
+	return nil
 }
 
 func (a Application) ReadyOrder(ctx context.Context, cmd ReadyOrder) error {
@@ -126,15 +105,16 @@ func (a Application) ReadyOrder(ctx context.Context, cmd ReadyOrder) error {
 		return nil
 	}
 
+	// publish domain events
+	if err = a.domainPublisher.Publish(ctx, order.GetEvents()...); err != nil {
+		return err
+	}
+
 	if err = a.orders.Update(ctx, order); err != nil {
 		return err
 	}
 
-	if err = a.notifications.NotifyOrderReady(ctx, order.ID, order.CustomerID); err != nil {
-		return err
-	}
-
-	return a.orders.Update(ctx, order)
+	return nil
 }
 
 func (a Application) CompleteOrder(ctx context.Context, cmd CompleteOrder) error {

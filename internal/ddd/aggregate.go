@@ -15,7 +15,7 @@ func (a AggregateBase) GetID() string {
 	return a.ID
 }
 
-func (a AggregateBase) AddEvent(event Event) {
+func (a *AggregateBase) AddEvent(event Event) {
 	a.events = append(a.events, event)
 }
 

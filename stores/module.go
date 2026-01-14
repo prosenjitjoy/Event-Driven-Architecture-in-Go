@@ -43,12 +43,12 @@ func (m Module) Startup(ctx context.Context, mono monolith.Monolith) error {
 		application.New(stores, products, catalog, mall),
 		mono.Logger(),
 	)
-	catalogHandlers := logging.LogEventHandlerAccess(
+	catalogHandlers := logging.LogEventHandlerAccess[ddd.AggregateEvent](
 		application.NewCatalogHandlers(catalog),
 		"Catalog",
 		mono.Logger(),
 	)
-	mallHandlers := logging.LogEventHandlerAccess(
+	mallHandlers := logging.LogEventHandlerAccess[ddd.AggregateEvent](
 		application.NewMallHandlers(mall),
 		"Mall",
 		mono.Logger(),

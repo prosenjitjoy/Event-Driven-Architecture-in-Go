@@ -21,7 +21,7 @@ func NewShoppingListRepository(conn *grpc.ClientConn) ShoppingRepository {
 }
 
 func (r ShoppingRepository) Create(ctx context.Context, orderID string, orderItems []domain.Item) (string, error) {
-	items := make([]*depotpb.OrderItem, 0, len(orderItems))
+	items := make([]*depotpb.OrderItem, len(orderItems))
 	for i, item := range orderItems {
 		items[i] = r.itemFromDomain(item)
 	}

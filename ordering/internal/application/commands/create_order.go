@@ -36,18 +36,18 @@ func (h CreateOrderHandler) CreateOrder(ctx context.Context, cmd CreateOrderRequ
 	}
 
 	// authorizeCustomer
-	if err = h.customers.Authorize(ctx, order.CustomerID); err != nil {
+	if err = h.customers.Authorize(ctx, cmd.CustomerID); err != nil {
 		return fmt.Errorf("order customer authorization: %w", err)
 	}
 
 	// validatePayment
-	if err = h.payments.Confirm(ctx, order.PaymentID); err != nil {
+	if err = h.payments.Confirm(ctx, cmd.PaymentID); err != nil {
 		return fmt.Errorf("order payment confirmation: %w", err)
 	}
 
 	// scheduleShopping
-	var shoppingID string
-	if order.ShoppingID, err = h.shopping.Create(ctx, cmd.ID, cmd.Items); err != nil {
+	shoppingID, err := h.shopping.Create(ctx, cmd.ID, cmd.Items)
+	if err != nil {
 		return fmt.Errorf("order shopping scheduling: %w", err)
 	}
 

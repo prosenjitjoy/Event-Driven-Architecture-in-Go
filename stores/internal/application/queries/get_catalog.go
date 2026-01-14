@@ -2,7 +2,6 @@ package queries
 
 import (
 	"context"
-	"log/slog"
 	"mall/stores/internal/domain"
 )
 
@@ -21,7 +20,5 @@ func NewGetCatalogHandler(catalog domain.CatalogRepository) GetCatalogHandler {
 }
 
 func (h GetCatalogHandler) GetCatalog(ctx context.Context, query GetCatalogRequest) ([]*domain.CatalogProduct, error) {
-	slog.Info("--> here")
-	defer slog.Info("<-- here")
 	return h.catalog.GetCatalog(ctx, query.StoreID)
 }

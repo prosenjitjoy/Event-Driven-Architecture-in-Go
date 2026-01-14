@@ -41,35 +41,6 @@ func (s server) CreateStore(ctx context.Context, request *storespb.CreateStoreRe
 	}, nil
 }
 
-func (s server) GetStores(ctx context.Context, request *storespb.GetStoresRequest) (*storespb.GetStoresResponse, error) {
-	stores, err := s.app.GetStores(ctx, queries.GetStoresRequest{})
-	if err != nil {
-		return nil, err
-	}
-
-	protoStores := []*storespb.Store{}
-	for _, store := range stores {
-		protoStores = append(protoStores, s.storeFromDomain(store))
-	}
-
-	return &storespb.GetStoresResponse{
-		Stores: protoStores,
-	}, nil
-}
-
-func (s server) GetStore(ctx context.Context, request *storespb.GetStoreRequest) (*storespb.GetStoreResponse, error) {
-	store, err := s.app.GetStore(ctx, queries.GetStoreRequest{
-		ID: request.GetId(),
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	return &storespb.GetStoreResponse{
-		Store: s.storeFromDomain(store),
-	}, nil
-}
-
 func (s server) EnableParticipation(ctx context.Context, request *storespb.EnableParticipationRequest) (*storespb.EnableParticipationResponse, error) {
 	err := s.app.EnableParticipation(ctx, commands.EnableParticipationRequest{
 		ID: request.GetId(),
@@ -90,6 +61,47 @@ func (s server) DisableParticipation(ctx context.Context, request *storespb.Disa
 	}
 
 	return &storespb.DisableParticipationResponse{}, nil
+}
+
+func (s server) RebrandStore(ctx context.Context, request *storespb.RebrandStoreRequest) (*storespb.RebrandStoreResponse, error) {
+	err := s.app.RebrandStore(ctx, commands.RebrandStoreRequest{
+		ID:   request.GetId(),
+		Name: request.GetName(),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &storespb.RebrandStoreResponse{}, nil
+}
+
+func (s server) GetStore(ctx context.Context, request *storespb.GetStoreRequest) (*storespb.GetStoreResponse, error) {
+	store, err := s.app.GetStore(ctx, queries.GetStoreRequest{
+		ID: request.GetId(),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &storespb.GetStoreResponse{
+		Store: s.storeFromDomain(store),
+	}, nil
+}
+
+func (s server) GetStores(ctx context.Context, request *storespb.GetStoresRequest) (*storespb.GetStoresResponse, error) {
+	stores, err := s.app.GetStores(ctx, queries.GetStoresRequest{})
+	if err != nil {
+		return nil, err
+	}
+
+	protoStores := []*storespb.Store{}
+	for _, store := range stores {
+		protoStores = append(protoStores, s.storeFromDomain(store))
+	}
+
+	return &storespb.GetStoresResponse{
+		Stores: protoStores,
+	}, nil
 }
 
 func (s server) GetParticipatingStores(ctx context.Context, request *storespb.GetParticipatingStoresRequest) (*storespb.GetParticipatingStoresResponse, error) {
@@ -125,17 +137,41 @@ func (s server) AddProduct(ctx context.Context, request *storespb.AddProductRequ
 	return &storespb.AddProductResponse{Id: id}, nil
 }
 
-func (s server) GetProduct(ctx context.Context, request *storespb.GetProductRequest) (*storespb.GetProductResponse, error) {
-	product, err := s.app.GetProduct(ctx, queries.GetProductRequest{
-		ID: request.GetId(),
+func (s server) RebrandProduct(ctx context.Context, request *storespb.RebrandProductRequest) (*storespb.RebrandProductResponse, error) {
+	err := s.app.RebrandProduct(ctx, commands.RebrandProductRequest{
+		ID:          request.GetId(),
+		Name:        request.GetName(),
+		Description: request.GetDescription(),
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	return &storespb.GetProductResponse{
-		Product: s.productFromDomain(product),
-	}, nil
+	return &storespb.RebrandProductResponse{}, nil
+}
+
+func (s server) IncreaseProductPrice(ctx context.Context, request *storespb.IncreaseProductPriceRequest) (*storespb.IncreaseProductPriceResponse, error) {
+	err := s.app.IncreaseProductPrice(ctx, commands.IncreaseProductPriceRequest{
+		ID:    request.GetId(),
+		Price: request.GetPrice(),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &storespb.IncreaseProductPriceResponse{}, nil
+}
+
+func (s server) DecreaseProductPrice(ctx context.Context, request *storespb.DecreaseProductPriceRequest) (*storespb.DecreaseProductPriceResponse, error) {
+	err := s.app.DecreaseProductPrice(ctx, commands.DecreaseProductPriceRequest{
+		ID:    request.GetId(),
+		Price: request.GetPrice(),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &storespb.DecreaseProductPriceResponse{}, nil
 }
 
 func (s server) RemoveProduct(ctx context.Context, request *storespb.RemoveProductRequest) (*storespb.RemoveProductResponse, error) {
@@ -149,6 +185,19 @@ func (s server) RemoveProduct(ctx context.Context, request *storespb.RemoveProdu
 	return &storespb.RemoveProductResponse{}, nil
 }
 
+func (s server) GetProduct(ctx context.Context, request *storespb.GetProductRequest) (*storespb.GetProductResponse, error) {
+	product, err := s.app.GetProduct(ctx, queries.GetProductRequest{
+		ID: request.GetId(),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &storespb.GetProductResponse{
+		Product: s.productFromDomain(product),
+	}, nil
+}
+
 func (s server) GetCatalog(ctx context.Context, request *storespb.GetCatalogRequest) (*storespb.GetCatalogResponse, error) {
 	products, err := s.app.GetCatalog(ctx, queries.GetCatalogRequest{
 		StoreID: request.GetStoreId(),
@@ -157,7 +206,7 @@ func (s server) GetCatalog(ctx context.Context, request *storespb.GetCatalogRequ
 		return nil, err
 	}
 
-	protoProducts := []*storespb.Product{}
+	protoProducts := make([]*storespb.Product, len(products))
 	for i, product := range products {
 		protoProducts[i] = s.productFromDomain(product)
 	}

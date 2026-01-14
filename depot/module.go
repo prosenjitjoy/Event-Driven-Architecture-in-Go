@@ -16,7 +16,7 @@ type Module struct{}
 
 func (m Module) Startup(ctx context.Context, mono monolith.Monolith) error {
 	// setup driven adapters
-	domainDispatcher := ddd.NewEventDispatcher()
+	domainDispatcher := ddd.NewEventDispatcher[ddd.AggregateEvent]()
 
 	shoppingLists := postgres.NewShoppingListRepository("depot.shopping_lists", mono.DB())
 
@@ -35,8 +35,9 @@ func (m Module) Startup(ctx context.Context, mono monolith.Monolith) error {
 		mono.Logger(),
 	)
 
-	orderHandlers := logging.LogDomainEventHandlerAccess(
-		application.NewOrderHandler(orders),
+	orderHandlers := logging.LogEventHandlerAccess[ddd.AggregateEvent](
+		application.NewOrderHandlers(orders),
+		"Order",
 		mono.Logger(),
 	)
 

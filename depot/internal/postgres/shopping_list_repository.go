@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"mall/depot/internal/domain"
-	"mall/internal/ddd"
 )
 
 type ShoppingListRepository struct {
@@ -26,37 +25,12 @@ func NewShoppingListRepository(tableName string, db *sql.DB) ShoppingListReposit
 func (r ShoppingListRepository) Find(ctx context.Context, id string) (*domain.ShoppingList, error) {
 	const query = "SELECT order_id, stops, assigned_bot_id, status FROM %s WHERE id = $1 LIMIT 1"
 
-	shoppingList := &domain.ShoppingList{
-		AggregateBase: ddd.AggregateBase{ID: id},
-	}
+	shoppingList := domain.NewShoppingList(id)
 
 	var stops []byte
 	var status string
 
 	err := r.db.QueryRowContext(ctx, r.table(query), id).Scan(&shoppingList.OrderID, &stops, &shoppingList.AssignedBotID, &status)
-	if err != nil {
-		return nil, fmt.Errorf("INTERNAL_SERVER_ERROR: %w", err)
-	}
-
-	shoppingList.Status = domain.ToShoppingListStatus(status)
-	err = json.Unmarshal(stops, &shoppingList.Stops)
-	if err != nil {
-		return nil, fmt.Errorf("INTERNAL_SERVER_ERROR: %w", err)
-	}
-
-	return shoppingList, nil
-}
-
-func (r ShoppingListRepository) FindOrderID(ctx context.Context, orderID string) (*domain.ShoppingList, error) {
-	const query = "SELECT id, stops, assigned_bot_id, status FROM %s WHERE order_id = $1 LIMIT 1"
-
-	shoppingList := &domain.ShoppingList{
-		OrderID: orderID,
-	}
-	var stops []byte
-	var status string
-
-	err := r.db.QueryRowContext(ctx, r.table(query), orderID).Scan(&shoppingList.ID, &stops, &shoppingList.AssignedBotID, &status)
 	if err != nil {
 		return nil, fmt.Errorf("INTERNAL_SERVER_ERROR: %w", err)
 	}

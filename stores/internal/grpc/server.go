@@ -158,8 +158,8 @@ func (s server) GetCatalog(ctx context.Context, request *storespb.GetCatalogRequ
 	}
 
 	protoProducts := []*storespb.Product{}
-	for _, product := range products {
-		protoProducts = append(protoProducts, s.productFromDomain(product))
+	for i, product := range products {
+		protoProducts[i] = s.productFromDomain(product)
 	}
 
 	return &storespb.GetCatalogResponse{
@@ -167,7 +167,7 @@ func (s server) GetCatalog(ctx context.Context, request *storespb.GetCatalogRequ
 	}, nil
 }
 
-func (s server) storeFromDomain(store *domain.Store) *storespb.Store {
+func (s server) storeFromDomain(store *domain.MallStore) *storespb.Store {
 	return &storespb.Store{
 		Id:            store.ID,
 		Name:          store.Name,
@@ -176,7 +176,7 @@ func (s server) storeFromDomain(store *domain.Store) *storespb.Store {
 	}
 }
 
-func (s server) productFromDomain(product *domain.Product) *storespb.Product {
+func (s server) productFromDomain(product *domain.CatalogProduct) *storespb.Product {
 	return &storespb.Product{
 		Id:          product.ID,
 		StoreId:     product.StoreID,

@@ -21,9 +21,9 @@ func NewOrderRepository(conn *grpc.ClientConn) OrderRepository {
 	}
 }
 
-func (r OrderRepository) Save(ctx context.Context, basket *domain.Basket) (string, error) {
-	items := make([]*orderingpb.Item, 0, len(basket.Items))
-	for _, item := range basket.Items {
+func (r OrderRepository) Save(ctx context.Context, paymentID, customerID string, basketItems map[string]domain.Item) (string, error) {
+	items := make([]*orderingpb.Item, 0, len(basketItems))
+	for _, item := range basketItems {
 		items = append(items, &orderingpb.Item{
 			StoreId:     item.StoreID,
 			ProductId:   item.ProductID,
@@ -36,8 +36,8 @@ func (r OrderRepository) Save(ctx context.Context, basket *domain.Basket) (strin
 
 	resp, err := r.client.CreateOrder(ctx, &orderingpb.CreateOrderRequest{
 		Items:      items,
-		CustomerId: basket.CustomerID,
-		PaymentId:  basket.PaymentID,
+		CustomerId: customerID,
+		PaymentId:  paymentID,
 	})
 	if err != nil {
 		return "", fmt.Errorf("saving order: %w", err)

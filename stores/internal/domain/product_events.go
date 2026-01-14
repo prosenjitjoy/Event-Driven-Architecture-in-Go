@@ -1,17 +1,34 @@
 package domain
 
+const (
+	ProductAddedEvent         = "stores.ProductAdded"
+	ProductRebrandedEvent     = "stores.ProductRebranded"
+	ProductPriceIncreaseEvent = "stores.ProductPriceIncrease"
+	ProductPriceDecreaseEvent = "stores.ProductPriceDecrease"
+	ProductRemovedEvent       = "stores.ProductRemoved"
+)
+
 type ProductAdded struct {
-	Product *Product
+	StoreID     string
+	Name        string
+	Description string
+	SKU         string
+	Price       float64
 }
 
-func (ProductAdded) EventName() string {
-	return "stores.ProductAdded"
+func (ProductAdded) Key() string { return ProductAddedEvent }
+
+type ProductRebranded struct {
+	Name        string
+	Description string
 }
 
-type ProductRemoved struct {
-	Product *Product
+func (ProductRebranded) Key() string { return ProductRebrandedEvent }
+
+type ProductPriceChanged struct {
+	Delta float64
 }
 
-func (ProductRemoved) EventName() string {
-	return "stores.ProductRemoved"
-}
+type ProductRemoved struct{}
+
+func (ProductRemoved) Key() string { return ProductRemovedEvent }

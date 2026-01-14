@@ -3,7 +3,6 @@ package commands
 import (
 	"context"
 	"fmt"
-	"mall/internal/ddd"
 	"mall/stores/internal/domain"
 )
 
@@ -17,25 +16,16 @@ type AddProductRequest struct {
 }
 
 type AddProductHandler struct {
-	stores          domain.StoreRepository
-	products        domain.ProductRepository
-	domainPublisher ddd.EventPublisher
+	products domain.ProductRepository
 }
 
-func NewAddProductHandler(stores domain.StoreRepository, products domain.ProductRepository, domainPublisher ddd.EventPublisher) AddProductHandler {
+func NewAddProductHandler(products domain.ProductRepository) AddProductHandler {
 	return AddProductHandler{
-		stores:          stores,
-		products:        products,
-		domainPublisher: domainPublisher,
+		products: products,
 	}
 }
 
 func (h AddProductHandler) AddProduct(ctx context.Context, cmd AddProductRequest) error {
-	_, err := h.stores.Find(ctx, cmd.StoreID)
-	if err != nil {
-		return fmt.Errorf("error adding product: %w", err)
-	}
-
 	product, err := domain.CreateProduct(cmd.ID, cmd.StoreID, cmd.Name, cmd.Description, cmd.SKU, cmd.Price)
 	if err != nil {
 		return fmt.Errorf("error adding product: %w", err)
@@ -43,10 +33,6 @@ func (h AddProductHandler) AddProduct(ctx context.Context, cmd AddProductRequest
 
 	if err = h.products.Save(ctx, product); err != nil {
 		return fmt.Errorf("error adding product: %w", err)
-	}
-
-	if err = h.domainPublisher.Publish(ctx, product.GetEvents()...); err != nil {
-		return err
 	}
 
 	return nil

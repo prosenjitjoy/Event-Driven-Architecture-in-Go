@@ -2,7 +2,6 @@ package commands
 
 import (
 	"context"
-	"mall/internal/ddd"
 	"mall/stores/internal/domain"
 )
 
@@ -11,19 +10,17 @@ type EnableParticipationRequest struct {
 }
 
 type EnableParticipationHandler struct {
-	stores          domain.StoreRepository
-	domainPublisher ddd.EventPublisher
+	stores domain.StoreRepository
 }
 
-func NewEnableParticipationHandler(stores domain.StoreRepository, domainPublisher ddd.EventPublisher) EnableParticipationHandler {
+func NewEnableParticipationHandler(stores domain.StoreRepository) EnableParticipationHandler {
 	return EnableParticipationHandler{
-		stores:          stores,
-		domainPublisher: domainPublisher,
+		stores: stores,
 	}
 }
 
 func (h EnableParticipationHandler) EnableParticipation(ctx context.Context, cmd EnableParticipationRequest) error {
-	store, err := h.stores.Find(ctx, cmd.ID)
+	store, err := h.stores.Load(ctx, cmd.ID)
 	if err != nil {
 		return err
 	}
@@ -32,13 +29,5 @@ func (h EnableParticipationHandler) EnableParticipation(ctx context.Context, cmd
 		return err
 	}
 
-	if err = h.stores.Update(ctx, store); err != nil {
-		return err
-	}
-
-	if err = h.domainPublisher.Publish(ctx, store.GetEvents()...); err != nil {
-		return err
-	}
-
-	return nil
+	return h.stores.Save(ctx, store)
 }

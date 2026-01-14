@@ -2,7 +2,6 @@ package commands
 
 import (
 	"context"
-	"mall/internal/ddd"
 	"mall/stores/internal/domain"
 )
 
@@ -13,14 +12,12 @@ type CreateStoreRequest struct {
 }
 
 type CreateStoreHandler struct {
-	stores          domain.StoreRepository
-	domainPublisher ddd.EventPublisher
+	stores domain.StoreRepository
 }
 
-func NewCreateStoreHandler(stores domain.StoreRepository, domainPublisher ddd.EventPublisher) CreateStoreHandler {
+func NewCreateStoreHandler(stores domain.StoreRepository) CreateStoreHandler {
 	return CreateStoreHandler{
-		stores:          stores,
-		domainPublisher: domainPublisher,
+		stores: stores,
 	}
 }
 
@@ -30,13 +27,5 @@ func (h CreateStoreHandler) CreateStore(ctx context.Context, cmd CreateStoreRequ
 		return err
 	}
 
-	if err = h.stores.Save(ctx, store); err != nil {
-		return err
-	}
-
-	if err = h.domainPublisher.Publish(ctx, store.GetEvents()...); err != nil {
-		return err
-	}
-
-	return nil
+	return h.stores.Save(ctx, store)
 }

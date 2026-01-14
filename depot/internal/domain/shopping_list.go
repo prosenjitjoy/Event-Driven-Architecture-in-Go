@@ -5,6 +5,8 @@ import (
 	"mall/internal/ddd"
 )
 
+const ShoppingListAggregate = "depot.ShoppingList"
+
 var (
 	ErrShoppingCannotBeCanceled  = errors.New("the shopping list cannot be canceled")
 	ErrShoppingCannotBeAssigned  = errors.New("the shopping list cannot be assigned")
@@ -12,22 +14,28 @@ var (
 )
 
 type ShoppingList struct {
-	ddd.AggregateBase
+	ddd.Aggregate
 	OrderID       string
 	Stops         Stops
 	AssignedBotID string
 	Status        ShoppingListStatus
 }
 
-func CreateShopping(id, orderID string) *ShoppingList {
-	shoppingList := &ShoppingList{
-		AggregateBase: ddd.AggregateBase{ID: id},
-		OrderID:       orderID,
-		Stops:         make(Stops),
-		Status:        ShoppingListIsAvailable,
+func NewShoppingList(id string) *ShoppingList {
+	return &ShoppingList{
+		Aggregate: ddd.NewAggregate(id, ShoppingListAggregate),
 	}
+}
 
-	shoppingList.AddEvent(&ShoppingListCreated{
+func (ShoppingList) Key() string { return ShoppingListAggregate }
+
+func CreateShopping(id, orderID string) *ShoppingList {
+	shoppingList := NewShoppingList(id)
+	shoppingList.OrderID = orderID
+	shoppingList.Status = ShoppingListIsAvailable
+	shoppingList.Stops = make(Stops)
+
+	shoppingList.AddEvent(ShoppingListCreatedEvent, &ShoppingListCreated{
 		ShoppingList: shoppingList,
 	})
 
@@ -62,7 +70,7 @@ func (sl *ShoppingList) Cancel() error {
 
 	sl.Status = ShoppingListIsCanceled
 
-	sl.AddEvent(&ShoppingListCanceled{
+	sl.AddEvent(ShoppingListCanceledEvent, &ShoppingListCanceled{
 		ShoppingList: sl,
 	})
 
@@ -81,7 +89,7 @@ func (sl *ShoppingList) Assign(id string) error {
 	sl.AssignedBotID = id
 	sl.Status = ShoppingListIsAssigned
 
-	sl.AddEvent(&ShoppingListAssigned{
+	sl.AddEvent(ShoppingListAssignedEvent, &ShoppingListAssigned{
 		ShoppingList: sl,
 		BotID:        id,
 	})
@@ -100,7 +108,7 @@ func (sl *ShoppingList) Complete() error {
 
 	sl.Status = ShoppingListIsCompleted
 
-	sl.AddEvent(&ShoppingListCompleted{
+	sl.AddEvent(ShoppingListCompletedEvent, &ShoppingListCompleted{
 		ShoppingList: sl,
 	})
 

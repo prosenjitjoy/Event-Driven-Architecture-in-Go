@@ -9,15 +9,15 @@ type GetStoresRequest struct {
 }
 
 type GetStoresHandler struct {
-	stores domain.StoreRepository
+	mall domain.MallRepository
 }
 
-func NewGetStoresHandler(stores domain.StoreRepository) GetStoresHandler {
+func NewGetStoresHandler(mall domain.MallRepository) GetStoresHandler {
 	return GetStoresHandler{
-		stores: stores,
+		mall: mall,
 	}
 }
 
-func (h GetStoresHandler) GetStores(ctx context.Context, _ GetStoresRequest) ([]*domain.Store, error) {
-	return h.stores.FindAll(ctx)
+func (h GetStoresHandler) GetStores(ctx context.Context, _ GetStoresRequest) ([]*domain.MallStore, error) {
+	return h.mall.All(ctx)
 }

@@ -2,6 +2,7 @@ package queries
 
 import (
 	"context"
+	"log/slog"
 	"mall/stores/internal/domain"
 )
 
@@ -10,13 +11,17 @@ type GetCatalogRequest struct {
 }
 
 type GetCatalogHandler struct {
-	products domain.ProductRepository
+	catalog domain.CatalogRepository
 }
 
-func NewGetCatalogHandler(product domain.ProductRepository) GetCatalogHandler {
-	return GetCatalogHandler{products: product}
+func NewGetCatalogHandler(catalog domain.CatalogRepository) GetCatalogHandler {
+	return GetCatalogHandler{
+		catalog: catalog,
+	}
 }
 
-func (h GetCatalogHandler) GetCatalog(ctx context.Context, query GetCatalogRequest) ([]*domain.Product, error) {
-	return h.products.GetCatalog(ctx, query.StoreID)
+func (h GetCatalogHandler) GetCatalog(ctx context.Context, query GetCatalogRequest) ([]*domain.CatalogProduct, error) {
+	slog.Info("--> here")
+	defer slog.Info("<-- here")
+	return h.catalog.GetCatalog(ctx, query.StoreID)
 }

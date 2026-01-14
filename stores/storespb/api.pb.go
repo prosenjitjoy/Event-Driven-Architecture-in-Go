@@ -117,26 +117,27 @@ func (x *CreateStoreResponse) GetId() string {
 	return ""
 }
 
-type GetStoresRequest struct {
+type EnableParticipationRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *GetStoresRequest) Reset() {
-	*x = GetStoresRequest{}
+func (x *EnableParticipationRequest) Reset() {
+	*x = EnableParticipationRequest{}
 	mi := &file_storespb_api_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *GetStoresRequest) String() string {
+func (x *EnableParticipationRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*GetStoresRequest) ProtoMessage() {}
+func (*EnableParticipationRequest) ProtoMessage() {}
 
-func (x *GetStoresRequest) ProtoReflect() protoreflect.Message {
+func (x *EnableParticipationRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_storespb_api_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -148,32 +149,38 @@ func (x *GetStoresRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use GetStoresRequest.ProtoReflect.Descriptor instead.
-func (*GetStoresRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use EnableParticipationRequest.ProtoReflect.Descriptor instead.
+func (*EnableParticipationRequest) Descriptor() ([]byte, []int) {
 	return file_storespb_api_proto_rawDescGZIP(), []int{2}
 }
 
-type GetStoresResponse struct {
+func (x *EnableParticipationRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+type EnableParticipationResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Stores        []*Store               `protobuf:"bytes,1,rep,name=stores,proto3" json:"stores,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *GetStoresResponse) Reset() {
-	*x = GetStoresResponse{}
+func (x *EnableParticipationResponse) Reset() {
+	*x = EnableParticipationResponse{}
 	mi := &file_storespb_api_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *GetStoresResponse) String() string {
+func (x *EnableParticipationResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*GetStoresResponse) ProtoMessage() {}
+func (*EnableParticipationResponse) ProtoMessage() {}
 
-func (x *GetStoresResponse) ProtoReflect() protoreflect.Message {
+func (x *EnableParticipationResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_storespb_api_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -185,16 +192,177 @@ func (x *GetStoresResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use GetStoresResponse.ProtoReflect.Descriptor instead.
-func (*GetStoresResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use EnableParticipationResponse.ProtoReflect.Descriptor instead.
+func (*EnableParticipationResponse) Descriptor() ([]byte, []int) {
 	return file_storespb_api_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *GetStoresResponse) GetStores() []*Store {
+type DisableParticipationRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DisableParticipationRequest) Reset() {
+	*x = DisableParticipationRequest{}
+	mi := &file_storespb_api_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DisableParticipationRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DisableParticipationRequest) ProtoMessage() {}
+
+func (x *DisableParticipationRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_storespb_api_proto_msgTypes[4]
 	if x != nil {
-		return x.Stores
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
 	}
-	return nil
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DisableParticipationRequest.ProtoReflect.Descriptor instead.
+func (*DisableParticipationRequest) Descriptor() ([]byte, []int) {
+	return file_storespb_api_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *DisableParticipationRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+type DisableParticipationResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DisableParticipationResponse) Reset() {
+	*x = DisableParticipationResponse{}
+	mi := &file_storespb_api_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DisableParticipationResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DisableParticipationResponse) ProtoMessage() {}
+
+func (x *DisableParticipationResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_storespb_api_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DisableParticipationResponse.ProtoReflect.Descriptor instead.
+func (*DisableParticipationResponse) Descriptor() ([]byte, []int) {
+	return file_storespb_api_proto_rawDescGZIP(), []int{5}
+}
+
+type RebrandStoreRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RebrandStoreRequest) Reset() {
+	*x = RebrandStoreRequest{}
+	mi := &file_storespb_api_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RebrandStoreRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RebrandStoreRequest) ProtoMessage() {}
+
+func (x *RebrandStoreRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_storespb_api_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RebrandStoreRequest.ProtoReflect.Descriptor instead.
+func (*RebrandStoreRequest) Descriptor() ([]byte, []int) {
+	return file_storespb_api_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *RebrandStoreRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *RebrandStoreRequest) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+type RebrandStoreResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RebrandStoreResponse) Reset() {
+	*x = RebrandStoreResponse{}
+	mi := &file_storespb_api_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RebrandStoreResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RebrandStoreResponse) ProtoMessage() {}
+
+func (x *RebrandStoreResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_storespb_api_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RebrandStoreResponse.ProtoReflect.Descriptor instead.
+func (*RebrandStoreResponse) Descriptor() ([]byte, []int) {
+	return file_storespb_api_proto_rawDescGZIP(), []int{7}
 }
 
 type GetStoreRequest struct {
@@ -206,7 +374,7 @@ type GetStoreRequest struct {
 
 func (x *GetStoreRequest) Reset() {
 	*x = GetStoreRequest{}
-	mi := &file_storespb_api_proto_msgTypes[4]
+	mi := &file_storespb_api_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -218,7 +386,7 @@ func (x *GetStoreRequest) String() string {
 func (*GetStoreRequest) ProtoMessage() {}
 
 func (x *GetStoreRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_storespb_api_proto_msgTypes[4]
+	mi := &file_storespb_api_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -231,7 +399,7 @@ func (x *GetStoreRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetStoreRequest.ProtoReflect.Descriptor instead.
 func (*GetStoreRequest) Descriptor() ([]byte, []int) {
-	return file_storespb_api_proto_rawDescGZIP(), []int{4}
+	return file_storespb_api_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *GetStoreRequest) GetId() string {
@@ -250,7 +418,7 @@ type GetStoreResponse struct {
 
 func (x *GetStoreResponse) Reset() {
 	*x = GetStoreResponse{}
-	mi := &file_storespb_api_proto_msgTypes[5]
+	mi := &file_storespb_api_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -262,7 +430,7 @@ func (x *GetStoreResponse) String() string {
 func (*GetStoreResponse) ProtoMessage() {}
 
 func (x *GetStoreResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_storespb_api_proto_msgTypes[5]
+	mi := &file_storespb_api_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -275,7 +443,7 @@ func (x *GetStoreResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetStoreResponse.ProtoReflect.Descriptor instead.
 func (*GetStoreResponse) Descriptor() ([]byte, []int) {
-	return file_storespb_api_proto_rawDescGZIP(), []int{5}
+	return file_storespb_api_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *GetStoreResponse) GetStore() *Store {
@@ -285,28 +453,27 @@ func (x *GetStoreResponse) GetStore() *Store {
 	return nil
 }
 
-type EnableParticipationRequest struct {
+type GetStoresRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *EnableParticipationRequest) Reset() {
-	*x = EnableParticipationRequest{}
-	mi := &file_storespb_api_proto_msgTypes[6]
+func (x *GetStoresRequest) Reset() {
+	*x = GetStoresRequest{}
+	mi := &file_storespb_api_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *EnableParticipationRequest) String() string {
+func (x *GetStoresRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*EnableParticipationRequest) ProtoMessage() {}
+func (*GetStoresRequest) ProtoMessage() {}
 
-func (x *EnableParticipationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_storespb_api_proto_msgTypes[6]
+func (x *GetStoresRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_storespb_api_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -317,39 +484,33 @@ func (x *EnableParticipationRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use EnableParticipationRequest.ProtoReflect.Descriptor instead.
-func (*EnableParticipationRequest) Descriptor() ([]byte, []int) {
-	return file_storespb_api_proto_rawDescGZIP(), []int{6}
+// Deprecated: Use GetStoresRequest.ProtoReflect.Descriptor instead.
+func (*GetStoresRequest) Descriptor() ([]byte, []int) {
+	return file_storespb_api_proto_rawDescGZIP(), []int{10}
 }
 
-func (x *EnableParticipationRequest) GetId() string {
-	if x != nil {
-		return x.Id
-	}
-	return ""
-}
-
-type EnableParticipationResponse struct {
+type GetStoresResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
+	Stores        []*Store               `protobuf:"bytes,1,rep,name=stores,proto3" json:"stores,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *EnableParticipationResponse) Reset() {
-	*x = EnableParticipationResponse{}
-	mi := &file_storespb_api_proto_msgTypes[7]
+func (x *GetStoresResponse) Reset() {
+	*x = GetStoresResponse{}
+	mi := &file_storespb_api_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *EnableParticipationResponse) String() string {
+func (x *GetStoresResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*EnableParticipationResponse) ProtoMessage() {}
+func (*GetStoresResponse) ProtoMessage() {}
 
-func (x *EnableParticipationResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_storespb_api_proto_msgTypes[7]
+func (x *GetStoresResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_storespb_api_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -360,89 +521,16 @@ func (x *EnableParticipationResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use EnableParticipationResponse.ProtoReflect.Descriptor instead.
-func (*EnableParticipationResponse) Descriptor() ([]byte, []int) {
-	return file_storespb_api_proto_rawDescGZIP(), []int{7}
+// Deprecated: Use GetStoresResponse.ProtoReflect.Descriptor instead.
+func (*GetStoresResponse) Descriptor() ([]byte, []int) {
+	return file_storespb_api_proto_rawDescGZIP(), []int{11}
 }
 
-type DisableParticipationRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *DisableParticipationRequest) Reset() {
-	*x = DisableParticipationRequest{}
-	mi := &file_storespb_api_proto_msgTypes[8]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *DisableParticipationRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DisableParticipationRequest) ProtoMessage() {}
-
-func (x *DisableParticipationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_storespb_api_proto_msgTypes[8]
+func (x *GetStoresResponse) GetStores() []*Store {
 	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
+		return x.Stores
 	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DisableParticipationRequest.ProtoReflect.Descriptor instead.
-func (*DisableParticipationRequest) Descriptor() ([]byte, []int) {
-	return file_storespb_api_proto_rawDescGZIP(), []int{8}
-}
-
-func (x *DisableParticipationRequest) GetId() string {
-	if x != nil {
-		return x.Id
-	}
-	return ""
-}
-
-type DisableParticipationResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *DisableParticipationResponse) Reset() {
-	*x = DisableParticipationResponse{}
-	mi := &file_storespb_api_proto_msgTypes[9]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *DisableParticipationResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DisableParticipationResponse) ProtoMessage() {}
-
-func (x *DisableParticipationResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_storespb_api_proto_msgTypes[9]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DisableParticipationResponse.ProtoReflect.Descriptor instead.
-func (*DisableParticipationResponse) Descriptor() ([]byte, []int) {
-	return file_storespb_api_proto_rawDescGZIP(), []int{9}
+	return nil
 }
 
 type GetParticipatingStoresRequest struct {
@@ -453,7 +541,7 @@ type GetParticipatingStoresRequest struct {
 
 func (x *GetParticipatingStoresRequest) Reset() {
 	*x = GetParticipatingStoresRequest{}
-	mi := &file_storespb_api_proto_msgTypes[10]
+	mi := &file_storespb_api_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -465,7 +553,7 @@ func (x *GetParticipatingStoresRequest) String() string {
 func (*GetParticipatingStoresRequest) ProtoMessage() {}
 
 func (x *GetParticipatingStoresRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_storespb_api_proto_msgTypes[10]
+	mi := &file_storespb_api_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -478,7 +566,7 @@ func (x *GetParticipatingStoresRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetParticipatingStoresRequest.ProtoReflect.Descriptor instead.
 func (*GetParticipatingStoresRequest) Descriptor() ([]byte, []int) {
-	return file_storespb_api_proto_rawDescGZIP(), []int{10}
+	return file_storespb_api_proto_rawDescGZIP(), []int{12}
 }
 
 type GetParticipatingStoresResponse struct {
@@ -490,7 +578,7 @@ type GetParticipatingStoresResponse struct {
 
 func (x *GetParticipatingStoresResponse) Reset() {
 	*x = GetParticipatingStoresResponse{}
-	mi := &file_storespb_api_proto_msgTypes[11]
+	mi := &file_storespb_api_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -502,7 +590,7 @@ func (x *GetParticipatingStoresResponse) String() string {
 func (*GetParticipatingStoresResponse) ProtoMessage() {}
 
 func (x *GetParticipatingStoresResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_storespb_api_proto_msgTypes[11]
+	mi := &file_storespb_api_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -515,7 +603,7 @@ func (x *GetParticipatingStoresResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetParticipatingStoresResponse.ProtoReflect.Descriptor instead.
 func (*GetParticipatingStoresResponse) Descriptor() ([]byte, []int) {
-	return file_storespb_api_proto_rawDescGZIP(), []int{11}
+	return file_storespb_api_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *GetParticipatingStoresResponse) GetStores() []*Store {
@@ -538,7 +626,7 @@ type AddProductRequest struct {
 
 func (x *AddProductRequest) Reset() {
 	*x = AddProductRequest{}
-	mi := &file_storespb_api_proto_msgTypes[12]
+	mi := &file_storespb_api_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -550,7 +638,7 @@ func (x *AddProductRequest) String() string {
 func (*AddProductRequest) ProtoMessage() {}
 
 func (x *AddProductRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_storespb_api_proto_msgTypes[12]
+	mi := &file_storespb_api_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -563,7 +651,7 @@ func (x *AddProductRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AddProductRequest.ProtoReflect.Descriptor instead.
 func (*AddProductRequest) Descriptor() ([]byte, []int) {
-	return file_storespb_api_proto_rawDescGZIP(), []int{12}
+	return file_storespb_api_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *AddProductRequest) GetStoreId() string {
@@ -610,7 +698,7 @@ type AddProductResponse struct {
 
 func (x *AddProductResponse) Reset() {
 	*x = AddProductResponse{}
-	mi := &file_storespb_api_proto_msgTypes[13]
+	mi := &file_storespb_api_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -622,7 +710,7 @@ func (x *AddProductResponse) String() string {
 func (*AddProductResponse) ProtoMessage() {}
 
 func (x *AddProductResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_storespb_api_proto_msgTypes[13]
+	mi := &file_storespb_api_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -635,7 +723,7 @@ func (x *AddProductResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AddProductResponse.ProtoReflect.Descriptor instead.
 func (*AddProductResponse) Descriptor() ([]byte, []int) {
-	return file_storespb_api_proto_rawDescGZIP(), []int{13}
+	return file_storespb_api_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *AddProductResponse) GetId() string {
@@ -643,6 +731,278 @@ func (x *AddProductResponse) GetId() string {
 		return x.Id
 	}
 	return ""
+}
+
+type RebrandProductRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Description   string                 `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RebrandProductRequest) Reset() {
+	*x = RebrandProductRequest{}
+	mi := &file_storespb_api_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RebrandProductRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RebrandProductRequest) ProtoMessage() {}
+
+func (x *RebrandProductRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_storespb_api_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RebrandProductRequest.ProtoReflect.Descriptor instead.
+func (*RebrandProductRequest) Descriptor() ([]byte, []int) {
+	return file_storespb_api_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *RebrandProductRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *RebrandProductRequest) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *RebrandProductRequest) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
+type RebrandProductResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RebrandProductResponse) Reset() {
+	*x = RebrandProductResponse{}
+	mi := &file_storespb_api_proto_msgTypes[17]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RebrandProductResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RebrandProductResponse) ProtoMessage() {}
+
+func (x *RebrandProductResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_storespb_api_proto_msgTypes[17]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RebrandProductResponse.ProtoReflect.Descriptor instead.
+func (*RebrandProductResponse) Descriptor() ([]byte, []int) {
+	return file_storespb_api_proto_rawDescGZIP(), []int{17}
+}
+
+type IncreaseProductPriceRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Price         float64                `protobuf:"fixed64,2,opt,name=price,proto3" json:"price,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *IncreaseProductPriceRequest) Reset() {
+	*x = IncreaseProductPriceRequest{}
+	mi := &file_storespb_api_proto_msgTypes[18]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *IncreaseProductPriceRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*IncreaseProductPriceRequest) ProtoMessage() {}
+
+func (x *IncreaseProductPriceRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_storespb_api_proto_msgTypes[18]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use IncreaseProductPriceRequest.ProtoReflect.Descriptor instead.
+func (*IncreaseProductPriceRequest) Descriptor() ([]byte, []int) {
+	return file_storespb_api_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *IncreaseProductPriceRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *IncreaseProductPriceRequest) GetPrice() float64 {
+	if x != nil {
+		return x.Price
+	}
+	return 0
+}
+
+type IncreaseProductPriceResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *IncreaseProductPriceResponse) Reset() {
+	*x = IncreaseProductPriceResponse{}
+	mi := &file_storespb_api_proto_msgTypes[19]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *IncreaseProductPriceResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*IncreaseProductPriceResponse) ProtoMessage() {}
+
+func (x *IncreaseProductPriceResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_storespb_api_proto_msgTypes[19]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use IncreaseProductPriceResponse.ProtoReflect.Descriptor instead.
+func (*IncreaseProductPriceResponse) Descriptor() ([]byte, []int) {
+	return file_storespb_api_proto_rawDescGZIP(), []int{19}
+}
+
+type DecreaseProductPriceRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Price         float64                `protobuf:"fixed64,2,opt,name=price,proto3" json:"price,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DecreaseProductPriceRequest) Reset() {
+	*x = DecreaseProductPriceRequest{}
+	mi := &file_storespb_api_proto_msgTypes[20]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DecreaseProductPriceRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DecreaseProductPriceRequest) ProtoMessage() {}
+
+func (x *DecreaseProductPriceRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_storespb_api_proto_msgTypes[20]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DecreaseProductPriceRequest.ProtoReflect.Descriptor instead.
+func (*DecreaseProductPriceRequest) Descriptor() ([]byte, []int) {
+	return file_storespb_api_proto_rawDescGZIP(), []int{20}
+}
+
+func (x *DecreaseProductPriceRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *DecreaseProductPriceRequest) GetPrice() float64 {
+	if x != nil {
+		return x.Price
+	}
+	return 0
+}
+
+type DecreaseProductPriceResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DecreaseProductPriceResponse) Reset() {
+	*x = DecreaseProductPriceResponse{}
+	mi := &file_storespb_api_proto_msgTypes[21]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DecreaseProductPriceResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DecreaseProductPriceResponse) ProtoMessage() {}
+
+func (x *DecreaseProductPriceResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_storespb_api_proto_msgTypes[21]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DecreaseProductPriceResponse.ProtoReflect.Descriptor instead.
+func (*DecreaseProductPriceResponse) Descriptor() ([]byte, []int) {
+	return file_storespb_api_proto_rawDescGZIP(), []int{21}
 }
 
 type GetProductRequest struct {
@@ -654,7 +1014,7 @@ type GetProductRequest struct {
 
 func (x *GetProductRequest) Reset() {
 	*x = GetProductRequest{}
-	mi := &file_storespb_api_proto_msgTypes[14]
+	mi := &file_storespb_api_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -666,7 +1026,7 @@ func (x *GetProductRequest) String() string {
 func (*GetProductRequest) ProtoMessage() {}
 
 func (x *GetProductRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_storespb_api_proto_msgTypes[14]
+	mi := &file_storespb_api_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -679,7 +1039,7 @@ func (x *GetProductRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetProductRequest.ProtoReflect.Descriptor instead.
 func (*GetProductRequest) Descriptor() ([]byte, []int) {
-	return file_storespb_api_proto_rawDescGZIP(), []int{14}
+	return file_storespb_api_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *GetProductRequest) GetId() string {
@@ -698,7 +1058,7 @@ type GetProductResponse struct {
 
 func (x *GetProductResponse) Reset() {
 	*x = GetProductResponse{}
-	mi := &file_storespb_api_proto_msgTypes[15]
+	mi := &file_storespb_api_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -710,7 +1070,7 @@ func (x *GetProductResponse) String() string {
 func (*GetProductResponse) ProtoMessage() {}
 
 func (x *GetProductResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_storespb_api_proto_msgTypes[15]
+	mi := &file_storespb_api_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -723,7 +1083,7 @@ func (x *GetProductResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetProductResponse.ProtoReflect.Descriptor instead.
 func (*GetProductResponse) Descriptor() ([]byte, []int) {
-	return file_storespb_api_proto_rawDescGZIP(), []int{15}
+	return file_storespb_api_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *GetProductResponse) GetProduct() *Product {
@@ -742,7 +1102,7 @@ type RemoveProductRequest struct {
 
 func (x *RemoveProductRequest) Reset() {
 	*x = RemoveProductRequest{}
-	mi := &file_storespb_api_proto_msgTypes[16]
+	mi := &file_storespb_api_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -754,7 +1114,7 @@ func (x *RemoveProductRequest) String() string {
 func (*RemoveProductRequest) ProtoMessage() {}
 
 func (x *RemoveProductRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_storespb_api_proto_msgTypes[16]
+	mi := &file_storespb_api_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -767,7 +1127,7 @@ func (x *RemoveProductRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RemoveProductRequest.ProtoReflect.Descriptor instead.
 func (*RemoveProductRequest) Descriptor() ([]byte, []int) {
-	return file_storespb_api_proto_rawDescGZIP(), []int{16}
+	return file_storespb_api_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *RemoveProductRequest) GetId() string {
@@ -785,7 +1145,7 @@ type RemoveProductResponse struct {
 
 func (x *RemoveProductResponse) Reset() {
 	*x = RemoveProductResponse{}
-	mi := &file_storespb_api_proto_msgTypes[17]
+	mi := &file_storespb_api_proto_msgTypes[25]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -797,7 +1157,7 @@ func (x *RemoveProductResponse) String() string {
 func (*RemoveProductResponse) ProtoMessage() {}
 
 func (x *RemoveProductResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_storespb_api_proto_msgTypes[17]
+	mi := &file_storespb_api_proto_msgTypes[25]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -810,7 +1170,7 @@ func (x *RemoveProductResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RemoveProductResponse.ProtoReflect.Descriptor instead.
 func (*RemoveProductResponse) Descriptor() ([]byte, []int) {
-	return file_storespb_api_proto_rawDescGZIP(), []int{17}
+	return file_storespb_api_proto_rawDescGZIP(), []int{25}
 }
 
 type GetCatalogRequest struct {
@@ -822,7 +1182,7 @@ type GetCatalogRequest struct {
 
 func (x *GetCatalogRequest) Reset() {
 	*x = GetCatalogRequest{}
-	mi := &file_storespb_api_proto_msgTypes[18]
+	mi := &file_storespb_api_proto_msgTypes[26]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -834,7 +1194,7 @@ func (x *GetCatalogRequest) String() string {
 func (*GetCatalogRequest) ProtoMessage() {}
 
 func (x *GetCatalogRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_storespb_api_proto_msgTypes[18]
+	mi := &file_storespb_api_proto_msgTypes[26]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -847,7 +1207,7 @@ func (x *GetCatalogRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetCatalogRequest.ProtoReflect.Descriptor instead.
 func (*GetCatalogRequest) Descriptor() ([]byte, []int) {
-	return file_storespb_api_proto_rawDescGZIP(), []int{18}
+	return file_storespb_api_proto_rawDescGZIP(), []int{26}
 }
 
 func (x *GetCatalogRequest) GetStoreId() string {
@@ -866,7 +1226,7 @@ type GetCatalogResponse struct {
 
 func (x *GetCatalogResponse) Reset() {
 	*x = GetCatalogResponse{}
-	mi := &file_storespb_api_proto_msgTypes[19]
+	mi := &file_storespb_api_proto_msgTypes[27]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -878,7 +1238,7 @@ func (x *GetCatalogResponse) String() string {
 func (*GetCatalogResponse) ProtoMessage() {}
 
 func (x *GetCatalogResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_storespb_api_proto_msgTypes[19]
+	mi := &file_storespb_api_proto_msgTypes[27]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -891,7 +1251,7 @@ func (x *GetCatalogResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetCatalogResponse.ProtoReflect.Descriptor instead.
 func (*GetCatalogResponse) Descriptor() ([]byte, []int) {
-	return file_storespb_api_proto_rawDescGZIP(), []int{19}
+	return file_storespb_api_proto_rawDescGZIP(), []int{27}
 }
 
 func (x *GetCatalogResponse) GetProducts() []*Product {
@@ -910,20 +1270,24 @@ const file_storespb_api_proto_rawDesc = "" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x1a\n" +
 	"\blocation\x18\x02 \x01(\tR\blocation\"%\n" +
 	"\x13CreateStoreResponse\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\"\x12\n" +
-	"\x10GetStoresRequest\"<\n" +
-	"\x11GetStoresResponse\x12'\n" +
-	"\x06stores\x18\x01 \x03(\v2\x0f.storespb.StoreR\x06stores\"!\n" +
-	"\x0fGetStoreRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\"9\n" +
-	"\x10GetStoreResponse\x12%\n" +
-	"\x05store\x18\x01 \x01(\v2\x0f.storespb.StoreR\x05store\",\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\",\n" +
 	"\x1aEnableParticipationRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\"\x1d\n" +
 	"\x1bEnableParticipationResponse\"-\n" +
 	"\x1bDisableParticipationRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\"\x1e\n" +
-	"\x1cDisableParticipationResponse\"\x1f\n" +
+	"\x1cDisableParticipationResponse\"9\n" +
+	"\x13RebrandStoreRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\"\x16\n" +
+	"\x14RebrandStoreResponse\"!\n" +
+	"\x0fGetStoreRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\"9\n" +
+	"\x10GetStoreResponse\x12%\n" +
+	"\x05store\x18\x01 \x01(\v2\x0f.storespb.StoreR\x05store\"\x12\n" +
+	"\x10GetStoresRequest\"<\n" +
+	"\x11GetStoresResponse\x12'\n" +
+	"\x06stores\x18\x01 \x03(\v2\x0f.storespb.StoreR\x06stores\"\x1f\n" +
 	"\x1dGetParticipatingStoresRequest\"I\n" +
 	"\x1eGetParticipatingStoresResponse\x12'\n" +
 	"\x06stores\x18\x01 \x03(\v2\x0f.storespb.StoreR\x06stores\"\x8c\x01\n" +
@@ -934,7 +1298,20 @@ const file_storespb_api_proto_rawDesc = "" +
 	"\x03sku\x18\x04 \x01(\tR\x03sku\x12\x14\n" +
 	"\x05price\x18\x05 \x01(\x01R\x05price\"$\n" +
 	"\x12AddProductResponse\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\"#\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\"]\n" +
+	"\x15RebrandProductRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12 \n" +
+	"\vdescription\x18\x03 \x01(\tR\vdescription\"\x18\n" +
+	"\x16RebrandProductResponse\"C\n" +
+	"\x1bIncreaseProductPriceRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x14\n" +
+	"\x05price\x18\x02 \x01(\x01R\x05price\"\x1e\n" +
+	"\x1cIncreaseProductPriceResponse\"C\n" +
+	"\x1bDecreaseProductPriceRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x14\n" +
+	"\x05price\x18\x02 \x01(\x01R\x05price\"\x1e\n" +
+	"\x1cDecreaseProductPriceResponse\"#\n" +
 	"\x11GetProductRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\"A\n" +
 	"\x12GetProductResponse\x12+\n" +
@@ -945,19 +1322,23 @@ const file_storespb_api_proto_rawDesc = "" +
 	"\x11GetCatalogRequest\x12\x19\n" +
 	"\bstore_id\x18\x01 \x01(\tR\astoreId\"C\n" +
 	"\x12GetCatalogResponse\x12-\n" +
-	"\bproducts\x18\x01 \x03(\v2\x11.storespb.ProductR\bproducts2\xdd\x06\n" +
+	"\bproducts\x18\x01 \x03(\v2\x11.storespb.ProductR\bproducts2\xd7\t\n" +
 	"\rStoresService\x12L\n" +
-	"\vCreateStore\x12\x1c.storespb.CreateStoreRequest\x1a\x1d.storespb.CreateStoreResponse\"\x00\x12F\n" +
-	"\tGetStores\x12\x1a.storespb.GetStoresRequest\x1a\x1b.storespb.GetStoresResponse\"\x00\x12C\n" +
-	"\bGetStore\x12\x19.storespb.GetStoreRequest\x1a\x1a.storespb.GetStoreResponse\"\x00\x12d\n" +
+	"\vCreateStore\x12\x1c.storespb.CreateStoreRequest\x1a\x1d.storespb.CreateStoreResponse\"\x00\x12d\n" +
 	"\x13EnableParticipation\x12$.storespb.EnableParticipationRequest\x1a%.storespb.EnableParticipationResponse\"\x00\x12g\n" +
-	"\x14DisableParticipation\x12%.storespb.DisableParticipationRequest\x1a&.storespb.DisableParticipationResponse\"\x00\x12m\n" +
+	"\x14DisableParticipation\x12%.storespb.DisableParticipationRequest\x1a&.storespb.DisableParticipationResponse\"\x00\x12O\n" +
+	"\fRebrandStore\x12\x1d.storespb.RebrandStoreRequest\x1a\x1e.storespb.RebrandStoreResponse\"\x00\x12C\n" +
+	"\bGetStore\x12\x19.storespb.GetStoreRequest\x1a\x1a.storespb.GetStoreResponse\"\x00\x12F\n" +
+	"\tGetStores\x12\x1a.storespb.GetStoresRequest\x1a\x1b.storespb.GetStoresResponse\"\x00\x12m\n" +
 	"\x16GetParticipatingStores\x12'.storespb.GetParticipatingStoresRequest\x1a(.storespb.GetParticipatingStoresResponse\"\x00\x12I\n" +
 	"\n" +
-	"AddProduct\x12\x1b.storespb.AddProductRequest\x1a\x1c.storespb.AddProductResponse\"\x00\x12I\n" +
-	"\n" +
-	"GetProduct\x12\x1b.storespb.GetProductRequest\x1a\x1c.storespb.GetProductResponse\"\x00\x12R\n" +
+	"AddProduct\x12\x1b.storespb.AddProductRequest\x1a\x1c.storespb.AddProductResponse\"\x00\x12U\n" +
+	"\x0eRebrandProduct\x12\x1f.storespb.RebrandProductRequest\x1a .storespb.RebrandProductResponse\"\x00\x12g\n" +
+	"\x14IncreaseProductPrice\x12%.storespb.IncreaseProductPriceRequest\x1a&.storespb.IncreaseProductPriceResponse\"\x00\x12g\n" +
+	"\x14DecreaseProductPrice\x12%.storespb.DecreaseProductPriceRequest\x1a&.storespb.DecreaseProductPriceResponse\"\x00\x12R\n" +
 	"\rRemoveProduct\x12\x1e.storespb.RemoveProductRequest\x1a\x1f.storespb.RemoveProductResponse\"\x00\x12I\n" +
+	"\n" +
+	"GetProduct\x12\x1b.storespb.GetProductRequest\x1a\x1c.storespb.GetProductResponse\"\x00\x12I\n" +
 	"\n" +
 	"GetCatalog\x12\x1b.storespb.GetCatalogRequest\x1a\x1c.storespb.GetCatalogResponse\"\x00Bw\n" +
 	"\fcom.storespbB\bApiProtoP\x01Z\x1dmall/stores/storespb/storespb\xa2\x02\x03SXX\xaa\x02\bStorespb\xca\x02\bStorespb\xe2\x02\x14Storespb\\GPBMetadata\xea\x02\bStorespbb\x06proto3"
@@ -974,59 +1355,75 @@ func file_storespb_api_proto_rawDescGZIP() []byte {
 	return file_storespb_api_proto_rawDescData
 }
 
-var file_storespb_api_proto_msgTypes = make([]protoimpl.MessageInfo, 20)
+var file_storespb_api_proto_msgTypes = make([]protoimpl.MessageInfo, 28)
 var file_storespb_api_proto_goTypes = []any{
 	(*CreateStoreRequest)(nil),             // 0: storespb.CreateStoreRequest
 	(*CreateStoreResponse)(nil),            // 1: storespb.CreateStoreResponse
-	(*GetStoresRequest)(nil),               // 2: storespb.GetStoresRequest
-	(*GetStoresResponse)(nil),              // 3: storespb.GetStoresResponse
-	(*GetStoreRequest)(nil),                // 4: storespb.GetStoreRequest
-	(*GetStoreResponse)(nil),               // 5: storespb.GetStoreResponse
-	(*EnableParticipationRequest)(nil),     // 6: storespb.EnableParticipationRequest
-	(*EnableParticipationResponse)(nil),    // 7: storespb.EnableParticipationResponse
-	(*DisableParticipationRequest)(nil),    // 8: storespb.DisableParticipationRequest
-	(*DisableParticipationResponse)(nil),   // 9: storespb.DisableParticipationResponse
-	(*GetParticipatingStoresRequest)(nil),  // 10: storespb.GetParticipatingStoresRequest
-	(*GetParticipatingStoresResponse)(nil), // 11: storespb.GetParticipatingStoresResponse
-	(*AddProductRequest)(nil),              // 12: storespb.AddProductRequest
-	(*AddProductResponse)(nil),             // 13: storespb.AddProductResponse
-	(*GetProductRequest)(nil),              // 14: storespb.GetProductRequest
-	(*GetProductResponse)(nil),             // 15: storespb.GetProductResponse
-	(*RemoveProductRequest)(nil),           // 16: storespb.RemoveProductRequest
-	(*RemoveProductResponse)(nil),          // 17: storespb.RemoveProductResponse
-	(*GetCatalogRequest)(nil),              // 18: storespb.GetCatalogRequest
-	(*GetCatalogResponse)(nil),             // 19: storespb.GetCatalogResponse
-	(*Store)(nil),                          // 20: storespb.Store
-	(*Product)(nil),                        // 21: storespb.Product
+	(*EnableParticipationRequest)(nil),     // 2: storespb.EnableParticipationRequest
+	(*EnableParticipationResponse)(nil),    // 3: storespb.EnableParticipationResponse
+	(*DisableParticipationRequest)(nil),    // 4: storespb.DisableParticipationRequest
+	(*DisableParticipationResponse)(nil),   // 5: storespb.DisableParticipationResponse
+	(*RebrandStoreRequest)(nil),            // 6: storespb.RebrandStoreRequest
+	(*RebrandStoreResponse)(nil),           // 7: storespb.RebrandStoreResponse
+	(*GetStoreRequest)(nil),                // 8: storespb.GetStoreRequest
+	(*GetStoreResponse)(nil),               // 9: storespb.GetStoreResponse
+	(*GetStoresRequest)(nil),               // 10: storespb.GetStoresRequest
+	(*GetStoresResponse)(nil),              // 11: storespb.GetStoresResponse
+	(*GetParticipatingStoresRequest)(nil),  // 12: storespb.GetParticipatingStoresRequest
+	(*GetParticipatingStoresResponse)(nil), // 13: storespb.GetParticipatingStoresResponse
+	(*AddProductRequest)(nil),              // 14: storespb.AddProductRequest
+	(*AddProductResponse)(nil),             // 15: storespb.AddProductResponse
+	(*RebrandProductRequest)(nil),          // 16: storespb.RebrandProductRequest
+	(*RebrandProductResponse)(nil),         // 17: storespb.RebrandProductResponse
+	(*IncreaseProductPriceRequest)(nil),    // 18: storespb.IncreaseProductPriceRequest
+	(*IncreaseProductPriceResponse)(nil),   // 19: storespb.IncreaseProductPriceResponse
+	(*DecreaseProductPriceRequest)(nil),    // 20: storespb.DecreaseProductPriceRequest
+	(*DecreaseProductPriceResponse)(nil),   // 21: storespb.DecreaseProductPriceResponse
+	(*GetProductRequest)(nil),              // 22: storespb.GetProductRequest
+	(*GetProductResponse)(nil),             // 23: storespb.GetProductResponse
+	(*RemoveProductRequest)(nil),           // 24: storespb.RemoveProductRequest
+	(*RemoveProductResponse)(nil),          // 25: storespb.RemoveProductResponse
+	(*GetCatalogRequest)(nil),              // 26: storespb.GetCatalogRequest
+	(*GetCatalogResponse)(nil),             // 27: storespb.GetCatalogResponse
+	(*Store)(nil),                          // 28: storespb.Store
+	(*Product)(nil),                        // 29: storespb.Product
 }
 var file_storespb_api_proto_depIdxs = []int32{
-	20, // 0: storespb.GetStoresResponse.stores:type_name -> storespb.Store
-	20, // 1: storespb.GetStoreResponse.store:type_name -> storespb.Store
-	20, // 2: storespb.GetParticipatingStoresResponse.stores:type_name -> storespb.Store
-	21, // 3: storespb.GetProductResponse.product:type_name -> storespb.Product
-	21, // 4: storespb.GetCatalogResponse.products:type_name -> storespb.Product
+	28, // 0: storespb.GetStoreResponse.store:type_name -> storespb.Store
+	28, // 1: storespb.GetStoresResponse.stores:type_name -> storespb.Store
+	28, // 2: storespb.GetParticipatingStoresResponse.stores:type_name -> storespb.Store
+	29, // 3: storespb.GetProductResponse.product:type_name -> storespb.Product
+	29, // 4: storespb.GetCatalogResponse.products:type_name -> storespb.Product
 	0,  // 5: storespb.StoresService.CreateStore:input_type -> storespb.CreateStoreRequest
-	2,  // 6: storespb.StoresService.GetStores:input_type -> storespb.GetStoresRequest
-	4,  // 7: storespb.StoresService.GetStore:input_type -> storespb.GetStoreRequest
-	6,  // 8: storespb.StoresService.EnableParticipation:input_type -> storespb.EnableParticipationRequest
-	8,  // 9: storespb.StoresService.DisableParticipation:input_type -> storespb.DisableParticipationRequest
-	10, // 10: storespb.StoresService.GetParticipatingStores:input_type -> storespb.GetParticipatingStoresRequest
-	12, // 11: storespb.StoresService.AddProduct:input_type -> storespb.AddProductRequest
-	14, // 12: storespb.StoresService.GetProduct:input_type -> storespb.GetProductRequest
-	16, // 13: storespb.StoresService.RemoveProduct:input_type -> storespb.RemoveProductRequest
-	18, // 14: storespb.StoresService.GetCatalog:input_type -> storespb.GetCatalogRequest
-	1,  // 15: storespb.StoresService.CreateStore:output_type -> storespb.CreateStoreResponse
-	3,  // 16: storespb.StoresService.GetStores:output_type -> storespb.GetStoresResponse
-	5,  // 17: storespb.StoresService.GetStore:output_type -> storespb.GetStoreResponse
-	7,  // 18: storespb.StoresService.EnableParticipation:output_type -> storespb.EnableParticipationResponse
-	9,  // 19: storespb.StoresService.DisableParticipation:output_type -> storespb.DisableParticipationResponse
-	11, // 20: storespb.StoresService.GetParticipatingStores:output_type -> storespb.GetParticipatingStoresResponse
-	13, // 21: storespb.StoresService.AddProduct:output_type -> storespb.AddProductResponse
-	15, // 22: storespb.StoresService.GetProduct:output_type -> storespb.GetProductResponse
-	17, // 23: storespb.StoresService.RemoveProduct:output_type -> storespb.RemoveProductResponse
-	19, // 24: storespb.StoresService.GetCatalog:output_type -> storespb.GetCatalogResponse
-	15, // [15:25] is the sub-list for method output_type
-	5,  // [5:15] is the sub-list for method input_type
+	2,  // 6: storespb.StoresService.EnableParticipation:input_type -> storespb.EnableParticipationRequest
+	4,  // 7: storespb.StoresService.DisableParticipation:input_type -> storespb.DisableParticipationRequest
+	6,  // 8: storespb.StoresService.RebrandStore:input_type -> storespb.RebrandStoreRequest
+	8,  // 9: storespb.StoresService.GetStore:input_type -> storespb.GetStoreRequest
+	10, // 10: storespb.StoresService.GetStores:input_type -> storespb.GetStoresRequest
+	12, // 11: storespb.StoresService.GetParticipatingStores:input_type -> storespb.GetParticipatingStoresRequest
+	14, // 12: storespb.StoresService.AddProduct:input_type -> storespb.AddProductRequest
+	16, // 13: storespb.StoresService.RebrandProduct:input_type -> storespb.RebrandProductRequest
+	18, // 14: storespb.StoresService.IncreaseProductPrice:input_type -> storespb.IncreaseProductPriceRequest
+	20, // 15: storespb.StoresService.DecreaseProductPrice:input_type -> storespb.DecreaseProductPriceRequest
+	24, // 16: storespb.StoresService.RemoveProduct:input_type -> storespb.RemoveProductRequest
+	22, // 17: storespb.StoresService.GetProduct:input_type -> storespb.GetProductRequest
+	26, // 18: storespb.StoresService.GetCatalog:input_type -> storespb.GetCatalogRequest
+	1,  // 19: storespb.StoresService.CreateStore:output_type -> storespb.CreateStoreResponse
+	3,  // 20: storespb.StoresService.EnableParticipation:output_type -> storespb.EnableParticipationResponse
+	5,  // 21: storespb.StoresService.DisableParticipation:output_type -> storespb.DisableParticipationResponse
+	7,  // 22: storespb.StoresService.RebrandStore:output_type -> storespb.RebrandStoreResponse
+	9,  // 23: storespb.StoresService.GetStore:output_type -> storespb.GetStoreResponse
+	11, // 24: storespb.StoresService.GetStores:output_type -> storespb.GetStoresResponse
+	13, // 25: storespb.StoresService.GetParticipatingStores:output_type -> storespb.GetParticipatingStoresResponse
+	15, // 26: storespb.StoresService.AddProduct:output_type -> storespb.AddProductResponse
+	17, // 27: storespb.StoresService.RebrandProduct:output_type -> storespb.RebrandProductResponse
+	19, // 28: storespb.StoresService.IncreaseProductPrice:output_type -> storespb.IncreaseProductPriceResponse
+	21, // 29: storespb.StoresService.DecreaseProductPrice:output_type -> storespb.DecreaseProductPriceResponse
+	25, // 30: storespb.StoresService.RemoveProduct:output_type -> storespb.RemoveProductResponse
+	23, // 31: storespb.StoresService.GetProduct:output_type -> storespb.GetProductResponse
+	27, // 32: storespb.StoresService.GetCatalog:output_type -> storespb.GetCatalogResponse
+	19, // [19:33] is the sub-list for method output_type
+	5,  // [5:19] is the sub-list for method input_type
 	5,  // [5:5] is the sub-list for extension type_name
 	5,  // [5:5] is the sub-list for extension extendee
 	0,  // [0:5] is the sub-list for field type_name
@@ -1044,7 +1441,7 @@ func file_storespb_api_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_storespb_api_proto_rawDesc), len(file_storespb_api_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   20,
+			NumMessages:   28,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

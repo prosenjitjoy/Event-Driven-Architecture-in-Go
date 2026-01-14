@@ -17,10 +17,10 @@ type CreateShoppingListHandler struct {
 	shoppingLists   domain.ShoppingListRepository
 	stores          domain.StoreRepository
 	products        domain.ProductRepository
-	domainPublisher ddd.EventPublisher
+	domainPublisher ddd.EventPublisher[ddd.AggregateEvent]
 }
 
-func NewCreateShoppingListHandler(shoppingLists domain.ShoppingListRepository, stores domain.StoreRepository, products domain.ProductRepository, domainPublisher ddd.EventPublisher) CreateShoppingListHandler {
+func NewCreateShoppingListHandler(shoppingLists domain.ShoppingListRepository, stores domain.StoreRepository, products domain.ProductRepository, domainPublisher ddd.EventPublisher[ddd.AggregateEvent]) CreateShoppingListHandler {
 	return CreateShoppingListHandler{
 		shoppingLists:   shoppingLists,
 		stores:          stores,
@@ -51,7 +51,7 @@ func (h CreateShoppingListHandler) CreateShoppingList(ctx context.Context, cmd C
 		return fmt.Errorf("scheduling shopping: %w", err)
 	}
 
-	if err := h.domainPublisher.Publish(ctx, list.GetEvents()...); err != nil {
+	if err := h.domainPublisher.Publish(ctx, list.Events()...); err != nil {
 		return err
 	}
 

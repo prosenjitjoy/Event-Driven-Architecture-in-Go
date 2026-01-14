@@ -10,15 +10,15 @@ type GetProductRequest struct {
 }
 
 type GetProductHandler struct {
-	products domain.ProductRepository
+	catalog domain.CatalogRepository
 }
 
-func NewGetProductHandler(products domain.ProductRepository) GetProductHandler {
+func NewGetProductHandler(catalog domain.CatalogRepository) GetProductHandler {
 	return GetProductHandler{
-		products: products,
+		catalog: catalog,
 	}
 }
 
-func (h GetProductHandler) GetProduct(ctx context.Context, query GetProductRequest) (*domain.Product, error) {
-	return h.products.Find(ctx, query.ID)
+func (h GetProductHandler) GetProduct(ctx context.Context, query GetProductRequest) (*domain.CatalogProduct, error) {
+	return h.catalog.Find(ctx, query.ID)
 }

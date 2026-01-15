@@ -6,7 +6,7 @@ import (
 	"github.com/google/uuid"
 )
 
-type EventPayload interface{}
+type EventPayload any
 
 type Event interface {
 	IDer

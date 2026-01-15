@@ -157,7 +157,7 @@ func (b *Basket) ApplyEvent(event ddd.Event) error {
 
 	case *BasketItemRemoved:
 		if item, exists := b.Items[payload.ProductID]; exists {
-			if item.Quantity-payload.Quantity <= 1 {
+			if item.Quantity-payload.Quantity <= 0 {
 				delete(b.Items, payload.ProductID)
 			} else {
 				item.Quantity -= payload.Quantity

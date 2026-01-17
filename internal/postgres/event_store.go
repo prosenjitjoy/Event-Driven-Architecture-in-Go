@@ -88,7 +88,6 @@ func (s EventStore) Load(ctx context.Context, aggregate es.EventSourcedAggregate
 func (s EventStore) Save(ctx context.Context, aggregate es.EventSourcedAggregate) error {
 	const query = "INSERT INTO %s (stream_id, stream_name, stream_version, event_id, event_name, event_data, occurred_at) VALUES ($1, $2, $3, $4, $5, $6, $7)"
 
-	var tx *sql.Tx
 	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{})
 	if err != nil {
 		return err

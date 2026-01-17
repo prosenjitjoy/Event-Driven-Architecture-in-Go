@@ -2,8 +2,10 @@ package stores
 
 import (
 	"context"
+	"mall/internal/am"
 	"mall/internal/ddd"
 	"mall/internal/es"
+	"mall/internal/jetstream"
 	"mall/internal/monolith"
 	pg "mall/internal/postgres"
 	"mall/internal/registry"
@@ -15,6 +17,7 @@ import (
 	"mall/stores/internal/logging"
 	"mall/stores/internal/postgres"
 	"mall/stores/internal/rest"
+	"mall/stores/storespb"
 )
 
 type Module struct{}
@@ -22,12 +25,19 @@ type Module struct{}
 func (m Module) Startup(ctx context.Context, mono monolith.Monolith) error {
 	// setup driven adapters
 	reg := registry.New()
-	err := registration(reg)
-	if err != nil {
+
+	if err := registration(reg); err != nil {
 		return err
 	}
 
+	if err := storespb.Registrations(reg); err != nil {
+		return err
+	}
+
+	eventStream := am.NewEventStream(reg, jetstream.NewStream(mono.Config().Nats.Stream, mono.JS()))
+
 	domainDispatcher := ddd.NewEventDispatcher[ddd.AggregateEvent]()
+
 	aggregateStore := es.AggregateStoreWithMiddleware(
 		pg.NewEventStore("stores.events", mono.DB(), reg),
 		es.NewEventPublisher(domainDispatcher),
@@ -54,6 +64,12 @@ func (m Module) Startup(ctx context.Context, mono monolith.Monolith) error {
 		mono.Logger(),
 	)
 
+	integrationEventHandlers := logging.LogEventHandlerAccess[ddd.AggregateEvent](
+		application.NewIntegrationEventHandlers(eventStream),
+		"IntegrationEvents",
+		mono.Logger(),
+	)
+
 	// setup driver adapters
 	if err := grpc.RegisterServer(app, mono.RPC()); err != nil {
 		return err
@@ -67,6 +83,7 @@ func (m Module) Startup(ctx context.Context, mono monolith.Monolith) error {
 
 	handlers.RegisterCatalogHandlers(catalogHandlers, domainDispatcher)
 	handlers.RegisterMallHandlers(mallHandlers, domainDispatcher)
+	handlers.RegisterIntegrationEventHandlers(integrationEventHandlers, domainDispatcher)
 
 	return nil
 }
@@ -97,15 +114,15 @@ func registration(reg registry.Registry) error {
 		return err
 	}
 
-	// snapshots
+	// store snapshots
 	if err := serde.RegisterKey(domain.StoreV1{}.SnapshotName(), domain.StoreV1{}); err != nil {
 		return err
 	}
 
 	// product
 	if err := serde.Register(domain.Product{}, func(v any) error {
-		store := v.(*domain.Product)
-		store.Aggregate = es.NewAggregate("", domain.ProductAggregate)
+		product := v.(*domain.Product)
+		product.Aggregate = es.NewAggregate("", domain.ProductAggregate)
 		return nil
 	}); err != nil {
 		return err

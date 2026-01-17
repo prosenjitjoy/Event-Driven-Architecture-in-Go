@@ -14,12 +14,12 @@ type EventSourcedAggregate interface {
 	EventCommitter
 }
 
-type AggregateStoreMiddleware func(store AggregateStore) AggregateStore
-
 type AggregateStore interface {
 	Load(ctx context.Context, aggregate EventSourcedAggregate) error
 	Save(ctx context.Context, aggregate EventSourcedAggregate) error
 }
+
+type AggregateStoreMiddleware func(store AggregateStore) AggregateStore
 
 func AggregateStoreWithMiddleware(store AggregateStore, mws ...AggregateStoreMiddleware) AggregateStore {
 	s := store

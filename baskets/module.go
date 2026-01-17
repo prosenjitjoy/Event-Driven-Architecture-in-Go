@@ -8,12 +8,15 @@ import (
 	"mall/baskets/internal/handlers"
 	"mall/baskets/internal/logging"
 	"mall/baskets/internal/rest"
+	"mall/internal/am"
 	"mall/internal/ddd"
 	"mall/internal/es"
+	"mall/internal/jetstream"
 	"mall/internal/monolith"
 	pg "mall/internal/postgres"
 	"mall/internal/registry"
 	"mall/internal/registry/serdes"
+	"mall/stores/storespb"
 )
 
 type Module struct{}
@@ -21,12 +24,19 @@ type Module struct{}
 func (m *Module) Startup(ctx context.Context, mono monolith.Monolith) error {
 	// setup driven adapters
 	reg := registry.New()
-	err := registrations(reg)
-	if err != nil {
+
+	if err := registrations(reg); err != nil {
 		return err
 	}
 
+	if err := storespb.Registrations(reg); err != nil {
+		return err
+	}
+
+	eventStream := am.NewEventStream(reg, jetstream.NewStream(mono.Config().Nats.Stream, mono.JS()))
+
 	domainDispatcher := ddd.NewEventDispatcher[ddd.AggregateEvent]()
+
 	aggregateStore := es.AggregateStoreWithMiddleware(
 		pg.NewEventStore("baskets.events", mono.DB(), reg),
 		es.NewEventPublisher(domainDispatcher),
@@ -38,6 +48,7 @@ func (m *Module) Startup(ctx context.Context, mono monolith.Monolith) error {
 	if err != nil {
 		return err
 	}
+
 	stores := grpc.NewStoreRepository(conn)
 	products := grpc.NewProductRepository(conn)
 	orders := grpc.NewOrderRepository(conn)
@@ -47,9 +58,22 @@ func (m *Module) Startup(ctx context.Context, mono monolith.Monolith) error {
 		application.New(baskets, stores, products, orders),
 		mono.Logger(),
 	)
+
 	orderHandlers := logging.LogEventHandlerAccess[ddd.AggregateEvent](
 		application.NewOrderHandlers(orders),
 		"Order",
+		mono.Logger(),
+	)
+
+	storeHandlers := logging.LogEventHandlerAccess[ddd.Event](
+		application.NewStoreHandlers(mono.Logger()),
+		"Store",
+		mono.Logger(),
+	)
+
+	productHandlers := logging.LogEventHandlerAccess[ddd.Event](
+		application.NewProductHandlers(mono.Logger()),
+		"Product",
 		mono.Logger(),
 	)
 
@@ -65,6 +89,14 @@ func (m *Module) Startup(ctx context.Context, mono monolith.Monolith) error {
 	}
 
 	handlers.RegisterOrderHandlers(orderHandlers, domainDispatcher)
+
+	if err := handlers.RegisterStoreHandlers(storeHandlers, eventStream); err != nil {
+		return err
+	}
+
+	if err := handlers.RegisterProductHandlers(productHandlers, eventStream); err != nil {
+		return err
+	}
 
 	return nil
 }

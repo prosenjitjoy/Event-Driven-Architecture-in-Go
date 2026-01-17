@@ -19,6 +19,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	_ "github.com/lib/pq"
+	"github.com/nats-io/nats.go"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
@@ -30,46 +31,64 @@ func main() {
 }
 
 func run() error {
-	// parse config
+	// parse configuration
 	cfg, err := config.InitConfig()
 	if err != nil {
 		return err
 	}
 
-	m := app{cfg: cfg}
-
-	// init infrastructure
-	m.db, err = sql.Open("postgres", cfg.PG.Conn)
+	// connect database
+	db, err := sql.Open("postgres", cfg.PG.Conn)
 	if err != nil {
 		return err
 	}
-	defer func(db *sql.DB) {
-		err := db.Close()
-		if err != nil {
-			return
-		}
-	}(m.db)
+	defer db.Close()
 
-	m.logger = logger.New(logger.LogConfig{
+	// connect nats
+	nc, err := nats.Connect(cfg.Nats.URL)
+	if err != nil {
+		return err
+	}
+	defer nc.Close()
+
+	// init jetstream
+	js, err := nc.JetStream()
+	if err != nil {
+		return err
+	}
+
+	// init logger
+	logger := logger.New(logger.LogConfig{
 		Environment: cfg.Environment,
 		LogLevel:    cfg.LogLevel,
 	})
 
-	m.rpc = initRpc()
-	m.mux = initMux()
-	m.waiter = waiter.New(waiter.CatchSignals())
+	// init grpc
+	grpcServer := grpc.NewServer()
+	reflection.Register(grpcServer)
 
-	// init modules
-	m.modules = []monolith.Module{
-		&baskets.Module{},
-		&customers.Module{},
-		&depot.Module{},
-		&notifications.Module{},
-		&ordering.Module{},
-		&payments.Module{},
-		&stores.Module{},
+	// init infrastructure
+	m := app{
+		cfg:    cfg,
+		db:     db,
+		nc:     nc,
+		js:     js,
+		logger: logger,
+		mux:    chi.NewMux(),
+		rpc:    grpcServer,
+		waiter: waiter.New(waiter.CatchSignals()),
+		modules: []monolith.Module{
+			&baskets.Module{},
+			&customers.Module{},
+			&depot.Module{},
+			&notifications.Module{},
+			&ordering.Module{},
+			&payments.Module{},
+			&stores.Module{},
+		},
 	}
 
+	// init modules
 	if err = m.startupModules(); err != nil {
 		return err
 	}
@@ -83,18 +102,8 @@ func run() error {
 	m.waiter.Add(
 		m.waitForWeb,
 		m.waitForRPC,
+		m.waitForStream,
 	)
 
 	return m.waiter.Wait()
-}
-
-func initRpc() *grpc.Server {
-	server := grpc.NewServer()
-	reflection.Register(server)
-
-	return server
-}
-
-func initMux() *chi.Mux {
-	return chi.NewMux()
 }

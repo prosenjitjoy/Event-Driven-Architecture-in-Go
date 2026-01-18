@@ -41,7 +41,7 @@ func Registrations(reg registry.Registry) error {
 	if err := serde.Register(&ProductRebranded{}); err != nil {
 		return err
 	}
-	if err := serde.RegisterKey(ProductPriceDecreasedEvent, &ProductPriceChanged{}); err != nil {
+	if err := serde.RegisterKey(ProductPriceIncreasedEvent, &ProductPriceChanged{}); err != nil {
 		return err
 	}
 	if err := serde.RegisterKey(ProductPriceDecreasedEvent, &ProductPriceChanged{}); err != nil {

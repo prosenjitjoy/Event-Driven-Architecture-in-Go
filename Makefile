@@ -6,3 +6,6 @@ generate:
 
 postgres:
 	podman run --name postgres --hostname postgres -e POSTGRES_PASSWORD=postgres -v ./docker/database:/docker-entrypoint-initdb.d -p 5432:5432 -d postgres:16-alpine
+
+nats:
+	podman run -p 4222:4222 nats:alpine -js -s

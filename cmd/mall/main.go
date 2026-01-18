@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"mall/baskets"
 	"mall/customers"
@@ -44,15 +45,23 @@ func run() error {
 	}
 	defer db.Close()
 
-	// connect nats
+	// connect nats jetstream
 	nc, err := nats.Connect(cfg.Nats.URL)
 	if err != nil {
 		return err
 	}
 	defer nc.Close()
 
-	// init jetstream
 	js, err := nc.JetStream()
+	if err != nil {
+		return err
+	}
+
+	// init jetstream
+	_, err = js.AddStream(&nats.StreamConfig{
+		Name:     cfg.Nats.Stream,
+		Subjects: []string{fmt.Sprintf("%s.>", cfg.Nats.Stream)},
+	})
 	if err != nil {
 		return err
 	}

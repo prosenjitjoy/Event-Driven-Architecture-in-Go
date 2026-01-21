@@ -2,8 +2,10 @@ package ordering
 
 import (
 	"context"
+	"mall/internal/am"
 	"mall/internal/ddd"
 	"mall/internal/es"
+	"mall/internal/jetstream"
 	"mall/internal/monolith"
 	pg "mall/internal/postgres"
 	"mall/internal/registry"
@@ -14,6 +16,7 @@ import (
 	"mall/ordering/internal/handlers"
 	"mall/ordering/internal/logging"
 	"mall/ordering/internal/rest"
+	"mall/ordering/orderingpb"
 )
 
 type Module struct{}
@@ -21,27 +24,34 @@ type Module struct{}
 func (m Module) Startup(ctx context.Context, mono monolith.Monolith) error {
 	// setup driven adapters
 	reg := registry.New()
-	err := registrations(reg)
-	if err != nil {
+
+	if err := registrations(reg); err != nil {
 		return err
 	}
 
+	if err := orderingpb.Registrations(reg); err != nil {
+		return err
+	}
+
+	eventStream := am.NewEventStream(reg, jetstream.NewStream(mono.Config().Nats.Stream, mono.JS()))
+
 	domainDispatcher := ddd.NewEventDispatcher[ddd.AggregateEvent]()
+
 	aggregateStore := es.AggregateStoreWithMiddleware(
 		pg.NewEventStore("ordering.events", mono.DB(), reg),
 		es.NewEventPublisher(domainDispatcher),
 		pg.NewSnapshotStore("ordering.snapshots", mono.DB(), reg),
 	)
+
 	orders := es.NewAggregateRepository[*domain.Order](domain.OrderAggregate, reg, aggregateStore)
+
 	conn, err := grpc.Dial(ctx, mono.Config().Rpc.Address())
 	if err != nil {
 		return err
 	}
 	customers := grpc.NewCustomerRepository(conn)
 	payments := grpc.NewPaymentRepository(conn)
-	invoices := grpc.NewInvoiceRepository(conn)
 	shopping := grpc.NewShoppingListRepository(conn)
-	notifications := grpc.NewNotificationRepository(conn)
 
 	// setup application
 	app := logging.LogApplicationAccess(
@@ -49,15 +59,9 @@ func (m Module) Startup(ctx context.Context, mono monolith.Monolith) error {
 		mono.Logger(),
 	)
 
-	notificationsHandlers := logging.LogEventHandlerAccess[ddd.AggregateEvent](
-		application.NewNotificationHandlers(notifications),
-		"Notification",
-		mono.Logger(),
-	)
-
-	invoiceHandlers := logging.LogEventHandlerAccess[ddd.AggregateEvent](
-		application.NewInvoiceHandlers(invoices),
-		"Invoice",
+	integrationEventHandlers := logging.LogEventHandlerAccess[ddd.AggregateEvent](
+		application.NewIntegrationEventHandlers(eventStream),
+		"IntegrationEvents",
 		mono.Logger(),
 	)
 
@@ -72,9 +76,7 @@ func (m Module) Startup(ctx context.Context, mono monolith.Monolith) error {
 		return err
 	}
 
-	handlers.RegisterNotificationHandlers(notificationsHandlers, domainDispatcher)
-
-	handlers.RegisterInvoiceHandlers(invoiceHandlers, domainDispatcher)
+	handlers.RegisterIntegrationEventHandlers(integrationEventHandlers, domainDispatcher)
 
 	return nil
 }

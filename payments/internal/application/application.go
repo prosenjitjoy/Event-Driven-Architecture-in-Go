@@ -3,6 +3,7 @@ package application
 import (
 	"context"
 	"fmt"
+	"mall/internal/ddd"
 	"mall/payments/internal/domain"
 )
 
@@ -46,18 +47,18 @@ type App interface {
 }
 
 type Application struct {
-	invoices domain.InvoiceRepository
-	payments domain.PaymentRepository
-	orders   domain.OrderRepsitory
+	invoices  domain.InvoiceRepository
+	payments  domain.PaymentRepository
+	publisher ddd.EventPublisher[ddd.Event]
 }
 
 var _ App = (*Application)(nil)
 
-func New(invoices domain.InvoiceRepository, payments domain.PaymentRepository, orders domain.OrderRepsitory) *Application {
+func New(invoices domain.InvoiceRepository, payments domain.PaymentRepository, publisher ddd.EventPublisher[ddd.Event]) *Application {
 	return &Application{
-		invoices: invoices,
-		payments: payments,
-		orders:   orders,
+		invoices:  invoices,
+		payments:  payments,
+		publisher: publisher,
 	}
 }
 
@@ -83,7 +84,7 @@ func (a Application) CreateInvoice(ctx context.Context, create CreateInvoice) er
 		ID:      create.ID,
 		OrderID: create.OrderID,
 		Amount:  create.Amount,
-		Status:  domain.InvoicePending,
+		Status:  domain.InvoiceIsPending,
 	})
 }
 
@@ -104,14 +105,16 @@ func (a Application) PayInvoice(ctx context.Context, pay PayInvoice) error {
 		return err
 	}
 
-	if invoice.Status != domain.InvoicePending {
+	if invoice.Status != domain.InvoiceIsPending {
 		return fmt.Errorf("BAD_REQUEST: %s", "invoice cannot be paid for")
 	}
 
-	invoice.Status = domain.InvoicePaid
+	invoice.Status = domain.InvoiceIsPaid
 
-	err = a.orders.Complete(ctx, invoice.ID, invoice.OrderID)
-	if err != nil {
+	if err := a.publisher.Publish(ctx, ddd.NewEvent(domain.InvoicePaidEvent, &domain.InvoicePaid{
+		ID:      invoice.ID,
+		OrderID: invoice.OrderID,
+	})); err != nil {
 		return err
 	}
 
@@ -124,11 +127,11 @@ func (a Application) CancelInvoice(ctx context.Context, cancel CancelInvoice) er
 		return err
 	}
 
-	if invoice.Status != domain.InvoicePending {
+	if invoice.Status != domain.InvoiceIsPending {
 		return fmt.Errorf("BAD_REQUEST: %s", "invoice cannot be paid for")
 	}
 
-	invoice.Status = domain.InvoiceCanceled
+	invoice.Status = domain.InvoiceIsCanceled
 
 	return a.invoices.Update(ctx, invoice)
 }

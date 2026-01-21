@@ -7,6 +7,7 @@ import (
 	"mall/baskets/internal/grpc"
 	"mall/baskets/internal/handlers"
 	"mall/baskets/internal/logging"
+	"mall/baskets/internal/postgres"
 	"mall/baskets/internal/rest"
 	"mall/internal/am"
 	"mall/internal/ddd"
@@ -49,8 +50,10 @@ func (m *Module) Startup(ctx context.Context, mono monolith.Monolith) error {
 		return err
 	}
 
-	stores := grpc.NewStoreRepository(conn)
-	products := grpc.NewProductRepository(conn)
+	stores := postgres.NewStoreCacheRepository("baskets.stores_cache", mono.DB(), grpc.NewStoreRepository(conn))
+
+	products := postgres.NewProductCacheRepository("baskets.products_cache", mono.DB(), grpc.NewProductRepository(conn))
+
 	orders := grpc.NewOrderRepository(conn)
 
 	// setup application
@@ -66,13 +69,13 @@ func (m *Module) Startup(ctx context.Context, mono monolith.Monolith) error {
 	)
 
 	storeHandlers := logging.LogEventHandlerAccess[ddd.Event](
-		application.NewStoreHandlers(mono.Logger()),
+		application.NewStoreHandlers(stores),
 		"Store",
 		mono.Logger(),
 	)
 
 	productHandlers := logging.LogEventHandlerAccess[ddd.Event](
-		application.NewProductHandlers(mono.Logger()),
+		application.NewProductHandlers(products),
 		"Product",
 		mono.Logger(),
 	)

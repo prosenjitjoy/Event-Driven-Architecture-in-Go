@@ -21,6 +21,142 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type Basket struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Items         []*Item                `protobuf:"bytes,2,rep,name=items,proto3" json:"items,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Basket) Reset() {
+	*x = Basket{}
+	mi := &file_basketspb_api_proto_msgTypes[0]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Basket) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Basket) ProtoMessage() {}
+
+func (x *Basket) ProtoReflect() protoreflect.Message {
+	mi := &file_basketspb_api_proto_msgTypes[0]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Basket.ProtoReflect.Descriptor instead.
+func (*Basket) Descriptor() ([]byte, []int) {
+	return file_basketspb_api_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *Basket) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *Basket) GetItems() []*Item {
+	if x != nil {
+		return x.Items
+	}
+	return nil
+}
+
+type Item struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	StoreId       string                 `protobuf:"bytes,1,opt,name=store_id,json=storeId,proto3" json:"store_id,omitempty"`
+	ProductId     string                 `protobuf:"bytes,2,opt,name=product_id,json=productId,proto3" json:"product_id,omitempty"`
+	StoreName     string                 `protobuf:"bytes,3,opt,name=store_name,json=storeName,proto3" json:"store_name,omitempty"`
+	ProductName   string                 `protobuf:"bytes,4,opt,name=product_name,json=productName,proto3" json:"product_name,omitempty"`
+	ProductPrice  float64                `protobuf:"fixed64,5,opt,name=product_price,json=productPrice,proto3" json:"product_price,omitempty"`
+	Quantity      int32                  `protobuf:"varint,6,opt,name=quantity,proto3" json:"quantity,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Item) Reset() {
+	*x = Item{}
+	mi := &file_basketspb_api_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Item) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Item) ProtoMessage() {}
+
+func (x *Item) ProtoReflect() protoreflect.Message {
+	mi := &file_basketspb_api_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Item.ProtoReflect.Descriptor instead.
+func (*Item) Descriptor() ([]byte, []int) {
+	return file_basketspb_api_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *Item) GetStoreId() string {
+	if x != nil {
+		return x.StoreId
+	}
+	return ""
+}
+
+func (x *Item) GetProductId() string {
+	if x != nil {
+		return x.ProductId
+	}
+	return ""
+}
+
+func (x *Item) GetStoreName() string {
+	if x != nil {
+		return x.StoreName
+	}
+	return ""
+}
+
+func (x *Item) GetProductName() string {
+	if x != nil {
+		return x.ProductName
+	}
+	return ""
+}
+
+func (x *Item) GetProductPrice() float64 {
+	if x != nil {
+		return x.ProductPrice
+	}
+	return 0
+}
+
+func (x *Item) GetQuantity() int32 {
+	if x != nil {
+		return x.Quantity
+	}
+	return 0
+}
+
 type StartBasketRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	CustomerId    string                 `protobuf:"bytes,1,opt,name=customer_id,json=customerId,proto3" json:"customer_id,omitempty"`
@@ -30,7 +166,7 @@ type StartBasketRequest struct {
 
 func (x *StartBasketRequest) Reset() {
 	*x = StartBasketRequest{}
-	mi := &file_basketspb_api_proto_msgTypes[0]
+	mi := &file_basketspb_api_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -42,7 +178,7 @@ func (x *StartBasketRequest) String() string {
 func (*StartBasketRequest) ProtoMessage() {}
 
 func (x *StartBasketRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_basketspb_api_proto_msgTypes[0]
+	mi := &file_basketspb_api_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -55,7 +191,7 @@ func (x *StartBasketRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StartBasketRequest.ProtoReflect.Descriptor instead.
 func (*StartBasketRequest) Descriptor() ([]byte, []int) {
-	return file_basketspb_api_proto_rawDescGZIP(), []int{0}
+	return file_basketspb_api_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *StartBasketRequest) GetCustomerId() string {
@@ -74,7 +210,7 @@ type StartBasketResponse struct {
 
 func (x *StartBasketResponse) Reset() {
 	*x = StartBasketResponse{}
-	mi := &file_basketspb_api_proto_msgTypes[1]
+	mi := &file_basketspb_api_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -86,7 +222,7 @@ func (x *StartBasketResponse) String() string {
 func (*StartBasketResponse) ProtoMessage() {}
 
 func (x *StartBasketResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_basketspb_api_proto_msgTypes[1]
+	mi := &file_basketspb_api_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -99,7 +235,7 @@ func (x *StartBasketResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StartBasketResponse.ProtoReflect.Descriptor instead.
 func (*StartBasketResponse) Descriptor() ([]byte, []int) {
-	return file_basketspb_api_proto_rawDescGZIP(), []int{1}
+	return file_basketspb_api_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *StartBasketResponse) GetId() string {
@@ -118,7 +254,7 @@ type CancelBasketRequest struct {
 
 func (x *CancelBasketRequest) Reset() {
 	*x = CancelBasketRequest{}
-	mi := &file_basketspb_api_proto_msgTypes[2]
+	mi := &file_basketspb_api_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -130,7 +266,7 @@ func (x *CancelBasketRequest) String() string {
 func (*CancelBasketRequest) ProtoMessage() {}
 
 func (x *CancelBasketRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_basketspb_api_proto_msgTypes[2]
+	mi := &file_basketspb_api_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -143,7 +279,7 @@ func (x *CancelBasketRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CancelBasketRequest.ProtoReflect.Descriptor instead.
 func (*CancelBasketRequest) Descriptor() ([]byte, []int) {
-	return file_basketspb_api_proto_rawDescGZIP(), []int{2}
+	return file_basketspb_api_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *CancelBasketRequest) GetId() string {
@@ -161,7 +297,7 @@ type CancelBasketResponse struct {
 
 func (x *CancelBasketResponse) Reset() {
 	*x = CancelBasketResponse{}
-	mi := &file_basketspb_api_proto_msgTypes[3]
+	mi := &file_basketspb_api_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -173,7 +309,7 @@ func (x *CancelBasketResponse) String() string {
 func (*CancelBasketResponse) ProtoMessage() {}
 
 func (x *CancelBasketResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_basketspb_api_proto_msgTypes[3]
+	mi := &file_basketspb_api_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -186,7 +322,7 @@ func (x *CancelBasketResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CancelBasketResponse.ProtoReflect.Descriptor instead.
 func (*CancelBasketResponse) Descriptor() ([]byte, []int) {
-	return file_basketspb_api_proto_rawDescGZIP(), []int{3}
+	return file_basketspb_api_proto_rawDescGZIP(), []int{5}
 }
 
 type CheckoutBasketRequest struct {
@@ -199,7 +335,7 @@ type CheckoutBasketRequest struct {
 
 func (x *CheckoutBasketRequest) Reset() {
 	*x = CheckoutBasketRequest{}
-	mi := &file_basketspb_api_proto_msgTypes[4]
+	mi := &file_basketspb_api_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -211,7 +347,7 @@ func (x *CheckoutBasketRequest) String() string {
 func (*CheckoutBasketRequest) ProtoMessage() {}
 
 func (x *CheckoutBasketRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_basketspb_api_proto_msgTypes[4]
+	mi := &file_basketspb_api_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -224,7 +360,7 @@ func (x *CheckoutBasketRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CheckoutBasketRequest.ProtoReflect.Descriptor instead.
 func (*CheckoutBasketRequest) Descriptor() ([]byte, []int) {
-	return file_basketspb_api_proto_rawDescGZIP(), []int{4}
+	return file_basketspb_api_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *CheckoutBasketRequest) GetId() string {
@@ -249,7 +385,7 @@ type CheckoutBasketResponse struct {
 
 func (x *CheckoutBasketResponse) Reset() {
 	*x = CheckoutBasketResponse{}
-	mi := &file_basketspb_api_proto_msgTypes[5]
+	mi := &file_basketspb_api_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -261,7 +397,7 @@ func (x *CheckoutBasketResponse) String() string {
 func (*CheckoutBasketResponse) ProtoMessage() {}
 
 func (x *CheckoutBasketResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_basketspb_api_proto_msgTypes[5]
+	mi := &file_basketspb_api_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -274,7 +410,7 @@ func (x *CheckoutBasketResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CheckoutBasketResponse.ProtoReflect.Descriptor instead.
 func (*CheckoutBasketResponse) Descriptor() ([]byte, []int) {
-	return file_basketspb_api_proto_rawDescGZIP(), []int{5}
+	return file_basketspb_api_proto_rawDescGZIP(), []int{7}
 }
 
 type AddItemRequest struct {
@@ -288,7 +424,7 @@ type AddItemRequest struct {
 
 func (x *AddItemRequest) Reset() {
 	*x = AddItemRequest{}
-	mi := &file_basketspb_api_proto_msgTypes[6]
+	mi := &file_basketspb_api_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -300,7 +436,7 @@ func (x *AddItemRequest) String() string {
 func (*AddItemRequest) ProtoMessage() {}
 
 func (x *AddItemRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_basketspb_api_proto_msgTypes[6]
+	mi := &file_basketspb_api_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -313,7 +449,7 @@ func (x *AddItemRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AddItemRequest.ProtoReflect.Descriptor instead.
 func (*AddItemRequest) Descriptor() ([]byte, []int) {
-	return file_basketspb_api_proto_rawDescGZIP(), []int{6}
+	return file_basketspb_api_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *AddItemRequest) GetId() string {
@@ -345,7 +481,7 @@ type AddItemResponse struct {
 
 func (x *AddItemResponse) Reset() {
 	*x = AddItemResponse{}
-	mi := &file_basketspb_api_proto_msgTypes[7]
+	mi := &file_basketspb_api_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -357,7 +493,7 @@ func (x *AddItemResponse) String() string {
 func (*AddItemResponse) ProtoMessage() {}
 
 func (x *AddItemResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_basketspb_api_proto_msgTypes[7]
+	mi := &file_basketspb_api_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -370,7 +506,7 @@ func (x *AddItemResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AddItemResponse.ProtoReflect.Descriptor instead.
 func (*AddItemResponse) Descriptor() ([]byte, []int) {
-	return file_basketspb_api_proto_rawDescGZIP(), []int{7}
+	return file_basketspb_api_proto_rawDescGZIP(), []int{9}
 }
 
 type RemoveItemRequest struct {
@@ -384,7 +520,7 @@ type RemoveItemRequest struct {
 
 func (x *RemoveItemRequest) Reset() {
 	*x = RemoveItemRequest{}
-	mi := &file_basketspb_api_proto_msgTypes[8]
+	mi := &file_basketspb_api_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -396,7 +532,7 @@ func (x *RemoveItemRequest) String() string {
 func (*RemoveItemRequest) ProtoMessage() {}
 
 func (x *RemoveItemRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_basketspb_api_proto_msgTypes[8]
+	mi := &file_basketspb_api_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -409,7 +545,7 @@ func (x *RemoveItemRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RemoveItemRequest.ProtoReflect.Descriptor instead.
 func (*RemoveItemRequest) Descriptor() ([]byte, []int) {
-	return file_basketspb_api_proto_rawDescGZIP(), []int{8}
+	return file_basketspb_api_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *RemoveItemRequest) GetId() string {
@@ -441,7 +577,7 @@ type RemoveItemResponse struct {
 
 func (x *RemoveItemResponse) Reset() {
 	*x = RemoveItemResponse{}
-	mi := &file_basketspb_api_proto_msgTypes[9]
+	mi := &file_basketspb_api_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -453,7 +589,7 @@ func (x *RemoveItemResponse) String() string {
 func (*RemoveItemResponse) ProtoMessage() {}
 
 func (x *RemoveItemResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_basketspb_api_proto_msgTypes[9]
+	mi := &file_basketspb_api_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -466,7 +602,7 @@ func (x *RemoveItemResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RemoveItemResponse.ProtoReflect.Descriptor instead.
 func (*RemoveItemResponse) Descriptor() ([]byte, []int) {
-	return file_basketspb_api_proto_rawDescGZIP(), []int{9}
+	return file_basketspb_api_proto_rawDescGZIP(), []int{11}
 }
 
 type GetBasketRequest struct {
@@ -478,7 +614,7 @@ type GetBasketRequest struct {
 
 func (x *GetBasketRequest) Reset() {
 	*x = GetBasketRequest{}
-	mi := &file_basketspb_api_proto_msgTypes[10]
+	mi := &file_basketspb_api_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -490,7 +626,7 @@ func (x *GetBasketRequest) String() string {
 func (*GetBasketRequest) ProtoMessage() {}
 
 func (x *GetBasketRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_basketspb_api_proto_msgTypes[10]
+	mi := &file_basketspb_api_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -503,7 +639,7 @@ func (x *GetBasketRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetBasketRequest.ProtoReflect.Descriptor instead.
 func (*GetBasketRequest) Descriptor() ([]byte, []int) {
-	return file_basketspb_api_proto_rawDescGZIP(), []int{10}
+	return file_basketspb_api_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *GetBasketRequest) GetId() string {
@@ -522,7 +658,7 @@ type GetBasketResponse struct {
 
 func (x *GetBasketResponse) Reset() {
 	*x = GetBasketResponse{}
-	mi := &file_basketspb_api_proto_msgTypes[11]
+	mi := &file_basketspb_api_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -534,7 +670,7 @@ func (x *GetBasketResponse) String() string {
 func (*GetBasketResponse) ProtoMessage() {}
 
 func (x *GetBasketResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_basketspb_api_proto_msgTypes[11]
+	mi := &file_basketspb_api_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -547,7 +683,7 @@ func (x *GetBasketResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetBasketResponse.ProtoReflect.Descriptor instead.
 func (*GetBasketResponse) Descriptor() ([]byte, []int) {
-	return file_basketspb_api_proto_rawDescGZIP(), []int{11}
+	return file_basketspb_api_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *GetBasketResponse) GetBasket() *Basket {
@@ -561,7 +697,19 @@ var File_basketspb_api_proto protoreflect.FileDescriptor
 
 const file_basketspb_api_proto_rawDesc = "" +
 	"\n" +
-	"\x13basketspb/api.proto\x12\tbasketspb\x1a\x18basketspb/messages.proto\"5\n" +
+	"\x13basketspb/api.proto\x12\tbasketspb\"?\n" +
+	"\x06Basket\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12%\n" +
+	"\x05items\x18\x02 \x03(\v2\x0f.basketspb.ItemR\x05items\"\xc3\x01\n" +
+	"\x04Item\x12\x19\n" +
+	"\bstore_id\x18\x01 \x01(\tR\astoreId\x12\x1d\n" +
+	"\n" +
+	"product_id\x18\x02 \x01(\tR\tproductId\x12\x1d\n" +
+	"\n" +
+	"store_name\x18\x03 \x01(\tR\tstoreName\x12!\n" +
+	"\fproduct_name\x18\x04 \x01(\tR\vproductName\x12#\n" +
+	"\rproduct_price\x18\x05 \x01(\x01R\fproductPrice\x12\x1a\n" +
+	"\bquantity\x18\x06 \x01(\x05R\bquantity\"5\n" +
 	"\x12StartBasketRequest\x12\x1f\n" +
 	"\vcustomer_id\x18\x01 \x01(\tR\n" +
 	"customerId\"%\n" +
@@ -613,41 +761,43 @@ func file_basketspb_api_proto_rawDescGZIP() []byte {
 	return file_basketspb_api_proto_rawDescData
 }
 
-var file_basketspb_api_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
+var file_basketspb_api_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
 var file_basketspb_api_proto_goTypes = []any{
-	(*StartBasketRequest)(nil),     // 0: basketspb.StartBasketRequest
-	(*StartBasketResponse)(nil),    // 1: basketspb.StartBasketResponse
-	(*CancelBasketRequest)(nil),    // 2: basketspb.CancelBasketRequest
-	(*CancelBasketResponse)(nil),   // 3: basketspb.CancelBasketResponse
-	(*CheckoutBasketRequest)(nil),  // 4: basketspb.CheckoutBasketRequest
-	(*CheckoutBasketResponse)(nil), // 5: basketspb.CheckoutBasketResponse
-	(*AddItemRequest)(nil),         // 6: basketspb.AddItemRequest
-	(*AddItemResponse)(nil),        // 7: basketspb.AddItemResponse
-	(*RemoveItemRequest)(nil),      // 8: basketspb.RemoveItemRequest
-	(*RemoveItemResponse)(nil),     // 9: basketspb.RemoveItemResponse
-	(*GetBasketRequest)(nil),       // 10: basketspb.GetBasketRequest
-	(*GetBasketResponse)(nil),      // 11: basketspb.GetBasketResponse
-	(*Basket)(nil),                 // 12: basketspb.Basket
+	(*Basket)(nil),                 // 0: basketspb.Basket
+	(*Item)(nil),                   // 1: basketspb.Item
+	(*StartBasketRequest)(nil),     // 2: basketspb.StartBasketRequest
+	(*StartBasketResponse)(nil),    // 3: basketspb.StartBasketResponse
+	(*CancelBasketRequest)(nil),    // 4: basketspb.CancelBasketRequest
+	(*CancelBasketResponse)(nil),   // 5: basketspb.CancelBasketResponse
+	(*CheckoutBasketRequest)(nil),  // 6: basketspb.CheckoutBasketRequest
+	(*CheckoutBasketResponse)(nil), // 7: basketspb.CheckoutBasketResponse
+	(*AddItemRequest)(nil),         // 8: basketspb.AddItemRequest
+	(*AddItemResponse)(nil),        // 9: basketspb.AddItemResponse
+	(*RemoveItemRequest)(nil),      // 10: basketspb.RemoveItemRequest
+	(*RemoveItemResponse)(nil),     // 11: basketspb.RemoveItemResponse
+	(*GetBasketRequest)(nil),       // 12: basketspb.GetBasketRequest
+	(*GetBasketResponse)(nil),      // 13: basketspb.GetBasketResponse
 }
 var file_basketspb_api_proto_depIdxs = []int32{
-	12, // 0: basketspb.GetBasketResponse.basket:type_name -> basketspb.Basket
-	0,  // 1: basketspb.BasketService.StartBasket:input_type -> basketspb.StartBasketRequest
-	2,  // 2: basketspb.BasketService.CancelBasket:input_type -> basketspb.CancelBasketRequest
-	4,  // 3: basketspb.BasketService.CheckoutBasket:input_type -> basketspb.CheckoutBasketRequest
-	6,  // 4: basketspb.BasketService.AddItem:input_type -> basketspb.AddItemRequest
-	8,  // 5: basketspb.BasketService.RemoveItem:input_type -> basketspb.RemoveItemRequest
-	10, // 6: basketspb.BasketService.GetBasket:input_type -> basketspb.GetBasketRequest
-	1,  // 7: basketspb.BasketService.StartBasket:output_type -> basketspb.StartBasketResponse
-	3,  // 8: basketspb.BasketService.CancelBasket:output_type -> basketspb.CancelBasketResponse
-	5,  // 9: basketspb.BasketService.CheckoutBasket:output_type -> basketspb.CheckoutBasketResponse
-	7,  // 10: basketspb.BasketService.AddItem:output_type -> basketspb.AddItemResponse
-	9,  // 11: basketspb.BasketService.RemoveItem:output_type -> basketspb.RemoveItemResponse
-	11, // 12: basketspb.BasketService.GetBasket:output_type -> basketspb.GetBasketResponse
-	7,  // [7:13] is the sub-list for method output_type
-	1,  // [1:7] is the sub-list for method input_type
-	1,  // [1:1] is the sub-list for extension type_name
-	1,  // [1:1] is the sub-list for extension extendee
-	0,  // [0:1] is the sub-list for field type_name
+	1,  // 0: basketspb.Basket.items:type_name -> basketspb.Item
+	0,  // 1: basketspb.GetBasketResponse.basket:type_name -> basketspb.Basket
+	2,  // 2: basketspb.BasketService.StartBasket:input_type -> basketspb.StartBasketRequest
+	4,  // 3: basketspb.BasketService.CancelBasket:input_type -> basketspb.CancelBasketRequest
+	6,  // 4: basketspb.BasketService.CheckoutBasket:input_type -> basketspb.CheckoutBasketRequest
+	8,  // 5: basketspb.BasketService.AddItem:input_type -> basketspb.AddItemRequest
+	10, // 6: basketspb.BasketService.RemoveItem:input_type -> basketspb.RemoveItemRequest
+	12, // 7: basketspb.BasketService.GetBasket:input_type -> basketspb.GetBasketRequest
+	3,  // 8: basketspb.BasketService.StartBasket:output_type -> basketspb.StartBasketResponse
+	5,  // 9: basketspb.BasketService.CancelBasket:output_type -> basketspb.CancelBasketResponse
+	7,  // 10: basketspb.BasketService.CheckoutBasket:output_type -> basketspb.CheckoutBasketResponse
+	9,  // 11: basketspb.BasketService.AddItem:output_type -> basketspb.AddItemResponse
+	11, // 12: basketspb.BasketService.RemoveItem:output_type -> basketspb.RemoveItemResponse
+	13, // 13: basketspb.BasketService.GetBasket:output_type -> basketspb.GetBasketResponse
+	8,  // [8:14] is the sub-list for method output_type
+	2,  // [2:8] is the sub-list for method input_type
+	2,  // [2:2] is the sub-list for extension type_name
+	2,  // [2:2] is the sub-list for extension extendee
+	0,  // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_basketspb_api_proto_init() }
@@ -655,14 +805,13 @@ func file_basketspb_api_proto_init() {
 	if File_basketspb_api_proto != nil {
 		return
 	}
-	file_basketspb_messages_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_basketspb_api_proto_rawDesc), len(file_basketspb_api_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   12,
+			NumMessages:   14,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

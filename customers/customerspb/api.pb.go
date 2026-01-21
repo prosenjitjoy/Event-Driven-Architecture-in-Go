@@ -21,6 +21,74 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type Customer struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	SmsNumber     string                 `protobuf:"bytes,3,opt,name=sms_number,json=smsNumber,proto3" json:"sms_number,omitempty"`
+	Enabled       bool                   `protobuf:"varint,4,opt,name=enabled,proto3" json:"enabled,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Customer) Reset() {
+	*x = Customer{}
+	mi := &file_customerspb_api_proto_msgTypes[0]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Customer) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Customer) ProtoMessage() {}
+
+func (x *Customer) ProtoReflect() protoreflect.Message {
+	mi := &file_customerspb_api_proto_msgTypes[0]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Customer.ProtoReflect.Descriptor instead.
+func (*Customer) Descriptor() ([]byte, []int) {
+	return file_customerspb_api_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *Customer) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *Customer) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *Customer) GetSmsNumber() string {
+	if x != nil {
+		return x.SmsNumber
+	}
+	return ""
+}
+
+func (x *Customer) GetEnabled() bool {
+	if x != nil {
+		return x.Enabled
+	}
+	return false
+}
+
 type RegisterCustomerRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
@@ -31,7 +99,7 @@ type RegisterCustomerRequest struct {
 
 func (x *RegisterCustomerRequest) Reset() {
 	*x = RegisterCustomerRequest{}
-	mi := &file_customerspb_api_proto_msgTypes[0]
+	mi := &file_customerspb_api_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -43,7 +111,7 @@ func (x *RegisterCustomerRequest) String() string {
 func (*RegisterCustomerRequest) ProtoMessage() {}
 
 func (x *RegisterCustomerRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_customerspb_api_proto_msgTypes[0]
+	mi := &file_customerspb_api_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -56,7 +124,7 @@ func (x *RegisterCustomerRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RegisterCustomerRequest.ProtoReflect.Descriptor instead.
 func (*RegisterCustomerRequest) Descriptor() ([]byte, []int) {
-	return file_customerspb_api_proto_rawDescGZIP(), []int{0}
+	return file_customerspb_api_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *RegisterCustomerRequest) GetName() string {
@@ -82,7 +150,7 @@ type RegisterCustomerResponse struct {
 
 func (x *RegisterCustomerResponse) Reset() {
 	*x = RegisterCustomerResponse{}
-	mi := &file_customerspb_api_proto_msgTypes[1]
+	mi := &file_customerspb_api_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -94,7 +162,7 @@ func (x *RegisterCustomerResponse) String() string {
 func (*RegisterCustomerResponse) ProtoMessage() {}
 
 func (x *RegisterCustomerResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_customerspb_api_proto_msgTypes[1]
+	mi := &file_customerspb_api_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -107,7 +175,7 @@ func (x *RegisterCustomerResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RegisterCustomerResponse.ProtoReflect.Descriptor instead.
 func (*RegisterCustomerResponse) Descriptor() ([]byte, []int) {
-	return file_customerspb_api_proto_rawDescGZIP(), []int{1}
+	return file_customerspb_api_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *RegisterCustomerResponse) GetId() string {
@@ -126,7 +194,7 @@ type AuthorizeCustomerRequest struct {
 
 func (x *AuthorizeCustomerRequest) Reset() {
 	*x = AuthorizeCustomerRequest{}
-	mi := &file_customerspb_api_proto_msgTypes[2]
+	mi := &file_customerspb_api_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -138,7 +206,7 @@ func (x *AuthorizeCustomerRequest) String() string {
 func (*AuthorizeCustomerRequest) ProtoMessage() {}
 
 func (x *AuthorizeCustomerRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_customerspb_api_proto_msgTypes[2]
+	mi := &file_customerspb_api_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -151,7 +219,7 @@ func (x *AuthorizeCustomerRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AuthorizeCustomerRequest.ProtoReflect.Descriptor instead.
 func (*AuthorizeCustomerRequest) Descriptor() ([]byte, []int) {
-	return file_customerspb_api_proto_rawDescGZIP(), []int{2}
+	return file_customerspb_api_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *AuthorizeCustomerRequest) GetId() string {
@@ -169,7 +237,7 @@ type AuthorizeCustomerResponse struct {
 
 func (x *AuthorizeCustomerResponse) Reset() {
 	*x = AuthorizeCustomerResponse{}
-	mi := &file_customerspb_api_proto_msgTypes[3]
+	mi := &file_customerspb_api_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -181,7 +249,7 @@ func (x *AuthorizeCustomerResponse) String() string {
 func (*AuthorizeCustomerResponse) ProtoMessage() {}
 
 func (x *AuthorizeCustomerResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_customerspb_api_proto_msgTypes[3]
+	mi := &file_customerspb_api_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -194,7 +262,7 @@ func (x *AuthorizeCustomerResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AuthorizeCustomerResponse.ProtoReflect.Descriptor instead.
 func (*AuthorizeCustomerResponse) Descriptor() ([]byte, []int) {
-	return file_customerspb_api_proto_rawDescGZIP(), []int{3}
+	return file_customerspb_api_proto_rawDescGZIP(), []int{4}
 }
 
 type GetCustomerRequest struct {
@@ -206,7 +274,7 @@ type GetCustomerRequest struct {
 
 func (x *GetCustomerRequest) Reset() {
 	*x = GetCustomerRequest{}
-	mi := &file_customerspb_api_proto_msgTypes[4]
+	mi := &file_customerspb_api_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -218,7 +286,7 @@ func (x *GetCustomerRequest) String() string {
 func (*GetCustomerRequest) ProtoMessage() {}
 
 func (x *GetCustomerRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_customerspb_api_proto_msgTypes[4]
+	mi := &file_customerspb_api_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -231,7 +299,7 @@ func (x *GetCustomerRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetCustomerRequest.ProtoReflect.Descriptor instead.
 func (*GetCustomerRequest) Descriptor() ([]byte, []int) {
-	return file_customerspb_api_proto_rawDescGZIP(), []int{4}
+	return file_customerspb_api_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *GetCustomerRequest) GetId() string {
@@ -250,7 +318,7 @@ type GetCustomerResponse struct {
 
 func (x *GetCustomerResponse) Reset() {
 	*x = GetCustomerResponse{}
-	mi := &file_customerspb_api_proto_msgTypes[5]
+	mi := &file_customerspb_api_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -262,7 +330,7 @@ func (x *GetCustomerResponse) String() string {
 func (*GetCustomerResponse) ProtoMessage() {}
 
 func (x *GetCustomerResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_customerspb_api_proto_msgTypes[5]
+	mi := &file_customerspb_api_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -275,7 +343,7 @@ func (x *GetCustomerResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetCustomerResponse.ProtoReflect.Descriptor instead.
 func (*GetCustomerResponse) Descriptor() ([]byte, []int) {
-	return file_customerspb_api_proto_rawDescGZIP(), []int{5}
+	return file_customerspb_api_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *GetCustomerResponse) GetCustomer() *Customer {
@@ -294,7 +362,7 @@ type EnableCustomerRequest struct {
 
 func (x *EnableCustomerRequest) Reset() {
 	*x = EnableCustomerRequest{}
-	mi := &file_customerspb_api_proto_msgTypes[6]
+	mi := &file_customerspb_api_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -306,7 +374,7 @@ func (x *EnableCustomerRequest) String() string {
 func (*EnableCustomerRequest) ProtoMessage() {}
 
 func (x *EnableCustomerRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_customerspb_api_proto_msgTypes[6]
+	mi := &file_customerspb_api_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -319,7 +387,7 @@ func (x *EnableCustomerRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EnableCustomerRequest.ProtoReflect.Descriptor instead.
 func (*EnableCustomerRequest) Descriptor() ([]byte, []int) {
-	return file_customerspb_api_proto_rawDescGZIP(), []int{6}
+	return file_customerspb_api_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *EnableCustomerRequest) GetId() string {
@@ -337,7 +405,7 @@ type EnableCustomerResponse struct {
 
 func (x *EnableCustomerResponse) Reset() {
 	*x = EnableCustomerResponse{}
-	mi := &file_customerspb_api_proto_msgTypes[7]
+	mi := &file_customerspb_api_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -349,7 +417,7 @@ func (x *EnableCustomerResponse) String() string {
 func (*EnableCustomerResponse) ProtoMessage() {}
 
 func (x *EnableCustomerResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_customerspb_api_proto_msgTypes[7]
+	mi := &file_customerspb_api_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -362,7 +430,7 @@ func (x *EnableCustomerResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EnableCustomerResponse.ProtoReflect.Descriptor instead.
 func (*EnableCustomerResponse) Descriptor() ([]byte, []int) {
-	return file_customerspb_api_proto_rawDescGZIP(), []int{7}
+	return file_customerspb_api_proto_rawDescGZIP(), []int{8}
 }
 
 type DisableCustomerRequest struct {
@@ -374,7 +442,7 @@ type DisableCustomerRequest struct {
 
 func (x *DisableCustomerRequest) Reset() {
 	*x = DisableCustomerRequest{}
-	mi := &file_customerspb_api_proto_msgTypes[8]
+	mi := &file_customerspb_api_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -386,7 +454,7 @@ func (x *DisableCustomerRequest) String() string {
 func (*DisableCustomerRequest) ProtoMessage() {}
 
 func (x *DisableCustomerRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_customerspb_api_proto_msgTypes[8]
+	mi := &file_customerspb_api_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -399,7 +467,7 @@ func (x *DisableCustomerRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DisableCustomerRequest.ProtoReflect.Descriptor instead.
 func (*DisableCustomerRequest) Descriptor() ([]byte, []int) {
-	return file_customerspb_api_proto_rawDescGZIP(), []int{8}
+	return file_customerspb_api_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *DisableCustomerRequest) GetId() string {
@@ -417,7 +485,7 @@ type DisableCustomerResponse struct {
 
 func (x *DisableCustomerResponse) Reset() {
 	*x = DisableCustomerResponse{}
-	mi := &file_customerspb_api_proto_msgTypes[9]
+	mi := &file_customerspb_api_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -429,7 +497,7 @@ func (x *DisableCustomerResponse) String() string {
 func (*DisableCustomerResponse) ProtoMessage() {}
 
 func (x *DisableCustomerResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_customerspb_api_proto_msgTypes[9]
+	mi := &file_customerspb_api_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -442,14 +510,20 @@ func (x *DisableCustomerResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DisableCustomerResponse.ProtoReflect.Descriptor instead.
 func (*DisableCustomerResponse) Descriptor() ([]byte, []int) {
-	return file_customerspb_api_proto_rawDescGZIP(), []int{9}
+	return file_customerspb_api_proto_rawDescGZIP(), []int{10}
 }
 
 var File_customerspb_api_proto protoreflect.FileDescriptor
 
 const file_customerspb_api_proto_rawDesc = "" +
 	"\n" +
-	"\x15customerspb/api.proto\x12\vcustomerspb\x1a\x1acustomerspb/messages.proto\"L\n" +
+	"\x15customerspb/api.proto\x12\vcustomerspb\"g\n" +
+	"\bCustomer\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12\x1d\n" +
+	"\n" +
+	"sms_number\x18\x03 \x01(\tR\tsmsNumber\x12\x18\n" +
+	"\aenabled\x18\x04 \x01(\bR\aenabled\"L\n" +
 	"\x17RegisterCustomerRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x1d\n" +
 	"\n" +
@@ -489,32 +563,32 @@ func file_customerspb_api_proto_rawDescGZIP() []byte {
 	return file_customerspb_api_proto_rawDescData
 }
 
-var file_customerspb_api_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
+var file_customerspb_api_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
 var file_customerspb_api_proto_goTypes = []any{
-	(*RegisterCustomerRequest)(nil),   // 0: customerspb.RegisterCustomerRequest
-	(*RegisterCustomerResponse)(nil),  // 1: customerspb.RegisterCustomerResponse
-	(*AuthorizeCustomerRequest)(nil),  // 2: customerspb.AuthorizeCustomerRequest
-	(*AuthorizeCustomerResponse)(nil), // 3: customerspb.AuthorizeCustomerResponse
-	(*GetCustomerRequest)(nil),        // 4: customerspb.GetCustomerRequest
-	(*GetCustomerResponse)(nil),       // 5: customerspb.GetCustomerResponse
-	(*EnableCustomerRequest)(nil),     // 6: customerspb.EnableCustomerRequest
-	(*EnableCustomerResponse)(nil),    // 7: customerspb.EnableCustomerResponse
-	(*DisableCustomerRequest)(nil),    // 8: customerspb.DisableCustomerRequest
-	(*DisableCustomerResponse)(nil),   // 9: customerspb.DisableCustomerResponse
-	(*Customer)(nil),                  // 10: customerspb.Customer
+	(*Customer)(nil),                  // 0: customerspb.Customer
+	(*RegisterCustomerRequest)(nil),   // 1: customerspb.RegisterCustomerRequest
+	(*RegisterCustomerResponse)(nil),  // 2: customerspb.RegisterCustomerResponse
+	(*AuthorizeCustomerRequest)(nil),  // 3: customerspb.AuthorizeCustomerRequest
+	(*AuthorizeCustomerResponse)(nil), // 4: customerspb.AuthorizeCustomerResponse
+	(*GetCustomerRequest)(nil),        // 5: customerspb.GetCustomerRequest
+	(*GetCustomerResponse)(nil),       // 6: customerspb.GetCustomerResponse
+	(*EnableCustomerRequest)(nil),     // 7: customerspb.EnableCustomerRequest
+	(*EnableCustomerResponse)(nil),    // 8: customerspb.EnableCustomerResponse
+	(*DisableCustomerRequest)(nil),    // 9: customerspb.DisableCustomerRequest
+	(*DisableCustomerResponse)(nil),   // 10: customerspb.DisableCustomerResponse
 }
 var file_customerspb_api_proto_depIdxs = []int32{
-	10, // 0: customerspb.GetCustomerResponse.customer:type_name -> customerspb.Customer
-	0,  // 1: customerspb.CustomersService.RegisterCustomer:input_type -> customerspb.RegisterCustomerRequest
-	2,  // 2: customerspb.CustomersService.AuthorizeCustomer:input_type -> customerspb.AuthorizeCustomerRequest
-	4,  // 3: customerspb.CustomersService.GetCustomer:input_type -> customerspb.GetCustomerRequest
-	6,  // 4: customerspb.CustomersService.EnableCustomer:input_type -> customerspb.EnableCustomerRequest
-	8,  // 5: customerspb.CustomersService.DisableCustomer:input_type -> customerspb.DisableCustomerRequest
-	1,  // 6: customerspb.CustomersService.RegisterCustomer:output_type -> customerspb.RegisterCustomerResponse
-	3,  // 7: customerspb.CustomersService.AuthorizeCustomer:output_type -> customerspb.AuthorizeCustomerResponse
-	5,  // 8: customerspb.CustomersService.GetCustomer:output_type -> customerspb.GetCustomerResponse
-	7,  // 9: customerspb.CustomersService.EnableCustomer:output_type -> customerspb.EnableCustomerResponse
-	9,  // 10: customerspb.CustomersService.DisableCustomer:output_type -> customerspb.DisableCustomerResponse
+	0,  // 0: customerspb.GetCustomerResponse.customer:type_name -> customerspb.Customer
+	1,  // 1: customerspb.CustomersService.RegisterCustomer:input_type -> customerspb.RegisterCustomerRequest
+	3,  // 2: customerspb.CustomersService.AuthorizeCustomer:input_type -> customerspb.AuthorizeCustomerRequest
+	5,  // 3: customerspb.CustomersService.GetCustomer:input_type -> customerspb.GetCustomerRequest
+	7,  // 4: customerspb.CustomersService.EnableCustomer:input_type -> customerspb.EnableCustomerRequest
+	9,  // 5: customerspb.CustomersService.DisableCustomer:input_type -> customerspb.DisableCustomerRequest
+	2,  // 6: customerspb.CustomersService.RegisterCustomer:output_type -> customerspb.RegisterCustomerResponse
+	4,  // 7: customerspb.CustomersService.AuthorizeCustomer:output_type -> customerspb.AuthorizeCustomerResponse
+	6,  // 8: customerspb.CustomersService.GetCustomer:output_type -> customerspb.GetCustomerResponse
+	8,  // 9: customerspb.CustomersService.EnableCustomer:output_type -> customerspb.EnableCustomerResponse
+	10, // 10: customerspb.CustomersService.DisableCustomer:output_type -> customerspb.DisableCustomerResponse
 	6,  // [6:11] is the sub-list for method output_type
 	1,  // [1:6] is the sub-list for method input_type
 	1,  // [1:1] is the sub-list for extension type_name
@@ -527,14 +601,13 @@ func file_customerspb_api_proto_init() {
 	if File_customerspb_api_proto != nil {
 		return
 	}
-	file_customerspb_messages_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_customerspb_api_proto_rawDesc), len(file_customerspb_api_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   10,
+			NumMessages:   11,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

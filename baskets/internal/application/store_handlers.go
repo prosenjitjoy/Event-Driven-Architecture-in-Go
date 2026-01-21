@@ -2,21 +2,20 @@ package application
 
 import (
 	"context"
-	"fmt"
-	"log/slog"
+	"mall/baskets/internal/domain"
 	"mall/internal/ddd"
 	"mall/stores/storespb"
 )
 
 type StoreHandlers[T ddd.Event] struct {
-	logger *slog.Logger
+	cache domain.StoreCacheRepository
 }
 
 var _ ddd.EventHandler[ddd.Event] = (*StoreHandlers[ddd.Event])(nil)
 
-func NewStoreHandlers(logger *slog.Logger) StoreHandlers[ddd.Event] {
+func NewStoreHandlers(cache domain.StoreCacheRepository) StoreHandlers[ddd.Event] {
 	return StoreHandlers[ddd.Event]{
-		logger: logger,
+		cache: cache,
 	}
 }
 
@@ -24,8 +23,6 @@ func (h StoreHandlers[T]) HandleEvent(ctx context.Context, event T) error {
 	switch event.EventName() {
 	case storespb.StoreCreatedEvent:
 		return h.onStoreCreated(ctx, event)
-	case storespb.StoreParticipatingToggledEvent:
-		return h.onStoreParticipationToggled(ctx, event)
 	case storespb.StoreRebrandedEvent:
 		return h.onStoreRebranded(ctx, event)
 	}
@@ -35,18 +32,12 @@ func (h StoreHandlers[T]) HandleEvent(ctx context.Context, event T) error {
 
 func (h StoreHandlers[T]) onStoreCreated(ctx context.Context, event ddd.Event) error {
 	payload := event.Payload().(*storespb.StoreCreated)
-	h.logger.Debug(fmt.Sprintf("ID: %s, Name: %s, Location: %s", payload.GetId(), payload.GetName(), payload.GetLocation()))
-	return nil
-}
 
-func (h StoreHandlers[T]) onStoreParticipationToggled(ctx context.Context, event ddd.Event) error {
-	payload := event.Payload().(*storespb.StoreParticipationToggled)
-	h.logger.Debug(fmt.Sprintf("ID: %s, Participating: %t", payload.GetId(), payload.GetParticipating()))
-	return nil
+	return h.cache.Add(ctx, payload.GetId(), payload.GetName())
 }
 
 func (h StoreHandlers[T]) onStoreRebranded(ctx context.Context, event ddd.Event) error {
 	payload := event.Payload().(*storespb.StoreRebranded)
-	h.logger.Debug(fmt.Sprintf("ID: %s, Name: %s", payload.GetId(), payload.GetName()))
-	return nil
+
+	return h.cache.Rename(ctx, payload.GetId(), payload.GetName())
 }

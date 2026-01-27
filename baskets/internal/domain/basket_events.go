@@ -32,9 +32,7 @@ type BasketCanceled struct{}
 func (BasketCanceled) Key() string { return BasketCanceledEvent }
 
 type BasketCheckedOut struct {
-	PaymentID  string
-	CustomerID string
-	Items      map[string]Item
+	PaymentID string
 }
 
 func (BasketCheckedOut) Key() string { return BasketCheckedOutEvent }

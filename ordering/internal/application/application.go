@@ -2,6 +2,7 @@ package application
 
 import (
 	"context"
+	"mall/internal/ddd"
 	"mall/ordering/internal/application/commands"
 	"mall/ordering/internal/application/queries"
 	"mall/ordering/internal/domain"
@@ -9,6 +10,8 @@ import (
 
 type Commands interface {
 	CreateOrder(ctx context.Context, cmd commands.CreateOrderRequest) error
+	RejectOrder(ctx context.Context, cmd commands.RejectOrderRequest) error
+	ApproveOrder(ctx context.Context, cmd commands.ApproveOrderRequest) error
 	CancelOrder(ctx context.Context, cmd commands.CancelOrderRequest) error
 	ReadyOrder(ctx context.Context, cmd commands.ReadyOrderRequest) error
 	CompleteOrder(ctx context.Context, cmd commands.CompleteOrderRequest) error
@@ -25,6 +28,8 @@ type App interface {
 
 type appCommands struct {
 	commands.CreateOrderHandler
+	commands.RejectOrderHandler
+	commands.ApproveOrderHandler
 	commands.CancelOrderHandler
 	commands.ReadyOrderHandler
 	commands.CompleteOrderHandler
@@ -41,13 +46,15 @@ type Application struct {
 
 var _ App = (*Application)(nil)
 
-func New(orders domain.OrderRepository, customers domain.CustomerRepository, payments domain.PaymentRepository, shopping domain.ShoppingRepository) *Application {
+func New(orders domain.OrderRepository, shopping domain.ShoppingRepository, publisher ddd.EventPublisher[ddd.Event]) *Application {
 	return &Application{
 		appCommands: appCommands{
-			CreateOrderHandler:   commands.NewCreateOrderHandler(orders, customers, payments, shopping),
-			CancelOrderHandler:   commands.NewCancelOrderHandler(orders, shopping),
-			ReadyOrderHandler:    commands.NewReadyOrderHandler(orders),
-			CompleteOrderHandler: commands.NewCompleteOrderHandler(orders),
+			CreateOrderHandler:   commands.NewCreateOrderHandler(orders, publisher),
+			RejectOrderHandler:   commands.NewRejectOrderHandler(orders, publisher),
+			ApproveOrderHandler:  commands.NewApproveOrderHandler(orders, publisher),
+			CancelOrderHandler:   commands.NewCancelOrderHandler(orders, shopping, publisher),
+			ReadyOrderHandler:    commands.NewReadyOrderHandler(orders, publisher),
+			CompleteOrderHandler: commands.NewCompleteOrderHandler(orders, publisher),
 		},
 		appQueries: appQueries{
 			GetOrderHandler: queries.NewGetOrderHandler(orders),

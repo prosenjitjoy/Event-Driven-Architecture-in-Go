@@ -24,6 +24,7 @@ func RegisterServer(app application.App, registrar grpc.ServiceRegistrar) error 
 
 func (s server) RegisterCustomer(ctx context.Context, request *customerspb.RegisterCustomerRequest) (*customerspb.RegisterCustomerResponse, error) {
 	id := uuid.New().String()
+
 	err := s.app.RegisterCustomer(ctx, application.RegisterCustomer{
 		ID:        id,
 		Name:      request.GetName(),

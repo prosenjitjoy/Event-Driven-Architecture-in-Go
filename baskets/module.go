@@ -2,6 +2,7 @@ package baskets
 
 import (
 	"context"
+	"mall/baskets/basketspb"
 	"mall/baskets/internal/application"
 	"mall/baskets/internal/domain"
 	"mall/baskets/internal/grpc"
@@ -30,17 +31,22 @@ func (m *Module) Startup(ctx context.Context, mono monolith.Monolith) error {
 		return err
 	}
 
+	if err := basketspb.Registrations(reg); err != nil {
+		return err
+	}
+
 	if err := storespb.Registrations(reg); err != nil {
 		return err
 	}
 
-	eventStream := am.NewEventStream(reg, jetstream.NewStream(mono.Config().Nats.Stream, mono.JS()))
+	stream := jetstream.NewStream(mono.Config().Nats.Stream, mono.JS(), mono.Logger())
 
-	domainDispatcher := ddd.NewEventDispatcher[ddd.AggregateEvent]()
+	eventStream := am.NewEventStream(reg, stream)
+
+	domainDispatcher := ddd.NewEventDispatcher[ddd.Event]()
 
 	aggregateStore := es.AggregateStoreWithMiddleware(
 		pg.NewEventStore("baskets.events", mono.DB(), reg),
-		es.NewEventPublisher(domainDispatcher),
 		pg.NewSnapshotStore("baskets.snapshots", mono.DB(), reg),
 	)
 
@@ -54,29 +60,21 @@ func (m *Module) Startup(ctx context.Context, mono monolith.Monolith) error {
 
 	products := postgres.NewProductCacheRepository("baskets.products_cache", mono.DB(), grpc.NewProductRepository(conn))
 
-	orders := grpc.NewOrderRepository(conn)
-
 	// setup application
 	app := logging.LogApplicationAccess(
-		application.New(baskets, stores, products, orders),
+		application.New(baskets, stores, products, domainDispatcher),
 		mono.Logger(),
 	)
 
-	orderHandlers := logging.LogEventHandlerAccess[ddd.AggregateEvent](
-		application.NewOrderHandlers(orders),
-		"Order",
+	domainEventHandlers := logging.LogEventHandlerAccess[ddd.Event](
+		handlers.NewDomainEventHandlers(eventStream),
+		"DomainEvents",
 		mono.Logger(),
 	)
 
-	storeHandlers := logging.LogEventHandlerAccess[ddd.Event](
-		application.NewStoreHandlers(stores),
-		"Store",
-		mono.Logger(),
-	)
-
-	productHandlers := logging.LogEventHandlerAccess[ddd.Event](
-		application.NewProductHandlers(products),
-		"Product",
+	integrationEventHandlers := logging.LogEventHandlerAccess[ddd.Event](
+		handlers.NewIntegrationEventHandlers(stores, products),
+		"IntegrationEvents",
 		mono.Logger(),
 	)
 
@@ -91,13 +89,9 @@ func (m *Module) Startup(ctx context.Context, mono monolith.Monolith) error {
 		return err
 	}
 
-	handlers.RegisterOrderHandlers(orderHandlers, domainDispatcher)
+	handlers.RegisterDomainEventHandlers(domainDispatcher, domainEventHandlers)
 
-	if err := handlers.RegisterStoreHandlers(storeHandlers, eventStream); err != nil {
-		return err
-	}
-
-	if err := handlers.RegisterProductHandlers(productHandlers, eventStream); err != nil {
+	if err := handlers.RegisterIntegrationEventHandlers(eventStream, integrationEventHandlers); err != nil {
 		return err
 	}
 
@@ -108,12 +102,11 @@ func registrations(reg registry.Registry) error {
 	serde := serdes.NewJsonSerde(reg)
 
 	// Basket
-	err := serde.Register(domain.Basket{}, func(v any) error {
+	if err := serde.Register(domain.Basket{}, func(v any) error {
 		basket := v.(*domain.Basket)
 		basket.Items = make(map[string]domain.Item)
 		return nil
-	})
-	if err != nil {
+	}); err != nil {
 		return err
 	}
 

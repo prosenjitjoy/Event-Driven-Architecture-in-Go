@@ -2,6 +2,7 @@ package depot
 
 import (
 	"context"
+	"mall/depot/depotpb"
 	"mall/depot/internal/application"
 	"mall/depot/internal/grpc"
 	"mall/depot/internal/handlers"
@@ -21,11 +22,19 @@ type Module struct{}
 func (m Module) Startup(ctx context.Context, mono monolith.Monolith) error {
 	// setup driven adapters
 	reg := registry.New()
+
 	if err := storespb.Registrations(reg); err != nil {
 		return err
 	}
 
-	eventStream := am.NewEventStream(reg, jetstream.NewStream(mono.Config().Nats.Stream, mono.JS()))
+	if err := depotpb.Registrations(reg); err != nil {
+		return err
+	}
+
+	stream := jetstream.NewStream(mono.Config().Nats.Stream, mono.JS(), mono.Logger())
+
+	eventStream := am.NewEventStream(reg, stream)
+	commandStream := am.NewCommandStream(reg, stream)
 
 	domainDispatcher := ddd.NewEventDispatcher[ddd.AggregateEvent]()
 
@@ -48,21 +57,21 @@ func (m Module) Startup(ctx context.Context, mono monolith.Monolith) error {
 		mono.Logger(),
 	)
 
-	orderHandlers := logging.LogEventHandlerAccess[ddd.AggregateEvent](
-		application.NewOrderHandlers(orders),
-		"Order",
+	domainEventHandlers := logging.LogEventHandlerAccess[ddd.AggregateEvent](
+		handlers.NewDomainEventHandlers(orders),
+		"DomainEvents",
 		mono.Logger(),
 	)
 
-	storeHandlers := logging.LogEventHandlerAccess[ddd.Event](
-		application.NewStoreHandlers(stores),
-		"Store",
+	integrationEventHandlers := logging.LogEventHandlerAccess[ddd.Event](
+		handlers.NewIntegrationEventHandlers(stores, products),
+		"IntegrationEvents",
 		mono.Logger(),
 	)
 
-	productHandlers := logging.LogEventHandlerAccess[ddd.Event](
-		application.NewProductHandlers(products),
-		"Product",
+	commandHandlers := logging.LogCommandHandlerAccess[ddd.Command](
+		handlers.NewCommandHandlers(app),
+		"Command",
 		mono.Logger(),
 	)
 
@@ -77,13 +86,13 @@ func (m Module) Startup(ctx context.Context, mono monolith.Monolith) error {
 		return err
 	}
 
-	handlers.RegisterOrderHandlers(orderHandlers, domainDispatcher)
+	handlers.RegisterDomainEventHandlers(domainDispatcher, domainEventHandlers)
 
-	if err := handlers.RegisterStoreHandlers(storeHandlers, eventStream); err != nil {
+	if err := handlers.RegisterIntegrationEventHandlers(eventStream, integrationEventHandlers); err != nil {
 		return err
 	}
 
-	if err := handlers.RegisterProductHandlers(productHandlers, eventStream); err != nil {
+	if err := handlers.RegisterCommandHandlers(commandStream, commandHandlers); err != nil {
 		return err
 	}
 

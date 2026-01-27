@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package paymentspb;
+
+// Events
+message InvoicePaid {
+  string id = 1;
+  string order_id = 2;
+}
+
+// Commands
+message ConfirmPayment {
+  string id = 1;
+  double amount = 2;
+}

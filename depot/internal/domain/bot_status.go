@@ -16,3 +16,14 @@ func (s BotStatus) String() string {
 		return ""
 	}
 }
+
+func ToBotStatus(status string) BotStatus {
+	switch status {
+	case BotIsIdle.String():
+		return BotIsIdle
+	case BotIsActive.String():
+		return BotIsActive
+	default:
+		return BotUnknown
+	}
+}

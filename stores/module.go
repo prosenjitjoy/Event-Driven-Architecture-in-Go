@@ -34,7 +34,9 @@ func (m Module) Startup(ctx context.Context, mono monolith.Monolith) error {
 		return err
 	}
 
-	eventStream := am.NewEventStream(reg, jetstream.NewStream(mono.Config().Nats.Stream, mono.JS()))
+	stream := jetstream.NewStream(mono.Config().Nats.Stream, mono.JS(), mono.Logger())
+
+	eventStream := am.NewEventStream(reg, stream)
 
 	domainDispatcher := ddd.NewEventDispatcher[ddd.AggregateEvent]()
 
@@ -53,20 +55,22 @@ func (m Module) Startup(ctx context.Context, mono monolith.Monolith) error {
 		application.New(stores, products, catalog, mall),
 		mono.Logger(),
 	)
+
 	catalogHandlers := logging.LogEventHandlerAccess[ddd.AggregateEvent](
 		application.NewCatalogHandlers(catalog),
 		"Catalog",
 		mono.Logger(),
 	)
+
 	mallHandlers := logging.LogEventHandlerAccess[ddd.AggregateEvent](
 		application.NewMallHandlers(mall),
 		"Mall",
 		mono.Logger(),
 	)
 
-	integrationEventHandlers := logging.LogEventHandlerAccess[ddd.AggregateEvent](
-		application.NewIntegrationEventHandlers(eventStream),
-		"IntegrationEvents",
+	domainEventHandlers := logging.LogEventHandlerAccess[ddd.AggregateEvent](
+		handlers.NewDomainEventHandlers(eventStream),
+		"DomainEvents",
 		mono.Logger(),
 	)
 
@@ -83,7 +87,7 @@ func (m Module) Startup(ctx context.Context, mono monolith.Monolith) error {
 
 	handlers.RegisterCatalogHandlers(catalogHandlers, domainDispatcher)
 	handlers.RegisterMallHandlers(mallHandlers, domainDispatcher)
-	handlers.RegisterIntegrationEventHandlers(integrationEventHandlers, domainDispatcher)
+	handlers.RegisterDomainEventHandlers(domainDispatcher, domainEventHandlers)
 
 	return nil
 }

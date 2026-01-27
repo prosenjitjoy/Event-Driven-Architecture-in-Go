@@ -18,14 +18,18 @@ import (
 
 type Module struct{}
 
-func (m Module) Startup(ctx context.Context, mono monolith.Monolith) error {
+func (*Module) Startup(ctx context.Context, mono monolith.Monolith) error {
 	// setup driven adapters
 	reg := registry.New()
-	if err := customerspb.Registration(reg); err != nil {
+
+	if err := customerspb.Registrations(reg); err != nil {
 		return err
 	}
 
-	eventStream := am.NewEventStream(reg, jetstream.NewStream(mono.Config().Nats.Stream, mono.JS()))
+	stream := jetstream.NewStream(mono.Config().Nats.Stream, mono.JS(), mono.Logger())
+
+	eventStream := am.NewEventStream(reg, stream)
+	commandStream := am.NewCommandStream(reg, stream)
 
 	domainDispatcher := ddd.NewEventDispatcher[ddd.AggregateEvent]()
 
@@ -37,12 +41,19 @@ func (m Module) Startup(ctx context.Context, mono monolith.Monolith) error {
 		mono.Logger(),
 	)
 
-	integrationEventHandlers := logging.LogEventHandlerAccess(
-		application.NewIntegrationEventHandlers(eventStream),
-		"IntegrationEvents",
+	domainEventHandlers := logging.LogEventHandlerAccess[ddd.AggregateEvent](
+		handlers.NewDomainEventHandlers(eventStream),
+		"DomainEvents",
 		mono.Logger(),
 	)
 
+	commandHandlers := logging.LogCommandHandlerAccess[ddd.Command](
+		handlers.NewCommandHandlers(app),
+		"Commands",
+		mono.Logger(),
+	)
+
+	// setup driver adapters
 	if err := grpc.RegisterServer(app, mono.RPC()); err != nil {
 		return err
 	}
@@ -53,7 +64,11 @@ func (m Module) Startup(ctx context.Context, mono monolith.Monolith) error {
 		return err
 	}
 
-	handlers.RegisterIntegrationEventHandlers(integrationEventHandlers, domainDispatcher)
+	handlers.RegisterDomainEventHandlers(domainEventHandlers, domainDispatcher)
+
+	if err := handlers.RegisterCommandHandlers(commandStream, commandHandlers); err != nil {
+		return err
+	}
 
 	return nil
 }

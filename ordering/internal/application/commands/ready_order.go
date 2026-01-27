@@ -2,6 +2,7 @@ package commands
 
 import (
 	"context"
+	"mall/internal/ddd"
 	"mall/ordering/internal/domain"
 )
 
@@ -10,12 +11,14 @@ type ReadyOrderRequest struct {
 }
 
 type ReadyOrderHandler struct {
-	orders domain.OrderRepository
+	orders    domain.OrderRepository
+	publisher ddd.EventPublisher[ddd.Event]
 }
 
-func NewReadyOrderHandler(orders domain.OrderRepository) ReadyOrderHandler {
+func NewReadyOrderHandler(orders domain.OrderRepository, publisher ddd.EventPublisher[ddd.Event]) ReadyOrderHandler {
 	return ReadyOrderHandler{
-		orders: orders,
+		orders:    orders,
+		publisher: publisher,
 	}
 }
 
@@ -25,7 +28,8 @@ func (h ReadyOrderHandler) ReadyOrder(ctx context.Context, cmd ReadyOrderRequest
 		return err
 	}
 
-	if err = order.Ready(); err != nil {
+	event, err := order.Ready()
+	if err != nil {
 		return err
 	}
 
@@ -33,5 +37,5 @@ func (h ReadyOrderHandler) ReadyOrder(ctx context.Context, cmd ReadyOrderRequest
 		return err
 	}
 
-	return nil
+	return h.publisher.Publish(ctx, event)
 }

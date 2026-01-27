@@ -9,6 +9,7 @@ const ShoppingListAggregate = "depot.ShoppingList"
 
 var (
 	ErrShoppingCannotBeCanceled  = errors.New("the shopping list cannot be canceled")
+	ErrShoppingCannotBeInitiated = errors.New("the shopping list cannot be initiated")
 	ErrShoppingCannotBeAssigned  = errors.New("the shopping list cannot be assigned")
 	ErrShoppingCannotBeCompleted = errors.New("the shopping list cannot be completed")
 )
@@ -70,9 +71,21 @@ func (sl *ShoppingList) Cancel() error {
 
 	sl.Status = ShoppingListIsCanceled
 
-	sl.AddEvent(ShoppingListCanceledEvent, &ShoppingListCanceled{
-		ShoppingList: sl,
-	})
+	sl.AddEvent(ShoppingListCanceledEvent, &ShoppingListCanceled{ShoppingList: sl})
+
+	return nil
+}
+
+func (sl ShoppingList) isPending() bool {
+	return sl.Status == ShoppingListIsPending
+}
+
+func (sl *ShoppingList) Initiate() error {
+	if !sl.isPending() {
+		return ErrShoppingCannotBeInitiated
+	}
+
+	sl.AddEvent(ShoppingListInitiatedEvent, &ShoppingListInitiated{ShoppingList: sl})
 
 	return nil
 }

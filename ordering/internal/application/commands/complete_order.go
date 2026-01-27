@@ -2,6 +2,7 @@ package commands
 
 import (
 	"context"
+	"mall/internal/ddd"
 	"mall/ordering/internal/domain"
 )
 
@@ -11,12 +12,14 @@ type CompleteOrderRequest struct {
 }
 
 type CompleteOrderHandler struct {
-	orders domain.OrderRepository
+	orders    domain.OrderRepository
+	publisher ddd.EventPublisher[ddd.Event]
 }
 
-func NewCompleteOrderHandler(orders domain.OrderRepository) CompleteOrderHandler {
+func NewCompleteOrderHandler(orders domain.OrderRepository, publisher ddd.EventPublisher[ddd.Event]) CompleteOrderHandler {
 	return CompleteOrderHandler{
-		orders: orders,
+		orders:    orders,
+		publisher: publisher,
 	}
 }
 
@@ -26,7 +29,8 @@ func (h CompleteOrderHandler) CompleteOrder(ctx context.Context, cmd CompleteOrd
 		return err
 	}
 
-	if err = order.Complete(cmd.InvoiceID); err != nil {
+	event, err := order.Complete(cmd.InvoiceID)
+	if err != nil {
 		return err
 	}
 
@@ -34,5 +38,5 @@ func (h CompleteOrderHandler) CompleteOrder(ctx context.Context, cmd CompleteOrd
 		return err
 	}
 
-	return nil
+	return h.publisher.Publish(ctx, event)
 }

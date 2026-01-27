@@ -24,6 +24,7 @@ type AggregateStoreMiddleware func(store AggregateStore) AggregateStore
 func AggregateStoreWithMiddleware(store AggregateStore, mws ...AggregateStoreMiddleware) AggregateStore {
 	s := store
 
+	// middleware are applied in reverse
 	for i := len(mws) - 1; i >= 0; i-- {
 		s = mws[i](s)
 	}

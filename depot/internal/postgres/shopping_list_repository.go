@@ -68,7 +68,7 @@ func (r ShoppingListRepository) Update(ctx context.Context, list *domain.Shoppin
 		return fmt.Errorf("INTERNAL_SERVER_ERROR: %w", err)
 	}
 
-	_, err = r.db.ExecContext(ctx, r.table(query), list.ID, stops, list.AssignedBotID, list.Status.String())
+	_, err = r.db.ExecContext(ctx, r.table(query), list.ID(), stops, list.AssignedBotID, list.Status.String())
 	if err != nil {
 		return fmt.Errorf("INTERNAL_SERVER_ERROR: %w", err)
 	}

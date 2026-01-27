@@ -2,6 +2,7 @@ package commands
 
 import (
 	"context"
+	"mall/internal/ddd"
 	"mall/ordering/internal/domain"
 )
 
@@ -10,14 +11,16 @@ type CancelOrderRequest struct {
 }
 
 type CancelOrderHandler struct {
-	orders   domain.OrderRepository
-	shopping domain.ShoppingRepository
+	orders    domain.OrderRepository
+	shopping  domain.ShoppingRepository
+	publisher ddd.EventPublisher[ddd.Event]
 }
 
-func NewCancelOrderHandler(orders domain.OrderRepository, shopping domain.ShoppingRepository) CancelOrderHandler {
+func NewCancelOrderHandler(orders domain.OrderRepository, shopping domain.ShoppingRepository, publisher ddd.EventPublisher[ddd.Event]) CancelOrderHandler {
 	return CancelOrderHandler{
-		orders:   orders,
-		shopping: shopping,
+		orders:    orders,
+		shopping:  shopping,
+		publisher: publisher,
 	}
 }
 
@@ -27,11 +30,8 @@ func (h CancelOrderHandler) CancelOrder(ctx context.Context, cmd CancelOrderRequ
 		return err
 	}
 
-	if err = order.Cancel(); err != nil {
-		return err
-	}
-
-	if err = h.shopping.Cancel(ctx, order.ShoppingID); err != nil {
+	event, err := order.Cancel()
+	if err != nil {
 		return err
 	}
 
@@ -39,5 +39,5 @@ func (h CancelOrderHandler) CancelOrder(ctx context.Context, cmd CancelOrderRequ
 		return err
 	}
 
-	return nil
+	return h.publisher.Publish(ctx, event)
 }

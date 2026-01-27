@@ -6,6 +6,10 @@ import (
 	"github.com/google/uuid"
 )
 
+type EventOption interface {
+	configureEvent(*event)
+}
+
 type EventPayload any
 
 type Event interface {
@@ -25,7 +29,7 @@ type event struct {
 
 var _ Event = (*event)(nil)
 
-func NewEvent(name string, payload EventPayload, options ...EventOption) event {
+func NewEvent(name string, payload EventPayload, options ...EventOption) Event {
 	return newEvent(name, payload, options...)
 }
 

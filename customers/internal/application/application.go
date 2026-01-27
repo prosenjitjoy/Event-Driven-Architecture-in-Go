@@ -85,10 +85,6 @@ func (a Application) AuthorizeCustomer(ctx context.Context, authorize AuthorizeC
 	return nil
 }
 
-func (a Application) GetCustomer(ctx context.Context, get GetCustomer) (*domain.Customer, error) {
-	return a.customers.Find(ctx, get.ID)
-}
-
 func (a Application) EnableCustomer(ctx context.Context, enable EnableCustomer) error {
 	customer, err := a.customers.Find(ctx, enable.ID)
 	if err != nil {
@@ -129,4 +125,8 @@ func (a Application) DisableCustomer(ctx context.Context, disable DisableCustome
 	}
 
 	return nil
+}
+
+func (a Application) GetCustomer(ctx context.Context, get GetCustomer) (*domain.Customer, error) {
+	return a.customers.Find(ctx, get.ID)
 }

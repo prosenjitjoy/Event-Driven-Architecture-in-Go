@@ -73,7 +73,7 @@ func (a Application) AuthorizePayment(ctx context.Context, authorize AuthorizePa
 func (a Application) ConfirmPayment(ctx context.Context, confirm ConfirmPayment) error {
 	_, err := a.payments.Find(ctx, confirm.ID)
 	if err != nil {
-		return fmt.Errorf("NOT_FOUNT: %w", err)
+		return err
 	}
 
 	return nil
@@ -106,7 +106,7 @@ func (a Application) PayInvoice(ctx context.Context, pay PayInvoice) error {
 	}
 
 	if invoice.Status != domain.InvoiceIsPending {
-		return fmt.Errorf("BAD_REQUEST: %s", "invoice cannot be paid for")
+		return fmt.Errorf("invoice cannot be paid for")
 	}
 
 	invoice.Status = domain.InvoiceIsPaid
@@ -128,7 +128,7 @@ func (a Application) CancelInvoice(ctx context.Context, cancel CancelInvoice) er
 	}
 
 	if invoice.Status != domain.InvoiceIsPending {
-		return fmt.Errorf("BAD_REQUEST: %s", "invoice cannot be paid for")
+		return fmt.Errorf("invoice cannot be paid for")
 	}
 
 	invoice.Status = domain.InvoiceIsCanceled

@@ -3,6 +3,7 @@ package commands
 import (
 	"context"
 	"fmt"
+	"mall/internal/ddd"
 	"mall/ordering/internal/domain"
 )
 
@@ -15,17 +16,13 @@ type CreateOrderRequest struct {
 
 type CreateOrderHandler struct {
 	orders    domain.OrderRepository
-	customers domain.CustomerRepository
-	payments  domain.PaymentRepository
-	shopping  domain.ShoppingRepository
+	publisher ddd.EventPublisher[ddd.Event]
 }
 
-func NewCreateOrderHandler(orders domain.OrderRepository, customers domain.CustomerRepository, payments domain.PaymentRepository, shopping domain.ShoppingRepository) CreateOrderHandler {
+func NewCreateOrderHandler(orders domain.OrderRepository, publisher ddd.EventPublisher[ddd.Event]) CreateOrderHandler {
 	return CreateOrderHandler{
 		orders:    orders,
-		customers: customers,
-		payments:  payments,
-		shopping:  shopping,
+		publisher: publisher,
 	}
 }
 
@@ -35,31 +32,14 @@ func (h CreateOrderHandler) CreateOrder(ctx context.Context, cmd CreateOrderRequ
 		return err
 	}
 
-	// authorizeCustomer
-	if err = h.customers.Authorize(ctx, cmd.CustomerID); err != nil {
-		return fmt.Errorf("order customer authorization: %w", err)
-	}
-
-	// validatePayment
-	if err = h.payments.Confirm(ctx, cmd.PaymentID); err != nil {
-		return fmt.Errorf("order payment confirmation: %w", err)
-	}
-
-	// scheduleShopping
-	shoppingID, err := h.shopping.Create(ctx, cmd.ID, cmd.Items)
-	if err != nil {
-		return fmt.Errorf("order shopping scheduling: %w", err)
-	}
-
-	// order creationg
-	err = order.CreateOrder(cmd.ID, cmd.CustomerID, cmd.PaymentID, shoppingID, cmd.Items)
+	event, err := order.CreateOrder(cmd.ID, cmd.CustomerID, cmd.PaymentID, cmd.Items)
 	if err != nil {
 		return fmt.Errorf("create order command: %w", err)
 	}
 
-	if err = h.orders.Save(ctx, order); err != nil {
+	if err := h.orders.Save(ctx, order); err != nil {
 		return fmt.Errorf("order creation: %w", err)
 	}
 
-	return nil
+	return h.publisher.Publish(ctx, event)
 }

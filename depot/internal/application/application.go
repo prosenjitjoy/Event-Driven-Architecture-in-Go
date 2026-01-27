@@ -11,6 +11,7 @@ import (
 type Commands interface {
 	CreateShoppingList(ctx context.Context, cmd commands.CreateShoppingListRequest) error
 	CancelShoppingList(ctx context.Context, cmd commands.CancelShoppingListRequest) error
+	InitiateShoppingList(ctx context.Context, cmd commands.InitiateShoppingRequest) error
 	AssignShoppingList(ctx context.Context, cmd commands.AssignShoppingListRequest) error
 	CompleteShoppingList(ctx context.Context, cmd commands.CompleteShoppingListRequest) error
 }
@@ -27,6 +28,7 @@ type App interface {
 type appCommands struct {
 	commands.CreateShoppingListHandler
 	commands.CancelShoppingListHandler
+	commands.InitiateShoppingListHandler
 	commands.AssignShoppingListHandler
 	commands.CompleteShoppingListHandler
 }
@@ -47,6 +49,7 @@ func New(shoppingLists domain.ShoppingListRepository, stores domain.StoreReposit
 		appCommands: appCommands{
 			CreateShoppingListHandler:   commands.NewCreateShoppingListHandler(shoppingLists, stores, products, domainPublisher),
 			CancelShoppingListHandler:   commands.NewCancelShoppingListHandler(shoppingLists, domainPublisher),
+			InitiateShoppingListHandler: commands.NewInitiateShoppingListHandler(shoppingLists, domainPublisher),
 			AssignShoppingListHandler:   commands.NewAssignShoppingListHandler(shoppingLists, domainPublisher),
 			CompleteShoppingListHandler: commands.NewCompleteShoppingListHandler(shoppingLists, domainPublisher),
 		},

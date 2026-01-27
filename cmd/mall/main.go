@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"mall/baskets"
+	"mall/cosec"
 	"mall/customers"
 	"mall/depot"
 	"mall/internal/config"
@@ -15,6 +16,7 @@ import (
 	"mall/notifications"
 	"mall/ordering"
 	"mall/payments"
+	"mall/search"
 	"mall/stores"
 	"net/http"
 
@@ -94,6 +96,8 @@ func run() error {
 			&ordering.Module{},
 			&payments.Module{},
 			&stores.Module{},
+			&search.Module{},
+			&cosec.Module{},
 		},
 	}
 

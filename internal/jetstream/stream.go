@@ -2,7 +2,10 @@ package jetstream
 
 import (
 	"context"
+	"fmt"
+	"log/slog"
 	"mall/internal/am"
+	"sync"
 
 	"github.com/nats-io/nats.go"
 	"google.golang.org/protobuf/proto"
@@ -13,14 +16,17 @@ const maxRetries = 5
 type Stream struct {
 	streamName string
 	js         nats.JetStreamContext
+	logger     *slog.Logger
+	mu         sync.Mutex
 }
 
-var _ am.MessageStream[am.RawMessage, am.RawMessage] = (*Stream)(nil)
+var _ am.RawMessageStream = (*Stream)(nil)
 
-func NewStream(streamName string, js nats.JetStreamContext) *Stream {
+func NewStream(streamName string, js nats.JetStreamContext, logger *slog.Logger) *Stream {
 	return &Stream{
 		streamName: streamName,
 		js:         js,
+		logger:     logger,
 	}
 }
 
@@ -50,13 +56,15 @@ func (s *Stream) Publish(ctx context.Context, topicName string, rawMsg am.RawMes
 			select {
 			case <-future.Ok(): // publish acknowledged
 				return
-			case <-future.Err(): // error: try again
+			case <-future.Err(): // error ignored: try again
 				tries = tries - 1
 				if tries <= 0 {
+					s.logger.Error(fmt.Sprintf("unable to publish message after %d tries", maxRetries))
 					return
 				}
 				future, err = s.js.PublishMsgAsync(future.Msg())
 				if err != nil {
+					s.logger.Error(fmt.Sprintf("failed to publish a message: %s", err.Error()))
 					return
 				}
 			}
@@ -66,7 +74,10 @@ func (s *Stream) Publish(ctx context.Context, topicName string, rawMsg am.RawMes
 	return nil
 }
 
-func (s *Stream) Subscribe(topicName string, handler am.MessageHandler[am.RawMessage], options ...am.SubscriberOption) error {
+func (s *Stream) Subscribe(topicName string, handler am.RawMessageHandler, options ...am.SubscriberOption) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
 	subCfg := am.NewSubscriberConfig(options)
 
 	opts := []nats.SubOpt{
@@ -74,7 +85,9 @@ func (s *Stream) Subscribe(topicName string, handler am.MessageHandler[am.RawMes
 	}
 
 	cfg := &nats.ConsumerConfig{
-		MaxDeliver: subCfg.MaxRedeliver(),
+		MaxDeliver:     subCfg.MaxRedeliver(),
+		DeliverSubject: topicName,
+		FilterSubject:  topicName,
 	}
 
 	if groupName := subCfg.GroupName(); groupName != "" {
@@ -117,12 +130,12 @@ func (s *Stream) Subscribe(topicName string, handler am.MessageHandler[am.RawMes
 	return nil
 }
 
-func (s *Stream) handleMsg(cfg am.SubscriberConfig, handler am.MessageHandler[am.RawMessage]) func(*nats.Msg) {
+func (s *Stream) handleMsg(cfg am.SubscriberConfig, handler am.RawMessageHandler) func(*nats.Msg) {
 	return func(natsMsg *nats.Msg) {
 		m := &StreamMessage{}
 		err := proto.Unmarshal(natsMsg.Data, m)
 		if err != nil {
-			// NAck? ... Logging?
+			s.logger.Warn("failed to unmarshal the *nats.Msg", "error", err.Error())
 			return
 		}
 
@@ -148,7 +161,7 @@ func (s *Stream) handleMsg(cfg am.SubscriberConfig, handler am.MessageHandler[am
 		if cfg.AckType() == am.AckTypeAuto {
 			err := msg.Ack()
 			if err != nil {
-				// can be logged
+				s.logger.Warn("failed to auto-Ack a message", "error", err.Error())
 			}
 		}
 
@@ -156,13 +169,15 @@ func (s *Stream) handleMsg(cfg am.SubscriberConfig, handler am.MessageHandler[am
 		case err = <-errc:
 			if err == nil {
 				if ackErr := msg.Ack(); ackErr != nil {
-					// can be logged
+					s.logger.Warn("failed to Ack a message", "error", ackErr.Error())
 				}
 				return
 			}
 			if nakErr := msg.NAck(); nakErr != nil {
-				// can be logged
+				s.logger.Warn("failed to Nack a message", "error", nakErr.Error())
 			}
+
+			s.logger.Warn("error while handling message", "error", err.Error())
 		case <-wCtx.Done():
 			return
 		}

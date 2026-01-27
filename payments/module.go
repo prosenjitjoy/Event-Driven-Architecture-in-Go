@@ -14,6 +14,7 @@ import (
 	"mall/payments/internal/logging"
 	"mall/payments/internal/postgres"
 	"mall/payments/internal/rest"
+	"mall/payments/paymentspb"
 )
 
 type Module struct{}
@@ -26,7 +27,14 @@ func (m Module) Startup(ctx context.Context, mono monolith.Monolith) error {
 		return err
 	}
 
-	eventStream := am.NewEventStream(reg, jetstream.NewStream(mono.Config().Nats.Stream, mono.JS()))
+	if err := paymentspb.Registrations(reg); err != nil {
+		return err
+	}
+
+	stream := jetstream.NewStream(mono.Config().Nats.Stream, mono.JS(), mono.Logger())
+
+	eventStream := am.NewEventStream(reg, stream)
+	commandStream := am.NewCommandStream(reg, stream)
 
 	domainDispatcher := ddd.NewEventDispatcher[ddd.Event]()
 
@@ -39,15 +47,21 @@ func (m Module) Startup(ctx context.Context, mono monolith.Monolith) error {
 		mono.Logger(),
 	)
 
-	orderHandlers := logging.LogEventHandlerAccess[ddd.Event](
-		application.NewOrderHandlers(app),
-		"Order",
+	domainEventHandlers := logging.LogEventHandlerAccess[ddd.Event](
+		handlers.NewDomainEventHandlers(eventStream),
+		"DomainEvents",
 		mono.Logger(),
 	)
 
 	integrationEventHandlers := logging.LogEventHandlerAccess[ddd.Event](
-		application.NewIntegrationEventHandlers(eventStream),
+		handlers.NewIntegrationHandlers(app),
 		"IntegrationEvents",
+		mono.Logger(),
+	)
+
+	commandHandlers := logging.LogCommandHandlerAccess[ddd.Command](
+		handlers.NewCommandHandlers(app),
+		"Commands",
 		mono.Logger(),
 	)
 
@@ -62,11 +76,15 @@ func (m Module) Startup(ctx context.Context, mono monolith.Monolith) error {
 		return err
 	}
 
-	if err := handlers.RegisterOrderHandlers(orderHandlers, eventStream); err != nil {
+	handlers.RegisterDomainEventHandlers(domainDispatcher, domainEventHandlers)
+
+	if err := handlers.RegisterIntegrationEventHandlers(eventStream, integrationEventHandlers); err != nil {
 		return err
 	}
 
-	handlers.RegisterIntegrationEventHandlers(integrationEventHandlers, domainDispatcher)
+	if err := handlers.RegisterCommandHandlers(commandStream, commandHandlers); err != nil {
+		return err
+	}
 
 	return nil
 }

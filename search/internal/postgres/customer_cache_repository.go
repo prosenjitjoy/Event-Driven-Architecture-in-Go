@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"mall/internal/postgres"
 	"mall/search/internal/domain"
 
 	"github.com/lib/pq"
@@ -12,13 +13,13 @@ import (
 
 type CustomerCacheRepository struct {
 	tableName string
-	db        *sql.DB
+	db        postgres.DBTX
 	fallback  domain.CustomerRepository
 }
 
 var _ domain.CustomerCacheRepository = (*CustomerCacheRepository)(nil)
 
-func NewCustomerCacheRepository(tableName string, db *sql.DB, fallback domain.CustomerRepository) CustomerCacheRepository {
+func NewCustomerCacheRepository(tableName string, db postgres.DBTX, fallback domain.CustomerRepository) CustomerCacheRepository {
 	return CustomerCacheRepository{
 		tableName: tableName,
 		db:        db,

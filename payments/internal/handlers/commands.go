@@ -16,12 +16,8 @@ func NewCommandHandlers(app application.App) ddd.CommandHandler[ddd.Command] {
 	return commandHandlers{app: app}
 }
 
-func RegisterCommandHandlers(subscriber am.CommandSubscriber, handlers ddd.CommandHandler[ddd.Command]) error {
-	cmdMsgHandler := am.CommandMessageHandlerFunc(func(ctx context.Context, cmdMsg am.IncomingCommandMessage) (ddd.Reply, error) {
-		return handlers.HandleCommand(ctx, cmdMsg)
-	})
-
-	err := subscriber.Subscribe(paymentspb.CommandChannel, cmdMsgHandler, am.MessageFilters{
+func RegisterCommandHandlers(subscriber am.RawMessageSubscriber, handlers am.RawMessageHandler) error {
+	err := subscriber.Subscribe(paymentspb.CommandChannel, handlers, am.MessageFilters{
 		paymentspb.ConfirmPaymentCommand,
 	}, am.GroupName("payment-commands"))
 	if err != nil {

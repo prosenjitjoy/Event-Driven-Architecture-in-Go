@@ -35,6 +35,26 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "malldb" <<-EOSQL
 
   CREATE TRIGGER updated_at_invoices_trgr BEFORE UPDATE ON payments.invoices FOR EACH ROW EXECUTE PROCEDURE updated_at_trigger();
 
+  CREATE TABLE payments.inbox(
+    id text NOT NULL,
+    name text NOT NULL,
+    subject text NOT NULL,
+    data bytea NOT NULL,
+    received_at timestamptz NOT NULL,
+    PRIMARY KEY(id)
+  );
+
+  CREATE TABLE payments.outbox(
+    id text NOT NULL,
+    name text NOT NULL,
+    subject text NOT NULL,
+    data bytea NOT NULL,
+    published_at timestamptz,
+    PRIMARY KEY(id)
+  );
+
+  CREATE INDEX payments_unpublished_idx ON payments.outbox(published_at) WHERE published_at IS NULL;
+
   GRANT USAGE ON SCHEMA payments TO malldb_user;
 
   GRANT INSERT, UPDATE, DELETE, SELECT ON ALL TABLES IN SCHEMA payments TO malldb_user;

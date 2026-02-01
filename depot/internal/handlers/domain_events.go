@@ -2,19 +2,21 @@ package handlers
 
 import (
 	"context"
+	"mall/depot/depotpb"
 	"mall/depot/internal/domain"
+	"mall/internal/am"
 	"mall/internal/ddd"
 )
 
 type domainHandlers[T ddd.AggregateEvent] struct {
-	orders domain.OrderRepository
+	publisher am.MessagePublisher[ddd.Event]
 }
 
 var _ ddd.EventHandler[ddd.AggregateEvent] = (*domainHandlers[ddd.AggregateEvent])(nil)
 
-func NewDomainEventHandlers(orders domain.OrderRepository) ddd.EventHandler[ddd.AggregateEvent] {
+func NewDomainEventHandlers(publisher am.MessagePublisher[ddd.Event]) ddd.EventHandler[ddd.AggregateEvent] {
 	return domainHandlers[ddd.AggregateEvent]{
-		orders: orders,
+		publisher: publisher,
 	}
 }
 
@@ -34,5 +36,10 @@ func (h domainHandlers[T]) HandleEvent(ctx context.Context, event T) error {
 func (h domainHandlers[T]) onShoppingListCompleted(ctx context.Context, event ddd.AggregateEvent) error {
 	payload := event.Payload().(*domain.ShoppingListCompleted)
 
-	return h.orders.Ready(ctx, payload.ShoppingList.OrderID)
+	evt := ddd.NewEvent(depotpb.ShoppingListCompletedEvent, &depotpb.ShoppingListCompleted{
+		Id:      event.AggregateID(),
+		OrderId: payload.ShoppingList.OrderID,
+	})
+
+	return h.publisher.Publish(ctx, depotpb.ShoppingListAggregateChannel, evt)
 }

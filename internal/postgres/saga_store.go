@@ -2,7 +2,6 @@ package postgres
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"mall/internal/registry"
 	"mall/internal/sec"
@@ -10,13 +9,13 @@ import (
 
 type SagaStore struct {
 	tableName string
-	db        *sql.DB
+	db        DBTX
 	registry  registry.Registry
 }
 
 var _ sec.SagaStore = (*SagaStore)(nil)
 
-func NewSagaStore(tableName string, db *sql.DB, registry registry.Registry) SagaStore {
+func NewSagaStore(tableName string, db DBTX, registry registry.Registry) SagaStore {
 	return SagaStore{
 		tableName: tableName,
 		db:        db,

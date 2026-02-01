@@ -18,7 +18,8 @@ import (
 
 type Module struct{}
 
-func (m Module) Startup(ctx context.Context, mono monolith.Monolith) error {
+func (*Module) Startup(ctx context.Context, mono monolith.Monolith) error {
+
 	// setup driven adapters
 	reg := registry.New()
 

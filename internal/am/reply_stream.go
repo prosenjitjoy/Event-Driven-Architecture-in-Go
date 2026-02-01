@@ -53,9 +53,10 @@ func (s replyStream) Publish(ctx context.Context, topicName string, reply ddd.Re
 	}
 
 	return s.stream.Publish(ctx, topicName, rawMessage{
-		id:   reply.ID(),
-		name: reply.ReplyName(),
-		data: data,
+		id:      reply.ID(),
+		name:    reply.ReplyName(),
+		subject: topicName,
+		data:    data,
 	})
 }
 

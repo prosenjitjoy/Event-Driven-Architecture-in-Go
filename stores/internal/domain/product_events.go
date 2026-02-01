@@ -1,11 +1,11 @@
 package domain
 
 const (
-	ProductAddedEvent         = "stores.ProductAdded"
-	ProductRebrandedEvent     = "stores.ProductRebranded"
-	ProductPriceIncreaseEvent = "stores.ProductPriceIncrease"
-	ProductPriceDecreaseEvent = "stores.ProductPriceDecrease"
-	ProductRemovedEvent       = "stores.ProductRemoved"
+	ProductAddedEvent          = "stores.ProductAdded"
+	ProductRebrandedEvent      = "stores.ProductRebranded"
+	ProductPriceIncreasedEvent = "stores.ProductPriceIncreased"
+	ProductPriceDecreasedEvent = "stores.ProductPriceDecreased"
+	ProductRemovedEvent        = "stores.ProductRemoved"
 )
 
 type ProductAdded struct {

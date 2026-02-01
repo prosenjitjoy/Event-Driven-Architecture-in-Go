@@ -7,6 +7,7 @@ import (
 
 type Message interface {
 	ddd.IDer
+	Subject() string
 	MessageName() string
 }
 
@@ -21,7 +22,6 @@ type IncomingMessage interface {
 type MessageHandler[I IncomingMessage] interface {
 	HandleMessage(ctx context.Context, msg I) error
 }
-
 type MessageHandlerFunc[I IncomingMessage] func(ctx context.Context, msg I) error
 
 func (f MessageHandlerFunc[I]) HandleMessage(ctx context.Context, msg I) error {

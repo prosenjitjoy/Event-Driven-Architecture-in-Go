@@ -12,14 +12,12 @@ type CancelOrderRequest struct {
 
 type CancelOrderHandler struct {
 	orders    domain.OrderRepository
-	shopping  domain.ShoppingRepository
 	publisher ddd.EventPublisher[ddd.Event]
 }
 
-func NewCancelOrderHandler(orders domain.OrderRepository, shopping domain.ShoppingRepository, publisher ddd.EventPublisher[ddd.Event]) CancelOrderHandler {
+func NewCancelOrderHandler(orders domain.OrderRepository, publisher ddd.EventPublisher[ddd.Event]) CancelOrderHandler {
 	return CancelOrderHandler{
 		orders:    orders,
-		shopping:  shopping,
 		publisher: publisher,
 	}
 }

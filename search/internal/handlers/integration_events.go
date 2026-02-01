@@ -22,14 +22,14 @@ var _ ddd.EventHandler[ddd.Event] = (*integrationHandlers[ddd.Event])(nil)
 func NewIntegrationHandlers(
 	orders domain.OrderRepository,
 	customers domain.CustomerCacheRepository,
-	products domain.ProductCacheRepository,
 	stores domain.StoreCacheRepository,
+	products domain.ProductCacheRepository,
 ) ddd.EventHandler[ddd.Event] {
 	return integrationHandlers[ddd.Event]{
 		orders:    orders,
 		customers: customers,
-		products:  products,
 		stores:    stores,
+		products:  products,
 	}
 }
 

@@ -7,6 +7,8 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
+type ClientConn = grpc.ClientConn
+
 func Dial(ctx context.Context, endpoint string) (*grpc.ClientConn, error) {
 	conn, err := grpc.NewClient(endpoint, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {

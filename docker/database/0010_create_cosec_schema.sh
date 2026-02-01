@@ -12,10 +12,30 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "malldb" <<-EOSQL
     done bool NOT NULL,
     compensating bool NOT NULL,
     updated_at timestamptz NOT NULL DEFAULT NOW(),
-    PRIMARY KEY (id, name)
+    PRIMARY KEY(id, name)
   );
 
   CREATE TRIGGER updated_at_cosec_trgr BEFORE UPDATE ON cosec.sagas FOR EACH ROW EXECUTE PROCEDURE updated_at_trigger();
+
+  CREATE TABLE cosec.inbox(
+    id text NOT NULL,
+    name text NOT NULL,
+    subject text NOT NULL,
+    data bytea NOT NULL,
+    received_at timestamptz NOT NULL,
+    PRIMARY KEY(id)
+  );
+
+  CREATE TABLE cosec.outbox(
+    id text NOT NULL,
+    name text NOT NULL,
+    subject text NOT NULL,
+    data bytea NOT NULL,
+    published_at timestamptz,
+    PRIMARY KEY(id)
+  );
+
+  CREATE INDEX cosec_unpublished_idx ON cosec.outbox(published_at) WHERE published_at IS NULL;
 
   GRANT USAGE ON SCHEMA cosec TO malldb_user;
   

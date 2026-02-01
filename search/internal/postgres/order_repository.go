@@ -3,22 +3,22 @@ package postgres
 import (
 	"bytes"
 	"context"
-	"database/sql"
 	"database/sql/driver"
 	"encoding/json"
 	"fmt"
+	"mall/internal/postgres"
 	"mall/search/internal/domain"
 	"strings"
 )
 
 type OrderRepository struct {
 	tableName string
-	db        *sql.DB
+	db        postgres.DBTX
 }
 
 var _ domain.OrderRepository = (*OrderRepository)(nil)
 
-func NewOrderRepository(tableName string, db *sql.DB) OrderRepository {
+func NewOrderRepository(tableName string, db postgres.DBTX) OrderRepository {
 	return OrderRepository{
 		tableName: tableName,
 		db:        db,

@@ -6,6 +6,10 @@ import (
 )
 
 const (
+	ShoppingListAggregateChannel = "mall.depot.events.ShoppingList"
+
+	ShoppingListCompletedEvent = "depotapi.ShoppingListCompletedEvent"
+
 	CommandChannel = "mall.depot.commands"
 
 	CreateShoppingListCommand = "depotapi.CreateShoppingListCommand"
@@ -17,6 +21,11 @@ const (
 
 func Registrations(reg registry.Registry) error {
 	serde := serdes.NewProtoSerde(reg)
+
+	// Events
+	if err := serde.Register(&ShoppingListCompleted{}); err != nil {
+		return err
+	}
 
 	// Commands
 	if err := serde.Register(&CreateShoppingList{}); err != nil {
@@ -36,6 +45,9 @@ func Registrations(reg registry.Registry) error {
 
 	return nil
 }
+
+// Events
+func (*ShoppingListCompleted) Key() string { return ShoppingListCompletedEvent }
 
 // Commands
 func (*CreateShoppingList) Key() string { return CreateShoppingListCommand }

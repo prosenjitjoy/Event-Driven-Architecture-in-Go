@@ -4,7 +4,6 @@ import (
 	"context"
 	"mall/internal/ddd"
 	"mall/internal/registry"
-	"strings"
 
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/structpb"
@@ -12,14 +11,11 @@ import (
 )
 
 type CommandPublisher = MessagePublisher[ddd.Command]
-
-type CommandSubscriber interface {
-	Subscribe(topicName string, handler CommandMessageHandler, options ...SubscriberOption) error
-}
+type CommandSubscriber = MessageSubscriber[IncomingCommandMessage]
 
 type CommandStream interface {
 	MessagePublisher[ddd.Command]
-	CommandSubscriber
+	MessageSubscriber[IncomingCommandMessage]
 }
 
 type commandStream struct {
@@ -57,9 +53,10 @@ func (s commandStream) Publish(ctx context.Context, topicName string, command dd
 	}
 
 	return s.stream.Publish(ctx, topicName, rawMessage{
-		id:   command.ID(),
-		name: command.CommandName(),
-		data: data,
+		id:      command.ID(),
+		name:    command.CommandName(),
+		subject: topicName,
+		data:    data,
 	})
 }
 
@@ -106,82 +103,8 @@ func (s commandStream) Subscribe(topicName string, handler CommandMessageHandler
 			msg:        msg,
 		}
 
-		destination := commandMsg.Metadata().Get(CommandReplyChannelHeader).(string)
-
-		reply, err := handler.HandleMessage(ctx, commandMsg)
-		if err != nil {
-			return s.publishReply(ctx, destination, s.failure(reply, commandMsg))
-		}
-
-		return s.publishReply(ctx, destination, s.success(reply, commandMsg))
+		return handler.HandleMessage(ctx, commandMsg)
 	})
 
 	return s.stream.Subscribe(topicName, fn, options...)
-}
-
-func (s commandStream) publishReply(ctx context.Context, destination string, reply ddd.Reply) error {
-	metadata, err := structpb.NewStruct(reply.Metadata())
-	if err != nil {
-		return err
-	}
-
-	var payload []byte
-
-	if reply.ReplyName() != SuccessReply && reply.ReplyName() != FailureReply {
-		payload, err = s.reg.Serialize(reply.ReplyName(), reply.Payload())
-		if err != nil {
-			return err
-		}
-	}
-
-	data, err := proto.Marshal(&ReplyMessageData{
-		Payload:   payload,
-		OccuredAt: timestamppb.New(reply.OccurredAt()),
-		Metadata:  metadata,
-	})
-	if err != nil {
-		return err
-	}
-
-	return s.stream.Publish(ctx, destination, rawMessage{
-		id:   reply.ID(),
-		name: reply.ReplyName(),
-		data: data,
-	})
-}
-
-func (s commandStream) failure(reply ddd.Reply, cmd ddd.Command) ddd.Reply {
-	if reply == nil {
-		reply = ddd.NewReply(FailureReply, nil)
-	}
-
-	reply.Metadata().Set(ReplyOutcomeHeader, OutcomeFailure)
-
-	return s.applyCorrelationHeaders(reply, cmd)
-}
-
-func (s commandStream) success(reply ddd.Reply, cmd ddd.Command) ddd.Reply {
-	if reply == nil {
-		reply = ddd.NewReply(SuccessReply, nil)
-	}
-
-	reply.Metadata().Set(ReplyOutcomeHeader, OutcomeSuccess)
-
-	return s.applyCorrelationHeaders(reply, cmd)
-}
-
-func (s commandStream) applyCorrelationHeaders(reply ddd.Reply, cmd ddd.Command) ddd.Reply {
-	for key, value := range cmd.Metadata() {
-		if key == CommandNameHeader {
-			continue
-		}
-
-		if strings.HasPrefix(key, CommandHeaderPrefix) {
-			hdr := ReplyHeaderPrefix + key[len(CommandHeaderPrefix):]
-
-			reply.Metadata().Set(hdr, value)
-		}
-	}
-
-	return reply
 }

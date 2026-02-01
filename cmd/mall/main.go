@@ -96,8 +96,8 @@ func run() error {
 			&ordering.Module{},
 			&payments.Module{},
 			&stores.Module{},
-			&search.Module{},
 			&cosec.Module{},
+			&search.Module{},
 		},
 	}
 

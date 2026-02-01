@@ -4,17 +4,18 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"mall/internal/postgres"
 	"mall/stores/internal/domain"
 )
 
 type CatalogRepository struct {
 	tableName string
-	db        *sql.DB
+	db        postgres.DBTX
 }
 
 var _ domain.CatalogRepository = (*CatalogRepository)(nil)
 
-func NewCatalogRepository(tableName string, db *sql.DB) CatalogRepository {
+func NewCatalogRepository(tableName string, db postgres.DBTX) CatalogRepository {
 	return CatalogRepository{
 		tableName: tableName,
 		db:        db,

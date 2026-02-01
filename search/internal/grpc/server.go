@@ -13,7 +13,7 @@ type server struct {
 	searchpb.UnimplementedSearchServiceServer
 }
 
-func RegisterServer(ctx context.Context, app application.Application, registrar grpc.ServiceRegistrar) error {
+func RegisterServer(app application.Application, registrar grpc.ServiceRegistrar) error {
 	searchpb.RegisterSearchServiceServer(registrar, server{app: app})
 
 	return nil

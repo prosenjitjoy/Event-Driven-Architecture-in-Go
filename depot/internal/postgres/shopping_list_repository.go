@@ -2,20 +2,20 @@ package postgres
 
 import (
 	"context"
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"mall/depot/internal/domain"
+	"mall/internal/postgres"
 )
 
 type ShoppingListRepository struct {
 	tableName string
-	db        *sql.DB
+	db        postgres.DBTX
 }
 
 var _ domain.ShoppingListRepository = (*ShoppingListRepository)(nil)
 
-func NewShoppingListRepository(tableName string, db *sql.DB) ShoppingListRepository {
+func NewShoppingListRepository(tableName string, db postgres.DBTX) ShoppingListRepository {
 	return ShoppingListRepository{
 		tableName: tableName,
 		db:        db,

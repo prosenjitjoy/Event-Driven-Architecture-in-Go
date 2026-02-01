@@ -2,19 +2,19 @@ package postgres
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"mall/customers/internal/domain"
+	"mall/internal/postgres"
 )
 
 type CustomerRepository struct {
 	tableName string
-	db        *sql.DB
+	db        postgres.DBTX
 }
 
 var _ domain.CustomerRepository = (*CustomerRepository)(nil)
 
-func NewCustomerRepository(tableName string, db *sql.DB) CustomerRepository {
+func NewCustomerRepository(tableName string, db postgres.DBTX) CustomerRepository {
 	return CustomerRepository{
 		tableName: tableName,
 		db:        db,

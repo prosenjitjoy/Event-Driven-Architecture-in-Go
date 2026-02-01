@@ -2,19 +2,19 @@ package postgres
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
+	"mall/internal/postgres"
 	"mall/payments/internal/domain"
 )
 
 type InvoiceRepository struct {
 	tableName string
-	db        *sql.DB
+	db        postgres.DBTX
 }
 
 var _ domain.InvoiceRepository = (*InvoiceRepository)(nil)
 
-func NewInvoiceRepository(tableName string, db *sql.DB) InvoiceRepository {
+func NewInvoiceRepository(tableName string, db postgres.DBTX) InvoiceRepository {
 	return InvoiceRepository{
 		tableName: tableName,
 		db:        db,

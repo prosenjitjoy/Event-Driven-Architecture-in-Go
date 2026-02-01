@@ -21,12 +21,8 @@ func NewCommandHandlers(app application.App) ddd.CommandHandler[ddd.Command] {
 	}
 }
 
-func RegisterCommandHandlers(subscriber am.CommandSubscriber, handlers ddd.CommandHandler[ddd.Command]) error {
-	cmdMsgHandler := am.CommandMessageHandlerFunc(func(ctx context.Context, cmdMsg am.IncomingCommandMessage) (ddd.Reply, error) {
-		return handlers.HandleCommand(ctx, cmdMsg)
-	})
-
-	err := subscriber.Subscribe(depotpb.CommandChannel, cmdMsgHandler, am.MessageFilters{
+func RegisterCommandHandlers(subscriber am.RawMessageSubscriber, handlers am.RawMessageHandler) error {
+	err := subscriber.Subscribe(depotpb.CommandChannel, handlers, am.MessageFilters{
 		depotpb.CreateShoppingListCommand,
 		depotpb.CancelShoppingListCommand,
 		depotpb.InitiateShoppingCommand,

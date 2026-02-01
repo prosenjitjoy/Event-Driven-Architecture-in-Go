@@ -61,6 +61,26 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "malldb" <<-EOSQL
 
   CREATE TRIGGER updated_at_snapshots_trgr BEFORE UPDATE ON stores.snapshots FOR EACH ROW EXECUTE PROCEDURE updated_at_trigger();
 
+  CREATE TABLE stores.inbox(
+    id text NOT NULL,
+    name text NOT NULL,
+    subject text NOT NULL,
+    data bytea NOT NULL,
+    received_at timestamptz NOT NULL,
+    PRIMARY KEY(id)
+  );
+
+  CREATE TABLE stores.outbox(
+    id text NOT NULL,
+    name text NOT NULL,
+    subject text NOT NULL,
+    data bytea NOT NULL,
+    published_at timestamptz,
+    PRIMARY KEY(id)
+  );
+
+  CREATE INDEX stores_unpublished_idx ON stores.outbox(published_at) WHERE published_at IS NULL;
+
   GRANT USAGE ON SCHEMA stores TO malldb_user;
   
   GRANT INSERT, UPDATE, DELETE, SELECT ON ALL TABLES IN SCHEMA stores TO malldb_user;

@@ -2,19 +2,19 @@ package postgres
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
+	"mall/internal/postgres"
 	"mall/payments/internal/domain"
 )
 
 type PaymentRepository struct {
 	tableName string
-	db        *sql.DB
+	db        postgres.DBTX
 }
 
 var _ domain.PaymentRepository = (*PaymentRepository)(nil)
 
-func NewPaymentRepository(tableName string, db *sql.DB) PaymentRepository {
+func NewPaymentRepository(tableName string, db postgres.DBTX) PaymentRepository {
 	return PaymentRepository{
 		tableName: tableName,
 		db:        db,

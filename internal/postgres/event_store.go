@@ -4,20 +4,33 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"mall/internal/ddd"
 	"mall/internal/es"
 	"mall/internal/registry"
+	"strings"
 	"time"
 )
 
 type EventStore struct {
 	tableName string
-	db        *sql.DB
+	db        DBTX
 	registry  registry.Registry
 }
 
+type aggregateEvent struct {
+	id        string
+	name      string
+	payload   ddd.EventPayload
+	occuredAt time.Time
+	aggregate es.EventSourcedAggregate
+	version   int
+}
+
+var _ ddd.AggregateEvent = (*aggregateEvent)(nil)
+
 var _ es.AggregateStore = (*EventStore)(nil)
 
-func NewEventStore(tableName string, db *sql.DB, registry registry.Registry) EventStore {
+func NewEventStore(tableName string, db DBTX, registry registry.Registry) EventStore {
 	return EventStore{
 		tableName: tableName,
 		db:        db,
@@ -47,6 +60,7 @@ func (s EventStore) Load(ctx context.Context, aggregate es.EventSourcedAggregate
 		var payloadData []byte
 		var aggregateVersion int
 		var occuredAt time.Time
+
 		err := rows.Scan(&aggregateVersion, &eventID, &eventName, &payloadData, &occuredAt)
 		if err != nil {
 			return err
@@ -75,41 +89,34 @@ func (s EventStore) Load(ctx context.Context, aggregate es.EventSourcedAggregate
 }
 
 func (s EventStore) Save(ctx context.Context, aggregate es.EventSourcedAggregate) error {
-	const query = "INSERT INTO %s (stream_id, stream_name, stream_version, event_id, event_name, event_data, occurred_at) VALUES ($1, $2, $3, $4, $5, $6, $7)"
-
-	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{})
-	if err != nil {
-		return err
-	}
-	defer func() {
-		p := recover()
-		switch {
-		case p != nil:
-			_ = tx.Rollback()
-			panic(p)
-		case err != nil:
-			rErr := tx.Rollback()
-			if rErr != nil {
-				err = fmt.Errorf("%s: %w", rErr.Error(), err)
-			}
-		default:
-			err = tx.Commit()
-		}
-	}()
+	const query = "INSERT INTO %s (stream_id, stream_name, stream_version, event_id, event_name, event_data, occurred_at) VALUES"
 
 	aggregateID := aggregate.ID()
 	aggregateName := aggregate.AggregateName()
 
-	for _, event := range aggregate.Events() {
+	placeholders := make([]string, len(aggregate.Events()))
+	values := make([]any, len(aggregate.Events())*7)
+
+	for i, event := range aggregate.Events() {
 		payloadData, err := s.registry.Serialize(event.EventName(), event.Payload())
 		if err != nil {
 			return err
 		}
 
-		_, err = tx.ExecContext(ctx, s.table(query), aggregateID, aggregateName, event.AggregateVersion(), event.ID(), event.EventName(), payloadData, event.OccurredAt())
-		if err != nil {
-			return err
-		}
+		placeholders[i] = fmt.Sprintf("($%d, $%d, $%d, $%d, $%d, $%d, $%d)", i*7+1, i*7+2, i*7+3, i*7+4, i*7+5, i*7+6, i*7+7)
+
+		values[i*7] = aggregateID
+		values[i*7+1] = aggregateName
+		values[i*7+2] = event.AggregateVersion()
+		values[i*7+3] = event.ID()
+		values[i*7+4] = event.EventName()
+		values[i*7+5] = payloadData
+		values[i*7+6] = event.OccurredAt()
+	}
+
+	_, err := s.db.ExecContext(ctx, fmt.Sprintf("%s %s", s.table(query), strings.Join(placeholders, ",")), values...)
+	if err != nil {
+		return err
 	}
 
 	return nil
@@ -118,3 +125,12 @@ func (s EventStore) Save(ctx context.Context, aggregate es.EventSourcedAggregate
 func (s EventStore) table(query string) string {
 	return fmt.Sprintf(query, s.tableName)
 }
+
+func (e aggregateEvent) ID() string                { return e.id }
+func (e aggregateEvent) EventName() string         { return e.name }
+func (e aggregateEvent) Payload() ddd.EventPayload { return e.payload }
+func (e aggregateEvent) Metadata() ddd.Metadata    { return ddd.Metadata{} }
+func (e aggregateEvent) OccurredAt() time.Time     { return e.occuredAt }
+func (e aggregateEvent) AggregateName() string     { return e.aggregate.AggregateName() }
+func (e aggregateEvent) AggregateID() string       { return e.aggregate.ID() }
+func (e aggregateEvent) AggregateVersion() int     { return e.version }

@@ -74,7 +74,7 @@ func (p *Product) IncreasePrice(price float64) error {
 		return ErrNotAPriceIncrease
 	}
 
-	p.AddEvent(ProductPriceIncreaseEvent, &ProductPriceChanged{
+	p.AddEvent(ProductPriceIncreasedEvent, &ProductPriceChanged{
 		Delta: price - p.Price,
 	})
 
@@ -86,7 +86,7 @@ func (p *Product) DecreasePrice(price float64) error {
 		return ErrNotAPriceDecrease
 	}
 
-	p.AddEvent(ProductPriceDecreaseEvent, &ProductPriceChanged{
+	p.AddEvent(ProductPriceDecreasedEvent, &ProductPriceChanged{
 		Delta: price - p.Price,
 	})
 

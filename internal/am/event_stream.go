@@ -49,9 +49,10 @@ func (s eventStream) Publish(ctx context.Context, topicName string, event ddd.Ev
 	}
 
 	return s.stream.Publish(ctx, topicName, rawMessage{
-		id:   event.ID(),
-		name: event.EventName(),
-		data: data,
+		id:      event.ID(),
+		name:    event.EventName(),
+		subject: topicName,
+		data:    data,
 	})
 }
 

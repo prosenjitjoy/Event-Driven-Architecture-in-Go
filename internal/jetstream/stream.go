@@ -142,6 +142,7 @@ func (s *Stream) handleMsg(cfg am.SubscriberConfig, handler am.RawMessageHandler
 		msg := &rawMessage{
 			id:       m.GetId(),
 			name:     m.GetName(),
+			subject:  natsMsg.Subject,
 			data:     m.GetData(),
 			acked:    false,
 			ackFn:    func() error { return natsMsg.Ack() },

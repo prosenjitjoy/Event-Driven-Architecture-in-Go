@@ -28,8 +28,8 @@ func RegisterDomainEventHandlers(subscriber ddd.EventSubscriber[ddd.AggregateEve
 		domain.StoreRebrandedEvent,
 		domain.ProductAddedEvent,
 		domain.ProductRebrandedEvent,
-		domain.ProductPriceIncreaseEvent,
-		domain.ProductPriceDecreaseEvent,
+		domain.ProductPriceIncreasedEvent,
+		domain.ProductPriceDecreasedEvent,
 		domain.ProductRemovedEvent,
 	)
 }
@@ -49,9 +49,9 @@ func (h domainHandlers[T]) HandleEvent(ctx context.Context, event T) error {
 		return h.onProductAdded(ctx, event)
 	case domain.ProductRebrandedEvent:
 		return h.onProductRebranded(ctx, event)
-	case domain.ProductPriceIncreaseEvent:
+	case domain.ProductPriceIncreasedEvent:
 		return h.onProductPriceIncreased(ctx, event)
-	case domain.ProductPriceDecreaseEvent:
+	case domain.ProductPriceDecreasedEvent:
 		return h.onProductPriceDecreased(ctx, event)
 	case domain.ProductRemovedEvent:
 		return h.onProductRemoved(ctx, event)

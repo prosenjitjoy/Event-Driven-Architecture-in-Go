@@ -7,6 +7,7 @@ import (
 	"mall/baskets"
 	"mall/cosec"
 	"mall/customers"
+	"mall/database/migrations"
 	"mall/depot"
 	"mall/internal/config"
 	"mall/internal/logger"
@@ -23,6 +24,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	_ "github.com/lib/pq"
 	"github.com/nats-io/nats.go"
+	"github.com/pressly/goose/v3"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
@@ -46,6 +48,16 @@ func run() error {
 		return err
 	}
 	defer db.Close()
+
+	// migrate database
+	goose.SetBaseFS(migrations.FS)
+	if err := goose.SetDialect("postgres"); err != nil {
+		return err
+	}
+
+	if err := goose.Up(db, "."); err != nil {
+		return err
+	}
 
 	// connect nats jetstream
 	nc, err := nats.Connect(cfg.Nats.URL)

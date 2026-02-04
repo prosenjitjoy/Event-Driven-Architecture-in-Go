@@ -9,7 +9,7 @@ RUN go build -v -o monolith ./cmd/mall
 # Run Stage
 FROM alpine:3.22 AS runtime
 WORKDIR /app
-COPY --from=builder /mall/docker/wait-for .
-RUN chmod +x ./wait-for
+COPY --from=builder /mall/wait-for.sh .
+RUN chmod +x ./wait-for.sh
 COPY --from=builder /mall/monolith .
 CMD ["/app/monolith"]

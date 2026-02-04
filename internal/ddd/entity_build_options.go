@@ -6,13 +6,13 @@ import (
 )
 
 type IDSetter interface {
-	setID(string)
+	SetID(string)
 }
 
 func SetID(id string) registry.BuildOption {
 	return func(v any) error {
 		if e, ok := v.(IDSetter); ok {
-			e.setID(id)
+			e.SetID(id)
 			return nil
 		}
 
@@ -21,13 +21,13 @@ func SetID(id string) registry.BuildOption {
 }
 
 type NameSetter interface {
-	setName(string)
+	SetName(string)
 }
 
 func SetName(name string) registry.BuildOption {
 	return func(v any) error {
 		if e, ok := v.(NameSetter); ok {
-			e.setName(name)
+			e.SetName(name)
 			return nil
 		}
 

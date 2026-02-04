@@ -8,28 +8,30 @@ type EntityNamer interface {
 	EntityName() string
 }
 
-type Entity struct {
-	id   string
-	name string
-}
-
-var _ interface {
+type Entity interface {
 	IDer
 	EntityNamer
 	IDSetter
 	NameSetter
-} = (*Entity)(nil)
+}
 
-func NewEntity(id, name string) Entity {
-	return Entity{
+type entity struct {
+	id   string
+	name string
+}
+
+var _ Entity = (*entity)(nil)
+
+func NewEntity(id, name string) *entity {
+	return &entity{
 		id:   id,
 		name: name,
 	}
 }
 
-func (e Entity) ID() string             { return e.id }
-func (e Entity) EntityName() string     { return e.name }
-func (e Entity) Equals(other IDer) bool { return e.id == other.ID() }
+func (e entity) ID() string             { return e.id }
+func (e entity) EntityName() string     { return e.name }
+func (e entity) Equals(other IDer) bool { return e.id == other.ID() }
 
-func (e *Entity) setID(id string)     { e.id = id }
-func (e *Entity) setName(name string) { e.name = name }
+func (e *entity) SetID(id string)     { e.id = id }
+func (e *entity) SetName(name string) { e.name = name }

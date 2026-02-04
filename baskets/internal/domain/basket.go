@@ -10,13 +10,13 @@ import (
 const BasketAggregate = "baskets.Basket"
 
 var (
-	ErrBasketHasNoItems         = errors.New("the basket has no items")
-	ErrBasketCannotBeModified   = errors.New("the basket cannot be modified")
-	ErrBasketCannotBeCancelled  = errors.New("the basket cannot be cancelled")
-	ErrQuantityCannotBeNegative = errors.New("the items quantity cannot be negative")
-	ErrBasketIDCannotBeBlank    = errors.New("the basket id cannot be blank")
-	ErrPaymentIDCannotBeBlank   = errors.New("the payment id cannot be blank")
-	ErrCustomerIDCannotBeBlank  = errors.New("the customer id cannot be blank")
+	ErrBasketHasNoItems        = errors.New("the basket has no items")
+	ErrBasketCannotBeModified  = errors.New("the basket cannot be modified")
+	ErrBasketCannotBeCancelled = errors.New("the basket cannot be cancelled")
+	ErrQuantityLessThanOne     = errors.New("the items quantity cannot be zero or negative")
+	ErrBasketIDCannotBeBlank   = errors.New("the basket id cannot be blank")
+	ErrPaymentIDCannotBeBlank  = errors.New("the payment id cannot be blank")
+	ErrCustomerIDCannotBeBlank = errors.New("the customer id cannot be blank")
 )
 
 type Basket struct {
@@ -100,8 +100,8 @@ func (b *Basket) AddItem(store *Store, product *Product, quantity int) error {
 		return ErrBasketCannotBeModified
 	}
 
-	if quantity < 0 {
-		return ErrQuantityCannotBeNegative
+	if quantity <= 0 {
+		return ErrQuantityLessThanOne
 	}
 
 	b.AddEvent(BasketItemAddedEvent, &BasketItemAdded{
@@ -123,8 +123,12 @@ func (b *Basket) RemoveItem(product *Product, quantity int) error {
 		return ErrBasketCannotBeModified
 	}
 
-	if quantity < 0 {
-		return ErrQuantityCannotBeNegative
+	if len(b.Items) == 0 {
+		return ErrBasketHasNoItems
+	}
+
+	if quantity <= 0 {
+		return ErrQuantityLessThanOne
 	}
 
 	if _, exists := b.Items[product.ID]; exists {
@@ -146,7 +150,7 @@ func (b *Basket) ApplyEvent(event ddd.Event) error {
 	case *BasketItemAdded:
 		if item, exists := b.Items[payload.Item.ProductID]; exists {
 			item.Quantity += payload.Item.Quantity
-			b.Items[payload.Item.ProductID] = payload.Item
+			b.Items[payload.Item.ProductID] = item
 		} else {
 			b.Items[payload.Item.ProductID] = payload.Item
 		}

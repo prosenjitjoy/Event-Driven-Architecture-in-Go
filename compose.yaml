@@ -4,21 +4,21 @@ services:
     hostname: monolith
     build:
       context: .
-      dockerfile: docker/Dockerfile
+      dockerfile: Dockerfile
     ports:
       - '8080:8080'
       - '8085:8085'
     env_file:
-      - docker/.env
+      - .env
     depends_on:
       - nats
       - postgres
-    command: ["./wait-for", "postgres:5432", "--", "/app/monolith"]
+    command: ["./wait-for.sh", "postgres:5432", "--", "/app/monolith"]
   
   nats:
     container_name: nats
     hostname: nats
-    image: nats:alpine
+    image: nats:alpine3.22
     ports:
       - '4222:4222'
     command:
@@ -31,15 +31,17 @@ services:
   postgres:
     container_name: postgres
     hostname: postgres
-    image: postgres:alpine
+    image: postgres:16-alpine
     restart: always
     environment:
-      POSTGRES_PASSWORD: secret
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
     ports:
       - '5432:5432'
     volumes:
       - 'pgdata:/var/lib/postgresql/data'
-      - './docker/database:/docker-entrypoint-initdb.d'
+      - './database/scripts:/docker-entrypoint-initdb.d'
   
 volumes:
   jsdata:

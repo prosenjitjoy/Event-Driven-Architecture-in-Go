@@ -1,11 +1,15 @@
 tools:
 	go install tool
+	go install go.uber.org/mock/mockgen@latest
+	go install github.com/bufbuild/buf/cmd/buf@latest
+	go install github.com/pressly/goose/v3/cmd/goose@latest
 
 generate:
 	go generate ./...
 
-postgres:
-	podman run --name postgres --hostname postgres -e POSTGRES_PASSWORD=postgres -v ./docker/database:/docker-entrypoint-initdb.d -p 5432:5432 -d postgres:16-alpine
+goose:
+	# cd migrations
+	# goose create -s <migration_name> sql
 
-nats:
-	podman run -p 4222:4222 nats:alpine -js -s
+integration:
+	go test -cover ./... -tags integration

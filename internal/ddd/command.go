@@ -48,7 +48,7 @@ func newCommand(name string, payload CommandPayload, options ...CommandOption) c
 	return cmd
 }
 
-func (c command) CommandName() string     { return c.name }
+func (c command) CommandName() string     { return c.EntityName() }
 func (c command) Payload() CommandPayload { return c.payload }
 func (c command) Metadata() Metadata      { return c.metadata }
 func (c command) OccurredAt() time.Time   { return c.occurredAt }

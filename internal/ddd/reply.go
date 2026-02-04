@@ -48,7 +48,7 @@ func newReply(name string, payload ReplyPayload, options ...ReplyOption) reply {
 	return rep
 }
 
-func (r reply) ReplyName() string     { return r.name }
+func (r reply) ReplyName() string     { return r.EntityName() }
 func (r reply) Payload() ReplyPayload { return r.payload }
 func (r reply) Metadata() Metadata    { return r.metadata }
 func (r reply) OccurredAt() time.Time { return r.occurredAt }

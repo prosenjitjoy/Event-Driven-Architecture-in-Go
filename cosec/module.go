@@ -14,11 +14,11 @@ import (
 	"mall/internal/ddd"
 	"mall/internal/di"
 	"mall/internal/jetstream"
-	"mall/internal/monolith"
 	pg "mall/internal/postgres"
 	"mall/internal/registry"
 	"mall/internal/registry/serdes"
 	"mall/internal/sec"
+	"mall/internal/system"
 	"mall/internal/tm"
 	"mall/ordering/orderingpb"
 	"mall/payments/paymentspb"
@@ -26,7 +26,11 @@ import (
 
 type Module struct{}
 
-func (*Module) Startup(ctx context.Context, mono monolith.Monolith) error {
+func (*Module) Startup(ctx context.Context, mono system.Service) error {
+	return Root(ctx, mono)
+}
+
+func Root(ctx context.Context, service system.Service) error {
 	container := di.New()
 
 	// setup driven adapters
@@ -53,17 +57,17 @@ func (*Module) Startup(ctx context.Context, mono monolith.Monolith) error {
 	})
 
 	container.AddSingleton("logger", func(c di.Container) (any, error) {
-		return mono.Logger(), nil
+		return service.Logger(), nil
 	})
 
 	container.AddSingleton("stream", func(c di.Container) (any, error) {
 		logger := c.Get("logger").(*slog.Logger)
 
-		return jetstream.NewStream(mono.Config().Nats.Stream, mono.JS(), logger), nil
+		return jetstream.NewStream(service.Config().Nats.Stream, service.JS(), logger), nil
 	})
 
 	container.AddSingleton("db", func(c di.Container) (any, error) {
-		return mono.DB(), nil
+		return service.DB(), nil
 	})
 
 	container.AddSingleton("outboxProcessor", func(c di.Container) (any, error) {

@@ -1,0 +1,20 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: example-ingress
+  annotations:
+    # Optional: Add specific HAProxy annotations here for fine-tuning
+    # haproxy.org/ssl-redirect: "true"
+spec:
+  ingressClassName: haproxy # This links the Ingress resource to the HAProxy controller
+  rules:
+  - host: "hello-world.example.com"
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: hello-world-service # Name of your Kubernetes service
+            port:
+              number: 80 # Port of your Kubernetes service

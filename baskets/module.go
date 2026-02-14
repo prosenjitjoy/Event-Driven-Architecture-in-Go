@@ -17,17 +17,21 @@ import (
 	"mall/internal/di"
 	"mall/internal/es"
 	"mall/internal/jetstream"
-	"mall/internal/monolith"
 	pg "mall/internal/postgres"
 	"mall/internal/registry"
 	"mall/internal/registry/serdes"
+	"mall/internal/system"
 	"mall/internal/tm"
 	"mall/stores/storespb"
 )
 
 type Module struct{}
 
-func (*Module) Startup(ctx context.Context, mono monolith.Monolith) error {
+func (*Module) Startup(ctx context.Context, mono system.Service) error {
+	return Root(ctx, mono)
+}
+
+func Root(ctx context.Context, service system.Service) error {
 	container := di.New()
 
 	// setup driven adapters
@@ -48,13 +52,13 @@ func (*Module) Startup(ctx context.Context, mono monolith.Monolith) error {
 	})
 
 	container.AddSingleton("logger", func(c di.Container) (any, error) {
-		return mono.Logger(), nil
+		return service.Logger(), nil
 	})
 
 	container.AddSingleton("stream", func(c di.Container) (any, error) {
 		logger := c.Get("logger").(*slog.Logger)
 
-		return jetstream.NewStream(mono.Config().Nats.Stream, mono.JS(), logger), nil
+		return jetstream.NewStream(service.Config().Nats.Stream, service.JS(), logger), nil
 	})
 
 	container.AddSingleton("domainDispatcher", func(c di.Container) (any, error) {
@@ -62,11 +66,11 @@ func (*Module) Startup(ctx context.Context, mono monolith.Monolith) error {
 	})
 
 	container.AddSingleton("db", func(c di.Container) (any, error) {
-		return mono.DB(), nil
+		return service.DB(), nil
 	})
 
-	container.AddSingleton("conn", func(c di.Container) (any, error) {
-		return grpc.Dial(ctx, mono.Config().Rpc.Address())
+	container.AddSingleton("storesConn", func(c di.Container) (any, error) {
+		return grpc.Dial(ctx, service.Config().Rpc.Service("STORES"))
 	})
 
 	container.AddSingleton("outboxProcessor", func(c di.Container) (any, error) {
@@ -126,16 +130,16 @@ func (*Module) Startup(ctx context.Context, mono monolith.Monolith) error {
 
 	container.AddScoped("stores", func(c di.Container) (any, error) {
 		tx := c.Get("tx").(*sql.Tx)
-		conn := c.Get("conn").(*grpc.ClientConn)
-		fallback := grpc.NewStoreRepository(conn)
+		storesConn := c.Get("storesConn").(*grpc.ClientConn)
+		fallback := grpc.NewStoreRepository(storesConn)
 
 		return postgres.NewStoreCacheRepository("baskets.stores_cache", tx, fallback), nil
 	})
 
 	container.AddScoped("products", func(c di.Container) (any, error) {
 		tx := c.Get("tx").(*sql.Tx)
-		conn := c.Get("conn").(*grpc.ClientConn)
-		fallback := grpc.NewProductRepository(conn)
+		storesConn := c.Get("storesConn").(*grpc.ClientConn)
+		fallback := grpc.NewProductRepository(storesConn)
 
 		return postgres.NewProductCacheRepository("baskets.products_cache", tx, fallback), nil
 	})
@@ -174,13 +178,13 @@ func (*Module) Startup(ctx context.Context, mono monolith.Monolith) error {
 	})
 
 	// setup driver adapters
-	if err := grpc.RegisterServerTx(container, mono.RPC()); err != nil {
+	if err := grpc.RegisterServerTx(container, service.RPC()); err != nil {
 		return err
 	}
-	if err := rest.RegisterGateway(ctx, mono.Mux(), mono.Config().Rpc.Address()); err != nil {
+	if err := rest.RegisterGateway(ctx, service.Mux(), service.Config().Rpc.Address()); err != nil {
 		return err
 	}
-	if err := rest.RegisterSwagger(mono.Mux()); err != nil {
+	if err := rest.RegisterSwagger(service.Mux()); err != nil {
 		return err
 	}
 

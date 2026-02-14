@@ -1,4 +1,4 @@
-package monolith
+package system
 
 import (
 	"context"
@@ -12,9 +12,10 @@ import (
 	"google.golang.org/grpc"
 )
 
-type Monolith interface {
+type Service interface {
 	Config() *config.AppConfig
 	DB() *sql.DB
+	NC() *nats.Conn
 	JS() nats.JetStreamContext
 	Logger() *slog.Logger
 	Mux() *chi.Mux
@@ -23,5 +24,5 @@ type Monolith interface {
 }
 
 type Module interface {
-	Startup(context.Context, Monolith) error
+	Startup(context.Context, Service) error
 }

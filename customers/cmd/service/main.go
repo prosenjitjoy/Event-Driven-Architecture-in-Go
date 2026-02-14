@@ -1,0 +1,70 @@
+package main
+
+import (
+	"database/sql"
+	"log"
+
+	"mall/customers"
+	"mall/customers/migrations"
+	"mall/internal/config"
+	"mall/internal/system"
+	"mall/internal/web"
+	"net/http"
+
+	_ "github.com/lib/pq"
+	"github.com/nats-io/nats.go"
+)
+
+func main() {
+	if err := run(); err != nil {
+		log.Fatalf("customers service: %s", err)
+	}
+}
+
+func run() error {
+	// parse configuration
+	cfg, err := config.InitConfig()
+	if err != nil {
+		return err
+	}
+
+	// add infrastructure
+	s, err := system.NewSystem(cfg)
+	if err != nil {
+		return err
+	}
+
+	defer func(db *sql.DB) {
+		err := db.Close()
+		if err != nil {
+			return
+		}
+	}(s.DB())
+
+	if err := s.MigrateDB(migrations.FS); err != nil {
+		return err
+	}
+
+	defer func(nc *nats.Conn) {
+		nc.Close()
+	}(s.NC())
+
+	// mount web resources
+	s.Mux().Mount("/", http.FileServer(http.FS(web.WebUI)))
+
+	// call the module composition root
+	if err := customers.Root(s.Waiter().Context(), s); err != nil {
+		return err
+	}
+
+	s.Logger().Info("started customers service")
+	defer s.Logger().Info("stopped customers service")
+
+	s.Waiter().Add(
+		s.WaitForWeb,
+		s.WaitForRPC,
+		s.WaitForStream,
+	)
+
+	return s.Waiter().Wait()
+}

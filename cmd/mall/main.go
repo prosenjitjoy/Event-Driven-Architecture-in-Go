@@ -2,7 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 	"mall/baskets"
 	"mall/cosec"
@@ -10,9 +9,7 @@ import (
 	"mall/database/migrations"
 	"mall/depot"
 	"mall/internal/config"
-	"mall/internal/logger"
-	"mall/internal/monolith"
-	"mall/internal/waiter"
+	"mall/internal/system"
 	"mall/internal/web"
 	"mall/notifications"
 	"mall/ordering"
@@ -21,17 +18,18 @@ import (
 	"mall/stores"
 	"net/http"
 
-	"github.com/go-chi/chi/v5"
 	_ "github.com/lib/pq"
 	"github.com/nats-io/nats.go"
-	"github.com/pressly/goose/v3"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/reflection"
 )
+
+type monolith struct {
+	*system.System
+	modules []system.Module
+}
 
 func main() {
 	if err := run(); err != nil {
-		log.Fatal(err)
+		log.Fatalf("monolith service: %s", err)
 	}
 }
 
@@ -42,65 +40,15 @@ func run() error {
 		return err
 	}
 
-	// connect database
-	db, err := sql.Open("postgres", cfg.PG.Conn)
-	if err != nil {
-		return err
-	}
-	defer db.Close()
-
-	// migrate database
-	goose.SetBaseFS(migrations.FS)
-	if err := goose.SetDialect("postgres"); err != nil {
-		return err
-	}
-
-	if err := goose.Up(db, "."); err != nil {
-		return err
-	}
-
-	// connect nats jetstream
-	nc, err := nats.Connect(cfg.Nats.URL)
-	if err != nil {
-		return err
-	}
-	defer nc.Close()
-
-	js, err := nc.JetStream()
+	// add infrastructure
+	s, err := system.NewSystem(cfg)
 	if err != nil {
 		return err
 	}
 
-	// init jetstream
-	_, err = js.AddStream(&nats.StreamConfig{
-		Name:     cfg.Nats.Stream,
-		Subjects: []string{fmt.Sprintf("%s.>", cfg.Nats.Stream)},
-	})
-	if err != nil {
-		return err
-	}
-
-	// init logger
-	logger := logger.New(logger.LogConfig{
-		Environment: cfg.Environment,
-		LogLevel:    cfg.LogLevel,
-	})
-
-	// init grpc
-	grpcServer := grpc.NewServer()
-	reflection.Register(grpcServer)
-
-	// init infrastructure
-	m := app{
-		cfg:    cfg,
-		db:     db,
-		nc:     nc,
-		js:     js,
-		logger: logger,
-		mux:    chi.NewMux(),
-		rpc:    grpcServer,
-		waiter: waiter.New(waiter.CatchSignals()),
-		modules: []monolith.Module{
+	m := monolith{
+		System: s,
+		modules: []system.Module{
 			&baskets.Module{},
 			&customers.Module{},
 			&depot.Module{},
@@ -113,22 +61,48 @@ func run() error {
 		},
 	}
 
+	defer func(db *sql.DB) {
+		err := db.Close()
+		if err != nil {
+			return
+		}
+	}(m.DB())
+
+	if err := m.MigrateDB(migrations.FS); err != nil {
+		return err
+	}
+
+	defer func(nc *nats.Conn) {
+		nc.Close()
+	}(m.NC())
+
 	// init modules
 	if err = m.startupModules(); err != nil {
 		return err
 	}
 
 	// mount web resources
-	m.mux.Mount("/", http.FileServer(http.FS(web.WebUI)))
+	m.Mux().Mount("/", http.FileServer(http.FS(web.WebUI)))
 
-	log.Println("started mall application")
-	defer log.Println("stopped mall application")
+	m.Logger().Info("started mall application")
+	defer m.Logger().Info("stopped mall application")
 
-	m.waiter.Add(
-		m.waitForWeb,
-		m.waitForRPC,
-		m.waitForStream,
+	m.Waiter().Add(
+		m.WaitForWeb,
+		m.WaitForRPC,
+		m.WaitForStream,
 	)
 
-	return m.waiter.Wait()
+	return m.Waiter().Wait()
+}
+
+func (m *monolith) startupModules() error {
+	for _, module := range m.modules {
+		ctx := m.Waiter().Context()
+		if err := module.Startup(ctx, m); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

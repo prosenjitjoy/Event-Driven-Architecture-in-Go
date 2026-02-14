@@ -18,13 +18,14 @@ type NatsConfig struct {
 }
 
 type AppConfig struct {
-	Environment     string `env:"ENVIRONMENT" env-required:"true"`
-	LogLevel        string `env:"LOG_LEVEL" env-default:"DEBUG"`
+	Environment     string        `env:"ENVIRONMENT" env-required:"true"`
+	LogLevel        string        `env:"LOG_LEVEL" env-default:"DEBUG"`
+	ShutdownTimeout time.Duration `env:"SHUTDOWN_TIMEOUT" env-default:"30s"`
 	PG              PGConfig
 	Nats            NatsConfig
 	Web             web.WebConfig
 	Rpc             rpc.RpcConfig
-	ShutdownTimeout time.Duration `env:"SHUTDOWN_TIMEOUT" env-default:"30s"`
+	rpcServices     string `env:"RPC_SERVICES" env-required:"true"`
 }
 
 func InitConfig() (*AppConfig, error) {
@@ -34,6 +35,8 @@ func InitConfig() (*AppConfig, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	cfg.Rpc.Services.Decode(cfg.rpcServices)
 
 	return &cfg, nil
 }

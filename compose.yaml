@@ -1,37 +1,204 @@
 services:
-  monolith:
-    container_name: monolith
-    hostname: monolith
+  # monolith:
+  #   container_name: monolith
+  #   hostname: monolith
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - '8080:8080'
+  #     - '9000:9000'
+  #   env_file:
+  #     - .env
+  #   depends_on:
+  #     - nats
+  #     - postgres
+  #   command: ["./wait-for.sh", "postgres:5432", "--", "/app/monolith"]
+  
+  baskets:
+    container_name: baskets
+    hostname: baskets
+    image: mall-baskets
     build:
       context: .
-      dockerfile: Dockerfile
-    ports:
-      - '8080:8080'
-      - '8085:8085'
-    env_file:
-      - .env
+      dockerfile: baskets/Dockerfile
+    expose:
+      - '8080'
+      - '9000'
+    environment:
+      ENVIRONMENT: development
+      RPC_SERVICE: STORES=stores:9000,CUSTOMERS=customers:9000
+      PG_CONN: postgres://basketsdb_user:basketsdb_pass@postgres:5432/basketsdb?sslmode=disable
+      NATS_URL: nats:4222
     depends_on:
       - nats
       - postgres
-    command: ["./wait-for.sh", "postgres:5432", "--", "/app/monolith"]
+    command: ["./wait-for.sh", "postgres:5432", "--", "/app/baskets-service"]
   
-  nats:
-    container_name: nats
-    hostname: nats
-    image: nats:alpine3.22
-    ports:
-      - '4222:4222'
-    command:
-      - -js
-      - -sd
-      - /var/lib/nats/data
-    volumes:
-      - 'jsdata:/var/lib/nats/data'
+  cosec:
+    container_name: cosec
+    hostname: cosec
+    image: mall-cosec
+    build:
+      context: .
+      dockerfile: cosec/Dockerfile
+    expose:
+      - '8080'
+      - '9000'
+    environment:
+      ENVIRONMENT: development
+      RPC_SERVICE: STORES=stores:9000,CUSTOMERS=customers:9000
+      PG_CONN: postgres://cosecdb_user:cosecdb_pass@postgres:5432/cosecdb?sslmode=disable
+      NATS_URL: nats:4222
+    depends_on:
+      - nats
+      - postgres
+    command: ["./wait-for.sh", "postgres:5432", "--", "/app/cosec-service"]
+  
+  customers:
+    container_name: customers
+    hostname: customers
+    image: mall-customers
+    build:
+      context: .
+      dockerfile: customers/Dockerfile
+    expose:
+      - '8080'
+      - '9000'
+    environment:
+      ENVIRONMENT: development
+      RPC_SERVICE: STORES=stores:9000,CUSTOMERS=customers:9000
+      PG_CONN: postgres://customersdb_user:customersdb_pass@postgres:5432/customersdb?sslmode=disable
+      NATS_URL: nats:4222
+    depends_on:
+      - nats
+      - postgres
+    command: ["./wait-for.sh", "postgres:5432", "--", "/app/customers-service"]
+
+  depot:
+    container_name: depot
+    hostname: depot
+    image: mall-depot
+    build:
+      context: .
+      dockerfile: depot/Dockerfile
+    expose:
+      - '8080'
+      - '9000'
+    environment:
+      ENVIRONMENT: development
+      RPC_SERVICE: STORES=stores:9000,depot=depot:9000
+      PG_CONN: postgres://depotdb_user:depotdb_pass@postgres:5432/depotdb?sslmode=disable
+      NATS_URL: nats:4222
+    depends_on:
+      - nats
+      - postgres
+    command: ["./wait-for.sh", "postgres:5432", "--", "/app/depot-service"]
+
+  notifications:
+    container_name: notifications
+    hostname: notifications
+    image: mall-notifications
+    build:
+      context: .
+      dockerfile: notifications/Dockerfile
+    expose:
+      - '8080'
+      - '9000'
+    environment:
+      ENVIRONMENT: development
+      RPC_SERVICE: STORES=stores:9000,notifications=notifications:9000
+      PG_CONN: postgres://notificationsdb_user:notificationsdb_pass@postgres:5432/notificationsdb?sslmode=disable
+      NATS_URL: nats:4222
+    depends_on:
+      - nats
+      - postgres
+    command: ["./wait-for.sh", "postgres:5432", "--", "/app/notifications-service"]
+
+  ordering:
+    container_name: ordering
+    hostname: ordering
+    image: mall-ordering
+    build:
+      context: .
+      dockerfile: ordering/Dockerfile
+    expose:
+      - '8080'
+      - '9000'
+    environment:
+      ENVIRONMENT: development
+      RPC_SERVICE: STORES=stores:9000,ordering=ordering:9000
+      PG_CONN: postgres://orderingdb_user:orderingdb_pass@postgres:5432/orderingdb?sslmode=disable
+      NATS_URL: nats:4222
+    depends_on:
+      - nats
+      - postgres
+    command: ["./wait-for.sh", "postgres:5432", "--", "/app/ordering-service"]
+
+  payments:
+    container_name: payments
+    hostname: payments
+    image: mall-payments
+    build:
+      context: .
+      dockerfile: payments/Dockerfile
+    expose:
+      - '8080'
+      - '9000'
+    environment:
+      ENVIRONMENT: development
+      RPC_SERVICE: STORES=stores:9000,payments=payments:9000
+      PG_CONN: postgres://paymentsdb_user:paymentsdb_pass@postgres:5432/paymentsdb?sslmode=disable
+      NATS_URL: nats:4222
+    depends_on:
+      - nats
+      - postgres
+    command: ["./wait-for.sh", "postgres:5432", "--", "/app/payments-service"]
+
+  stores:
+    container_name: stores
+    hostname: stores
+    image: mall-stores
+    build:
+      context: .
+      dockerfile: stores/Dockerfile
+    expose:
+      - '8080'
+      - '9000'
+    environment:
+      ENVIRONMENT: development
+      RPC_SERVICE: STORES=stores:9000,stores=stores:9000
+      PG_CONN: postgres://storesdb_user:storesdb_pass@postgres:5432/storesdb?sslmode=disable
+      NATS_URL: nats:4222
+    depends_on:
+      - nats
+      - postgres
+    command: ["./wait-for.sh", "postgres:5432", "--", "/app/stores-service"]
+
+  search:
+    container_name: search
+    hostname: search
+    image: mall-search
+    build:
+      context: .
+      dockerfile: search/Dockerfile
+    expose:
+      - '8080'
+      - '9000'
+    environment:
+      ENVIRONMENT: development
+      RPC_SERVICE: STORES=stores:9000,search=search:9000
+      PG_CONN: postgres://searchdb_user:searchdb_pass@postgres:5432/searchdb?sslmode=disable
+      NATS_URL: nats:4222
+    depends_on:
+      - nats
+      - postgres
+    command: ["./wait-for.sh", "postgres:5432", "--", "/app/search-service"]
 
   postgres:
     container_name: postgres
     hostname: postgres
-    image: postgres:16-alpine
+    image: postgres:alpine
     restart: always
     environment:
       POSTGRES_USER: postgres
@@ -42,6 +209,28 @@ services:
     volumes:
       - 'pgdata:/var/lib/postgresql/data'
       - './database/scripts:/docker-entrypoint-initdb.d'
+
+  nats:
+    container_name: nats
+    hostname: nats
+    image: nats:alpine
+    ports:
+      - '4222:4222'
+    command:
+      - -js
+      - -sd
+      - /var/lib/nats/data
+    volumes:
+      - 'jsdata:/var/lib/nats/data'
+
+  haproxy:
+    container_name: haproxy
+    hostname: haproxy
+    image: haproxy:3.2-alpine
+    ports:
+      - '8080:8080'
+    volumes:
+     - './haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg'
   
 volumes:
   jsdata:

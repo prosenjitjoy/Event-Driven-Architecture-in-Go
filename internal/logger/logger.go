@@ -3,6 +3,9 @@ package logger
 import (
 	"log/slog"
 	"os"
+
+	"go.opentelemetry.io/contrib/bridges/otelslog"
+	"go.opentelemetry.io/otel/log/noop"
 )
 
 type LogConfig struct {
@@ -35,5 +38,7 @@ func New(cfg LogConfig) *slog.Logger {
 		return slog.New(slog.NewTextHandler(os.Stdout, option))
 	}
 
-	return slog.New(slog.NewJSONHandler(os.Stdout, option))
+	provider := noop.NewLoggerProvider() // setup
+
+	return slog.New(otelslog.NewHandler("mall", otelslog.WithLoggerProvider(provider)))
 }

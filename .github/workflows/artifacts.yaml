@@ -10,8 +10,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - run: podman login -u=${{secrets.PODMAN_USERNAME}}  -p=${{secrets.PODMAN_TOKEN}} quay.io
       - run: make build_images
+      - run: podman login -u=${{secrets.PODMAN_USERNAME}}  -p=${{secrets.PODMAN_TOKEN}} quay.io
       - run: podman push quay.io/prosenjitjoy/mall-baskets
       - run: podman push quay.io/prosenjitjoy/mall-cosec
       - run: podman push quay.io/prosenjitjoy/mall-customers

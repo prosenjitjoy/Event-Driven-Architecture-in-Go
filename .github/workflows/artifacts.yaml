@@ -12,12 +12,12 @@ jobs:
       - uses: actions/checkout@v4
       - run: podman login -u=${{secrets.PODMAN_USERNAME}}  -p=${{secrets.PODMAN_TOKEN}} quay.io
       - run: make build_images
-      - run: podman push prosenjitjoy/mall-baskets
-      - run: podman push prosenjitjoy/mall-cosec
-      - run: podman push prosenjitjoy/mall-customers
-      - run: podman push prosenjitjoy/mall-depot
-      - run: podman push prosenjitjoy/mall-notifications
-      - run: podman push prosenjitjoy/mall-ordering
-      - run: podman push prosenjitjoy/mall-payments
-      - run: podman push prosenjitjoy/mall-stores
-      - run: podman push prosenjitjoy/mall-search
+      - run: podman push quay.io/prosenjitjoy/mall-baskets
+      - run: podman push quay.io/prosenjitjoy/mall-cosec
+      - run: podman push quay.io/prosenjitjoy/mall-customers
+      - run: podman push quay.io/prosenjitjoy/mall-depot
+      - run: podman push quay.io/prosenjitjoy/mall-notifications
+      - run: podman push quay.io/prosenjitjoy/mall-ordering
+      - run: podman push quay.io/prosenjitjoy/mall-payments
+      - run: podman push quay.io/prosenjitjoy/mall-stores
+      - run: podman push quay.io/prosenjitjoy/mall-search

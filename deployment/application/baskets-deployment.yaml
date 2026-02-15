@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: baskets-deployment
+  labels:
+    app: baskets
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: baskets
+  template:
+    metadata:
+      labels:
+        app: baskets
+    spec:
+      containers:
+      - name: baskets
+        image: quay.io/prosenjitjoy/mall-baskets
+        ports:
+        - name: rest
+          containerPort: 8080
+        - name: grpc
+          containerPort: 9000
+        envFrom:
+          - configMapRef:
+              name: baskets-secret

@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: search-deployment
+  labels:
+    app: search
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: search
+  template:
+    metadata:
+      labels:
+        app: search
+    spec:
+      containers:
+      - name: search
+        image: quay.io/prosenjitjoy/mall-search
+        ports:
+        - name: rest
+          containerPort: 8080
+        - name: grpc
+          containerPort: 9000
+        envFrom:
+          - configMapRef:
+              name: search-secret

@@ -36,13 +36,13 @@ func NewSystem(cfg *config.AppConfig) (*System, error) {
 	// connect database
 	db, err := sql.Open("postgres", cfg.PG.Conn)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("db connection: %w", err)
 	}
 
 	// connect nats jetstream
 	nc, err := nats.Connect(cfg.Nats.URL)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("nats connection: %w", err)
 	}
 
 	js, err := nc.JetStream()

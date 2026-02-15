@@ -1,0 +1,114 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: mall-ingress
+spec:
+  ingressClassName: prod
+  rules:
+  - http:
+      paths:
+      - path: /api/baskets
+        pathType: Prefix
+        backend:
+          service:
+            name: baskets-service
+            port:
+              number: 8080
+      - path: /baskets-spec/
+        pathType: Prefix
+        backend:
+          service:
+            name: baskets-service
+            port:
+              number: 8080
+      - path: /api/customers
+        pathType: Prefix
+        backend:
+          service:
+            name: customers-service
+            port:
+              number: 8080
+      - path: /customers-spec/
+        pathType: Prefix
+        backend:
+          service:
+            name: customers-service
+            port:
+              number: 8080
+      - path: /api/depot
+        pathType: Prefix
+        backend:
+          service:
+            name: depot-service
+            port:
+              number: 8080
+      - path: /depot-spec/
+        pathType: Prefix
+        backend:
+          service:
+            name: depot-service
+            port:
+              number: 8080
+      - path: /api/ordering
+        pathType: Prefix
+        backend:
+          service:
+            name: ordering-service
+            port:
+              number: 8080
+      - path: /ordering-spec/
+        pathType: Prefix
+        backend:
+          service:
+            name: ordering-service
+            port:
+              number: 8080
+      - path: /api/payments
+        pathType: Prefix
+        backend:
+          service:
+            name: payments-service
+            port:
+              number: 8080
+      - path: /payments-spec/
+        pathType: Prefix
+        backend:
+          service:
+            name: payments-service
+            port:
+              number: 8080
+      - path: /api/stores
+        pathType: Prefix
+        backend:
+          service:
+            name: stores-service
+            port:
+              number: 8080
+      - path: /stores-spec/
+        pathType: Prefix
+        backend:
+          service:
+            name: stores-service
+            port:
+              number: 8080
+      - path: /api/search
+        pathType: Prefix
+        backend:
+          service:
+            name: search-service
+            port:
+              number: 8080
+      - path: /search-spec/
+        pathType: Prefix
+        backend:
+          service:
+            name: search-service
+            port:
+              number: 8080
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: baskets-service
+            port:
+              number: 8080

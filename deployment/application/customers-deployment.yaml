@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: customers-deployment
+  labels:
+    app: customers
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: customers
+  template:
+    metadata:
+      labels:
+        app: customers
+    spec:
+      containers:
+      - name: customers
+        image: quay.io/prosenjitjoy/mall-customers
+        ports:
+        - name: rest
+          containerPort: 8080
+        - name: grpc
+          containerPort: 9000
+        envFrom:
+          - configMapRef:
+              name: customers-secret

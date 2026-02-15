@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: search-secret
+  labels:
+    app: search
+data:
+  ENVIRONMENT: "development"
+  WEB_PORT: "8080"
+  RPC_PORT: "9000"
+  RPC_SERVICES: "STORES=stores-service:9000,CUSTOMERS=customers-service:9000"
+  PG_CONN: "postgres://searchdb_user:searchdb_pass@postgres-service:5432/searchdb?sslmode=disable"
+  NATS_URL: "nats://nats-service:4222"
+

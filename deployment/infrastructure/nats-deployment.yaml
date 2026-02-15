@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nats-deployment
+  labels:
+    app: nats
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nats
+  template:
+    metadata:
+      labels:
+        app: nats
+    spec:
+      containers:
+        - name: nats
+          image: nats:alpine
+          imagePullPolicy: IfNotPresent
+          args:
+            - '-js'
+            - '-sd'
+            - /var/lib/nats/data
+          ports:
+            - containerPort: 4222
+          volumeMounts:
+            - name: nats-storage
+              mountPath: /var/lib/nats/data
+      volumes:
+        - name: nats-storage
+          persistentVolumeClaim:
+            claimName: nats-pvc

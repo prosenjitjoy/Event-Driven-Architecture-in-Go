@@ -5,7 +5,7 @@ on:
     branches: ['main']
 
 jobs:
-  deploy:
+  build_images:
     runs-on: ubuntu-latest
 
     steps:

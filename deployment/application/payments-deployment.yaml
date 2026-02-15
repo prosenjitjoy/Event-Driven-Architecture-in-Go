@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payments-deployment
+  labels:
+    app: payments
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: payments
+  template:
+    metadata:
+      labels:
+        app: payments
+    spec:
+      containers:
+      - name: payments
+        image: quay.io/prosenjitjoy/mall-payments
+        ports:
+        - name: rest
+          containerPort: 8080
+        - name: grpc
+          containerPort: 9000
+        envFrom:
+          - configMapRef:
+              name: payments-secret

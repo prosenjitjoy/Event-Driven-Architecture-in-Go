@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cosec-deployment
+  labels:
+    app: cosec
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cosec
+  template:
+    metadata:
+      labels:
+        app: cosec
+    spec:
+      containers:
+      - name: cosec
+        image: quay.io/prosenjitjoy/mall-cosec
+        ports:
+        - name: rest
+          containerPort: 8080
+        - name: grpc
+          containerPort: 9000
+        envFrom:
+          - configMapRef:
+              name: cosec-secret

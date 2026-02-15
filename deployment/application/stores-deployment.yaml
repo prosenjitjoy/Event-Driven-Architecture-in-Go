@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stores-deployment
+  labels:
+    app: stores
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: stores
+  template:
+    metadata:
+      labels:
+        app: stores
+    spec:
+      containers:
+      - name: stores
+        image: quay.io/prosenjitjoy/mall-stores
+        ports:
+        - name: rest
+          containerPort: 8080
+        - name: grpc
+          containerPort: 9000
+        envFrom:
+          - configMapRef:
+              name: stores-secret

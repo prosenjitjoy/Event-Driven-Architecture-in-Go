@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cosec-secret
+  labels:
+    app: cosec
+data:
+  ENVIRONMENT: "development"
+  WEB_PORT: "8080"
+  RPC_PORT: "9000"
+  RPC_SERVICES: "STORES=stores-service:9000,CUSTOMERS=customers-service:9000"
+  PG_CONN: "postgres://cosecdb_user:cosecdb_pass@postgres-service:5432/cosecdb?sslmode=disable"
+  NATS_URL: "nats://nats-service:4222"
+

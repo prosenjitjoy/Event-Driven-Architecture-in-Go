@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+    name: payments-service
+spec:
+    selector:
+      app: payments
+    ports:
+    - name: rest
+      protocol: TCP
+      port: 8080 # cluster assigned ip port
+      targetPort: 8080 # pod container ip port
+    - name: grpc
+      protocol: TCP
+      port: 9000 # cluster assigned ip port
+      targetPort: 9000 # pod container ip port

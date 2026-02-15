@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: notifications-secret
+  labels:
+    app: notifications
+data:
+  ENVIRONMENT: "development"
+  WEB_PORT: "8080"
+  RPC_PORT: "9000"
+  RPC_SERVICES: "STORES=stores-service:9000,CUSTOMERS=customers-service:9000"
+  PG_CONN: "postgres://notificationsdb_user:notificationsdb_pass@postgres-service:5432/notificationsdb?sslmode=disable"
+  NATS_URL: "nats://nats-service:4222"
+

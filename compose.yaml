@@ -226,11 +226,13 @@ services:
   haproxy:
     container_name: haproxy
     hostname: haproxy
-    image: haproxy:3.2-alpine
+    image: haproxy:alpine
     ports:
       - '8080:8080'
     volumes:
      - './haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg'
+     - './wait-for.sh:/wait-for.sh'
+    command: ["/wait-for.sh", "postgres:5432", "--", "haproxy", "-f", "/usr/local/etc/haproxy/haproxy.cfg"]
   
 volumes:
   jsdata:

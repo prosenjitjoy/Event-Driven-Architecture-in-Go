@@ -27,3 +27,12 @@ build_images:
 	podman build -t quay.io/prosenjitjoy/mall-payments -f ./payments/Dockerfile .
 	podman build -t quay.io/prosenjitjoy/mall-search -f ./search/Dockerfile .
 	podman build -t quay.io/prosenjitjoy/mall-stores -f ./stores/Dockerfile .
+
+gen_configmap:
+	kubectl create configmap postgres-initdb --from-file=./database/scripts
+
+kubectl_psql:
+	# kubectl exec -it <pod-name> -- psql -h localhost -U <db-user> -d <db-name>
+
+kubectl_host:
+	# kubectl port-forward service/<service-name> <local-port>:<service-port>

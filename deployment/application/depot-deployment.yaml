@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: depot-deployment
+  labels:
+    app: depot
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: depot
+  template:
+    metadata:
+      labels:
+        app: depot
+    spec:
+      containers:
+      - name: depot
+        image: quay.io/prosenjitjoy/mall-depot
+        ports:
+        - name: rest
+          containerPort: 8080
+        - name: grpc
+          containerPort: 9000
+        envFrom:
+          - configMapRef:
+              name: depot-secret

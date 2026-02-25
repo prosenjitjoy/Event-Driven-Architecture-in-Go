@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"mall/internal/am"
 	"mall/internal/tm"
@@ -23,10 +24,15 @@ func NewInboxStore(tableName string, db DBTX) InboxStore {
 	}
 }
 
-func (s InboxStore) Save(ctx context.Context, msg am.RawMessage) error {
-	const query = "INSERT INTO %s (id, name, subject, data, received_at) VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP)"
+func (s InboxStore) Save(ctx context.Context, msg am.IncomingMessage) error {
+	const query = "INSERT INTO %s (id, name, subject, data, metadata, sent_at, received_at) VALUES ($1, $2, $3, $4, $5, $6, $7)"
 
-	_, err := s.db.ExecContext(ctx, s.table(query), msg.ID(), msg.MessageName(), msg.Subject(), msg.Data())
+	metadata, err := json.Marshal(msg.Metadata())
+	if err != nil {
+		return err
+	}
+
+	_, err = s.db.ExecContext(ctx, s.table(query), msg.ID(), msg.MessageName(), msg.Subject(), msg.Data(), metadata, msg.SentAt(), msg.ReceivedAt())
 	if err != nil {
 		if pgErr, ok := err.(*pq.Error); ok {
 			// unique_violation error

@@ -34,8 +34,6 @@ func NewStore(id string) *Store {
 	}
 }
 
-func (Store) Key() string { return StoreAggregate }
-
 func CreateStore(id, name, location string) (*Store, error) {
 	if name == "" {
 		return nil, ErrStoreNameIsBlank

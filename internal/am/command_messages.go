@@ -1,8 +1,14 @@
 package am
 
 import (
+	"context"
 	"mall/internal/ddd"
+	"mall/internal/registry"
+	"strings"
 	"time"
+
+	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 const (
@@ -12,12 +18,12 @@ const (
 )
 
 type CommandMessage interface {
-	Message
+	MessageBase
 	ddd.Command
 }
 
 type IncomingCommandMessage interface {
-	IncomingMessage
+	IncomingMessageBase
 	ddd.Command
 }
 
@@ -25,9 +31,8 @@ type commandMessage struct {
 	id         string
 	name       string
 	payload    ddd.CommandPayload
-	metadata   ddd.Metadata
 	occurredAt time.Time
-	msg        IncomingMessage
+	msg        IncomingMessageBase
 }
 
 var _ CommandMessage = (*commandMessage)(nil)
@@ -35,11 +40,142 @@ var _ CommandMessage = (*commandMessage)(nil)
 func (c commandMessage) ID() string                  { return c.id }
 func (c commandMessage) CommandName() string         { return c.name }
 func (c commandMessage) Payload() ddd.CommandPayload { return c.payload }
-func (c commandMessage) Metadata() ddd.Metadata      { return c.metadata }
+func (c commandMessage) Metadata() ddd.Metadata      { return c.msg.Metadata() }
 func (c commandMessage) OccurredAt() time.Time       { return c.occurredAt }
 func (c commandMessage) Subject() string             { return c.msg.Subject() }
 func (c commandMessage) MessageName() string         { return c.MessageName() }
+func (c commandMessage) SentAt() time.Time           { return c.msg.SentAt() }
 func (c commandMessage) Ack() error                  { return c.msg.Ack() }
 func (c commandMessage) NAck() error                 { return c.msg.NAck() }
 func (c commandMessage) Extend() error               { return c.msg.Extend() }
 func (c commandMessage) Kill() error                 { return c.msg.Kill() }
+
+type CommandPublisher interface {
+	Publish(ctx context.Context, topicName string, cmd ddd.Command) error
+}
+
+type commandPublisher struct {
+	reg       registry.Registry
+	publisher MessagePublisher
+}
+
+var _ CommandPublisher = (*commandPublisher)(nil)
+
+func NewCommandPublisher(reg registry.Registry, msgPublisher MessagePublisher, mws ...MessagePublisherMiddleware) CommandPublisher {
+	return commandPublisher{
+		reg:       reg,
+		publisher: MessagePublisherWithMiddleware(msgPublisher, mws...),
+	}
+}
+
+func (s commandPublisher) Publish(ctx context.Context, topicName string, command ddd.Command) error {
+	payload, err := s.reg.Serialize(command.CommandName(), command.Payload())
+	if err != nil {
+		return err
+	}
+
+	data, err := proto.Marshal(&CommandMessageData{
+		Payload:    payload,
+		OccurredAt: timestamppb.New(command.OccurredAt()),
+	})
+	if err != nil {
+		return err
+	}
+
+	return s.publisher.Publish(ctx, topicName, message{
+		id:       command.ID(),
+		name:     command.CommandName(),
+		subject:  topicName,
+		data:     data,
+		metadata: command.Metadata(),
+		sentAt:   time.Now(),
+	})
+}
+
+type commandMsgHandler struct {
+	reg       registry.Registry
+	publisher ReplyPublisher
+	handler   ddd.CommandHandler[ddd.Command]
+}
+
+var _ MessageHandler = (*commandMsgHandler)(nil)
+
+func NewCommandHandler(reg registry.Registry, publisher ReplyPublisher, handler ddd.CommandHandler[ddd.Command], mws ...MessageHandlerMiddleware) MessageHandler {
+	return MessageHandlerWithMiddleware(commandMsgHandler{
+		reg:       reg,
+		publisher: publisher,
+		handler:   handler,
+	}, mws...)
+}
+
+func (h commandMsgHandler) HandleMessage(ctx context.Context, msg IncomingMessage) error {
+	var commandData CommandMessageData
+
+	err := proto.Unmarshal(msg.Data(), &commandData)
+	if err != nil {
+		return err
+	}
+
+	commandName := msg.MessageName()
+
+	payload, err := h.reg.Deserialize(commandName, commandData.GetPayload())
+	if err != nil {
+		return err
+	}
+
+	commandMsg := commandMessage{
+		id:         msg.ID(),
+		name:       commandName,
+		payload:    payload,
+		occurredAt: commandData.GetOccurredAt().AsTime(),
+		msg:        msg,
+	}
+
+	destination := commandMsg.Metadata().Get(CommandReplyChannelHeader).(string)
+
+	reply, err := h.handler.HandleCommand(ctx, commandMsg)
+	if err != nil {
+		failedReply := h.failure(reply, commandMsg)
+
+		return h.publisher.Publish(ctx, destination, failedReply)
+	}
+
+	successReply := h.success(reply, commandMsg)
+
+	return h.publisher.Publish(ctx, destination, successReply)
+}
+
+func (h commandMsgHandler) failure(reply ddd.Reply, cmd ddd.Command) ddd.Reply {
+	if reply == nil {
+		reply = ddd.NewReply(FailureReply, nil)
+	}
+
+	reply.Metadata().Set(ReplyOutcomeHeader, OutcomeFailure)
+
+	return h.applyCorrelationHeaders(reply, cmd)
+}
+
+func (h commandMsgHandler) success(reply ddd.Reply, cmd ddd.Command) ddd.Reply {
+	if reply == nil {
+		reply = ddd.NewReply(SuccessReply, nil)
+	}
+
+	reply.Metadata().Set(ReplyOutcomeHeader, OutcomeSuccess)
+
+	return h.applyCorrelationHeaders(reply, cmd)
+}
+
+func (h commandMsgHandler) applyCorrelationHeaders(reply ddd.Reply, cmd ddd.Command) ddd.Reply {
+	for key, value := range cmd.Metadata() {
+		if key == CommandNameHeader {
+			continue
+		}
+
+		if strings.HasPrefix(key, CommandHeaderPrefix) {
+			header := ReplyHeaderPrefix + key[len(CommandHeaderPrefix):]
+			reply.Metadata().Set(header, value)
+		}
+	}
+
+	return reply
+}

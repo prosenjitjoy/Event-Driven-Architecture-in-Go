@@ -215,18 +215,18 @@ func (mr *MockEventSourcedAggregateMockRecorder) CommitEvents() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CommitEvents", reflect.TypeOf((*MockEventSourcedAggregate)(nil).CommitEvents))
 }
 
-// Events mocks base method.
-func (m *MockEventSourcedAggregate) Events() []ddd.AggregateEvent {
+// GetEvents mocks base method.
+func (m *MockEventSourcedAggregate) GetEvents() []ddd.AggregateEvent {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Events")
+	ret := m.ctrl.Call(m, "GetEvents")
 	ret0, _ := ret[0].([]ddd.AggregateEvent)
 	return ret0
 }
 
-// Events indicates an expected call of Events.
-func (mr *MockEventSourcedAggregateMockRecorder) Events() *gomock.Call {
+// GetEvents indicates an expected call of GetEvents.
+func (mr *MockEventSourcedAggregateMockRecorder) GetEvents() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Events", reflect.TypeOf((*MockEventSourcedAggregate)(nil).Events))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEvents", reflect.TypeOf((*MockEventSourcedAggregate)(nil).GetEvents))
 }
 
 // ID mocks base method.
@@ -350,18 +350,18 @@ func (mr *MockAggregateMockRecorder) CommitEvents() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CommitEvents", reflect.TypeOf((*MockAggregate)(nil).CommitEvents))
 }
 
-// Events mocks base method.
-func (m *MockAggregate) Events() []ddd.AggregateEvent {
+// GetEvents mocks base method.
+func (m *MockAggregate) GetEvents() []ddd.AggregateEvent {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Events")
+	ret := m.ctrl.Call(m, "GetEvents")
 	ret0, _ := ret[0].([]ddd.AggregateEvent)
 	return ret0
 }
 
-// Events indicates an expected call of Events.
-func (mr *MockAggregateMockRecorder) Events() *gomock.Call {
+// GetEvents indicates an expected call of GetEvents.
+func (mr *MockAggregateMockRecorder) GetEvents() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Events", reflect.TypeOf((*MockAggregate)(nil).Events))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEvents", reflect.TypeOf((*MockAggregate)(nil).GetEvents))
 }
 
 // ID mocks base method.
@@ -416,6 +416,18 @@ func (mr *MockAggregateMockRecorder) SetName(arg0 any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetName", reflect.TypeOf((*MockAggregate)(nil).SetName), arg0)
 }
 
+// SetVersion mocks base method.
+func (m *MockAggregate) SetVersion(arg0 int) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "SetVersion", arg0)
+}
+
+// SetVersion indicates an expected call of SetVersion.
+func (mr *MockAggregateMockRecorder) SetVersion(arg0 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetVersion", reflect.TypeOf((*MockAggregate)(nil).SetVersion), arg0)
+}
+
 // Version mocks base method.
 func (m *MockAggregate) Version() int {
 	m.ctrl.T.Helper()
@@ -428,16 +440,4 @@ func (m *MockAggregate) Version() int {
 func (mr *MockAggregateMockRecorder) Version() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Version", reflect.TypeOf((*MockAggregate)(nil).Version))
-}
-
-// setVersion mocks base method.
-func (m *MockAggregate) setVersion(arg0 int) {
-	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "setVersion", arg0)
-}
-
-// setVersion indicates an expected call of setVersion.
-func (mr *MockAggregateMockRecorder) setVersion(arg0 any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "setVersion", reflect.TypeOf((*MockAggregate)(nil).setVersion), arg0)
 }

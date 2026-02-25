@@ -6,13 +6,13 @@ import (
 )
 
 type VersionSetter interface {
-	setVersion(int)
+	SetVersion(int)
 }
 
 func SetVersion(version int) registry.BuildOption {
 	return func(v any) error {
 		if agg, ok := v.(VersionSetter); ok {
-			agg.setVersion(version)
+			agg.SetVersion(version)
 			return nil
 		}
 

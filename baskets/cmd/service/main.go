@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"log"
 	"mall/baskets"
@@ -15,12 +16,14 @@ import (
 )
 
 func main() {
-	if err := run(); err != nil {
+	ctx := context.Background()
+
+	if err := run(ctx); err != nil {
 		log.Fatalf("basket service: %s", err)
 	}
 }
 
-func run() error {
+func run(ctx context.Context) error {
 	// parse configuration
 	cfg, err := config.InitConfig()
 	if err != nil {
@@ -28,7 +31,7 @@ func run() error {
 	}
 
 	// add infrastructure
-	s, err := system.NewSystem(cfg)
+	s, err := system.NewSystem(ctx, cfg)
 	if err != nil {
 		return err
 	}
@@ -56,10 +59,10 @@ func run() error {
 		return err
 	}
 
-	s.Logger().Info("started baskets service")
-	defer s.Logger().Info("stopped baskets service")
+	s.Logger().InfoContext(ctx, "started baskets service")
+	defer s.Logger().InfoContext(ctx, "stopped baskets service")
 
-	s.Waiter().Add(
+	s.Waiter().AddWaitFunc(
 		s.WaitForWeb,
 		s.WaitForRPC,
 		s.WaitForStream,

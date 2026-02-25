@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"log"
 	"mall/depot"
@@ -28,7 +29,7 @@ func run() error {
 	}
 
 	// add infrastructure
-	s, err := system.NewSystem(cfg)
+	s, err := system.NewSystem(context.Background(), cfg)
 	if err != nil {
 		return err
 	}
@@ -59,7 +60,7 @@ func run() error {
 	s.Logger().Info("started depot service")
 	defer s.Logger().Info("stopped depot service")
 
-	s.Waiter().Add(
+	s.Waiter().AddWaitFunc(
 		s.WaitForWeb,
 		s.WaitForRPC,
 		s.WaitForStream,

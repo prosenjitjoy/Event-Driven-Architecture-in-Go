@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"log/slog"
 	"mall/cosec/internal/application"
+	"mall/cosec/internal/constants"
 	"mall/cosec/internal/domain"
 	"mall/cosec/internal/handlers"
 	"mall/cosec/internal/logging"
@@ -16,7 +17,6 @@ import (
 	"mall/internal/jetstream"
 	pg "mall/internal/postgres"
 	"mall/internal/registry"
-	"mall/internal/registry/serdes"
 	"mall/internal/sec"
 	"mall/internal/system"
 	"mall/internal/tm"
@@ -34,10 +34,10 @@ func Root(ctx context.Context, service system.Service) error {
 	container := di.New()
 
 	// setup driven adapters
-	container.AddSingleton("registry", func(c di.Container) (any, error) {
+	container.AddSingleton(constants.RegistryKey, func(c di.Container) (any, error) {
 		reg := registry.New()
 
-		if err := registrations(reg); err != nil {
+		if err := domain.Registrations(reg); err != nil {
 			return nil, err
 		}
 		if err := orderingpb.Registrations(reg); err != nil {
@@ -56,105 +56,101 @@ func Root(ctx context.Context, service system.Service) error {
 		return reg, nil
 	})
 
-	container.AddSingleton("logger", func(c di.Container) (any, error) {
-		return service.Logger(), nil
+	stream := jetstream.NewStream(service.Config().Nats.Stream, service.JS(), service.Logger())
+
+	container.AddScoped(constants.DatabaseTransactionKey, func(c di.Container) (any, error) {
+		return service.DB().Begin()
 	})
 
-	container.AddSingleton("stream", func(c di.Container) (any, error) {
-		logger := c.Get("logger").(*slog.Logger)
+	container.AddScoped(constants.MessagePublisherKey, func(c di.Container) (any, error) {
+		tx := c.Get(constants.DatabaseTransactionKey).(*sql.Tx)
 
-		return jetstream.NewStream(service.Config().Nats.Stream, service.JS(), logger), nil
+		outboxStore := pg.NewOutboxStore(constants.OutboxTableName, tx)
+		outboxPublisher := tm.OutboxPublisher(outboxStore)
+
+		return am.NewMessagePublisher(
+			stream,
+			outboxPublisher,
+		), nil
 	})
 
-	container.AddSingleton("db", func(c di.Container) (any, error) {
-		return service.DB(), nil
+	container.AddSingleton(constants.MessageSubscriberKey, func(c di.Container) (any, error) {
+		return am.NewMessageSubscriber(
+			stream,
+		), nil
 	})
 
-	container.AddSingleton("outboxProcessor", func(c di.Container) (any, error) {
-		db := c.Get("db").(*sql.DB)
-		stream := c.Get("stream").(am.RawMessageStream)
-		outboxStore := pg.NewOutboxStore("cosec.outbox", db)
+	container.AddScoped(constants.CommandPublisherKey, func(c di.Container) (any, error) {
+		reg := c.Get(constants.RegistryKey).(registry.Registry)
+		msgPublisher := c.Get(constants.MessagePublisherKey).(am.MessagePublisher)
 
-		return tm.NewOutboxProcessor(stream, outboxStore), nil
+		return am.NewCommandPublisher(reg, msgPublisher), nil
 	})
 
-	container.AddScoped("tx", func(c di.Container) (any, error) {
-		db := c.Get("db").(*sql.DB)
+	container.AddScoped(constants.InboxStoreKey, func(c di.Container) (any, error) {
+		tx := c.Get(constants.DatabaseTransactionKey).(*sql.Tx)
 
-		return db.Begin()
+		return pg.NewInboxStore(constants.InboxTableName, tx), nil
 	})
 
-	container.AddScoped("txStream", func(c di.Container) (any, error) {
-		tx := c.Get("tx").(*sql.Tx)
-		outboxStore := pg.NewOutboxStore("cosec.outbox", tx)
-
-		stream := c.Get("stream").(am.RawMessageStream)
-		outboxStream := tm.NewOutboxStreamMiddleware(outboxStore)
-
-		return am.RawMessageStreamWithMiddleware(stream, outboxStream), nil
-	})
-
-	container.AddScoped("eventStream", func(c di.Container) (any, error) {
-		reg := c.Get("registry").(registry.Registry)
-		stream := c.Get("txStream").(am.RawMessageStream)
-
-		return am.NewEventStream(reg, stream), nil
-	})
-
-	container.AddScoped("commandStream", func(c di.Container) (any, error) {
-		reg := c.Get("registry").(registry.Registry)
-		stream := c.Get("txStream").(am.RawMessageStream)
-
-		return am.NewCommandStream(reg, stream), nil
-	})
-
-	container.AddScoped("replyStream", func(c di.Container) (any, error) {
-		reg := c.Get("registry").(registry.Registry)
-		stream := c.Get("txStream").(am.RawMessageStream)
-
-		return am.NewReplyStream(reg, stream), nil
-	})
-
-	container.AddScoped("inboxMiddleware", func(c di.Container) (any, error) {
-		tx := c.Get("tx").(*sql.Tx)
-		inboxStore := pg.NewInboxStore("cosec.inbox", tx)
-
-		return tm.NewInboxHandlerMiddleware(inboxStore), nil
-	})
-
-	container.AddScoped("sagaRepo", func(c di.Container) (any, error) {
-		tx := c.Get("tx").(*sql.Tx)
+	container.AddScoped(constants.SagaStoreKey, func(c di.Container) (any, error) {
+		tx := c.Get(constants.DatabaseTransactionKey).(*sql.Tx)
 		reg := c.Get("registry").(registry.Registry)
 
-		sagaStore := pg.NewSagaStore("cosec.sagas", tx, reg)
+		sagaStore := pg.NewSagaStore(constants.SagasTableName, tx, reg)
 
 		return sec.NewSagaRepository[*domain.CreateOrderData](reg, sagaStore), nil
 	})
 
-	container.AddSingleton("saga", func(c di.Container) (any, error) {
+	container.AddSingleton(constants.SagaKey, func(c di.Container) (any, error) {
 		return application.NewCreateOrderSaga(), nil
 	})
 
 	// setup application
-	container.AddScoped("orchestrator", func(c di.Container) (any, error) {
-		logger := c.Get("logger").(*slog.Logger)
-		saga := c.Get("saga").(sec.Saga[*domain.CreateOrderData])
-		sagaRepo := c.Get("sagaRepo").(sec.SagaRepository[*domain.CreateOrderData])
-		commandStream := c.Get("commandStream").(am.CommandStream)
+	container.AddScoped(constants.OrchestratorKey, func(c di.Container) (any, error) {
+		saga := c.Get(constants.SagaKey).(sec.Saga[*domain.CreateOrderData])
+		sagaRepo := c.Get(constants.SagaStoreKey).(sec.SagaRepository[*domain.CreateOrderData])
+		commandPublisher := c.Get(constants.CommandPublisherKey).(am.CommandPublisher)
 
-		orchestrator := sec.NewOrchestrator[*domain.CreateOrderData](saga, sagaRepo, commandStream)
+		orchestrator := sec.NewOrchestrator[*domain.CreateOrderData](saga, sagaRepo, commandPublisher)
+		orchestrator = logging.LogReplyHandlerAccess[*domain.CreateOrderData](
+			orchestrator,
+			"CreateOrderSaga",
+			service.Logger(),
+		) // logging wrapper
 
-		return logging.LogReplyHandlerAccess[*domain.CreateOrderData](orchestrator, "CreateOrderSaga", logger), nil
+		return orchestrator, nil
 	})
 
-	container.AddScoped("integrationEventHandlers", func(c di.Container) (any, error) {
-		logger := c.Get("logger").(*slog.Logger)
-		orchestrator := c.Get("orchestrator").(sec.Orchestrator[*domain.CreateOrderData])
+	container.AddScoped(constants.IntegrationEventHandlersKey, func(c di.Container) (any, error) {
+		reg := c.Get(constants.RegistryKey).(registry.Registry)
+		orchestrator := c.Get(constants.OrchestratorKey).(sec.Orchestrator[*domain.CreateOrderData])
 
 		integrationEventHandlers := handlers.NewIntegrationEventHandlers(orchestrator)
+		integrationEventHandlers = logging.LogEventHandlerAccess[ddd.Event](
+			integrationEventHandlers,
+			"IntegrationEvents",
+			service.Logger(),
+		) // logging wrapper
 
-		return logging.LogEventHandlerAccess[ddd.Event](integrationEventHandlers, "IntegrationEvents", logger), nil
+		inboxStore := c.Get(constants.InboxStoreKey).(tm.InboxStore)
+		inboxHandler := tm.InboxHandler(inboxStore)
+
+		return am.NewEventHandler(reg, integrationEventHandlers, inboxHandler), nil
 	})
+
+	container.AddScoped(constants.ReplyHandlersKey, func(c di.Container) (any, error) {
+		reg := c.Get(constants.RegistryKey).(registry.Registry)
+		orchestrator := c.Get(constants.OrchestratorKey).(sec.Orchestrator[*domain.CreateOrderData])
+
+		inboxStore := c.Get(constants.InboxStoreKey).(tm.InboxStore)
+		inboxHandler := tm.InboxHandler(inboxStore)
+
+		return handlers.NewReplyHandlers(reg, orchestrator, inboxHandler), nil
+	})
+
+	outboxStore := pg.NewOutboxStore(constants.OutboxTableName, service.DB())
+	outboxProcessor := tm.NewOutboxProcessor(stream, outboxStore)
 
 	// setup driver adapters
 	if err := handlers.RegisterIntegrationEventHandlersTx(container); err != nil {
@@ -164,26 +160,12 @@ func Root(ctx context.Context, service system.Service) error {
 		return err
 	}
 
-	startOutboxProcessor(ctx, container)
+	startOutboxProcessor(ctx, outboxProcessor, service.Logger())
 
 	return nil
 }
 
-func registrations(reg registry.Registry) error {
-	serde := serdes.NewJsonSerde(reg)
-
-	// Saga data
-	if err := serde.RegisterKey(application.CreateOrderSagaName, domain.CreateOrderData{}); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func startOutboxProcessor(ctx context.Context, container di.Container) {
-	logger := container.Get("logger").(*slog.Logger)
-	outboxProcessor := container.Get("outboxProcessor").(tm.OutboxProcessor)
-
+func startOutboxProcessor(ctx context.Context, outboxProcessor tm.OutboxProcessor, logger *slog.Logger) {
 	go func() {
 		err := outboxProcessor.Start(ctx)
 		if err != nil {

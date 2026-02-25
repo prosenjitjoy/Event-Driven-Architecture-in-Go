@@ -83,18 +83,18 @@ func (mr *MockAggregateMockRecorder) ClearEvents() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ClearEvents", reflect.TypeOf((*MockAggregate)(nil).ClearEvents))
 }
 
-// Events mocks base method.
-func (m *MockAggregate) Events() []AggregateEvent {
+// GetEvents mocks base method.
+func (m *MockAggregate) GetEvents() []AggregateEvent {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Events")
+	ret := m.ctrl.Call(m, "GetEvents")
 	ret0, _ := ret[0].([]AggregateEvent)
 	return ret0
 }
 
-// Events indicates an expected call of Events.
-func (mr *MockAggregateMockRecorder) Events() *gomock.Call {
+// GetEvents indicates an expected call of GetEvents.
+func (mr *MockAggregateMockRecorder) GetEvents() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Events", reflect.TypeOf((*MockAggregate)(nil).Events))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEvents", reflect.TypeOf((*MockAggregate)(nil).GetEvents))
 }
 
 // ID mocks base method.

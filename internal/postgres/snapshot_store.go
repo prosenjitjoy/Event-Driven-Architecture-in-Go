@@ -93,7 +93,7 @@ func (s SnapshotStore) Save(ctx context.Context, aggregate es.EventSourcedAggreg
 func (SnapshotStore) shouldSnapshot(aggregate es.EventSourcedAggregate) bool {
 	var maxChanges = 3
 	var pendingVersion = aggregate.PendingVersion()
-	var pendingChanges = len(aggregate.Events())
+	var pendingChanges = len(aggregate.GetEvents())
 
 	return pendingVersion >= maxChanges && ((pendingChanges >= maxChanges) || (pendingVersion%maxChanges < pendingChanges) || (pendingVersion%maxChanges == 0))
 }

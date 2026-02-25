@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"mall/internal/di"
 	"mall/search/internal/application"
+	"mall/search/internal/constants"
 	"mall/search/searchpb"
 
 	"google.golang.org/grpc"
@@ -30,7 +31,7 @@ func (s serverTx) SearchOrders(ctx context.Context, request *searchpb.SearchOrde
 		err = s.closeTx(tx, err)
 	}(di.Get(ctx, "tx").(*sql.Tx))
 
-	next := server{app: di.Get(ctx, "app").(application.Application)}
+	next := server{app: di.Get(ctx, constants.DatabaseTransactionKey).(application.Application)}
 
 	return next.SearchOrders(ctx, request)
 }
@@ -42,7 +43,7 @@ func (s serverTx) GetOrder(ctx context.Context, request *searchpb.GetOrderReques
 		err = s.closeTx(tx, err)
 	}(di.Get(ctx, "tx").(*sql.Tx))
 
-	next := server{app: di.Get(ctx, "app").(application.Application)}
+	next := server{app: di.Get(ctx, constants.DatabaseTransactionKey).(application.Application)}
 
 	return next.GetOrder(ctx, request)
 }

@@ -30,7 +30,7 @@ func LoadSnapshot(v any, snapshot Snapshot, version int) error {
 		return err
 	}
 
-	agg.setVersion(version)
+	agg.SetVersion(version)
 
 	return nil
 }

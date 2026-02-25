@@ -20,7 +20,9 @@ type server struct {
 var _ orderingpb.OrderingServiceServer = (*server)(nil)
 
 func RegisterServer(app application.App, registrar grpc.ServiceRegistrar) error {
-	orderingpb.RegisterOrderingServiceServer(registrar, server{app: app})
+	orderingpb.RegisterOrderingServiceServer(registrar, server{
+		app: app,
+	})
 
 	return nil
 }

@@ -1,19 +1,25 @@
 services:
-  # monolith:
-  #   container_name: monolith
-  #   hostname: monolith
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - '8080:8080'
-  #     - '9000:9000'
-  #   env_file:
-  #     - .env
-  #   depends_on:
-  #     - nats
-  #     - postgres
-  #   command: ["./wait-for.sh", "postgres:5432", "--", "/app/monolith"]
+  mall:
+    container_name: mall
+    hostname: mall
+    image: mall-monolith
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        tag: debug
+    ports:
+      - '8080:8080'
+      - '9090:9090'
+    env_file:
+      - .env
+    depends_on:
+      - nats
+      - postgres
+      - clickhouse
+    command: ["./wait-for.sh", "postgres:5432", "--", "/app/mall-monolith"]
+    profiles:
+      - monolith
   
   baskets:
     container_name: baskets
@@ -22,18 +28,29 @@ services:
     build:
       context: .
       dockerfile: baskets/Dockerfile
+      args:
+        tag: debug
     expose:
       - '8080'
-      - '9000'
+      - '9090'
     environment:
       ENVIRONMENT: development
-      RPC_SERVICE: STORES=stores:9000,CUSTOMERS=customers:9000
+      RPC_SERVICE: STORES=stores:9090,CUSTOMERS=customers:9090
       PG_CONN: postgres://basketsdb_user:basketsdb_pass@postgres:5432/basketsdb?sslmode=disable
-      NATS_URL: nats:4222
+      NATS_URL: nats://nats_user:nats_pass@nats:4222
+      OTEL_SERVICE_NAME: baskets
+      CH_HOST: clickhouse
+      CH_PORT: "9000"
+      CH_DB: oteldb
+      CH_USER: oteldb_user
+      CH_PASS: oteldb_pass
     depends_on:
       - nats
       - postgres
+      - clickhouse
     command: ["./wait-for.sh", "postgres:5432", "--", "/app/baskets-service"]
+    profiles:
+      - microservices
   
   cosec:
     container_name: cosec
@@ -42,18 +59,29 @@ services:
     build:
       context: .
       dockerfile: cosec/Dockerfile
+      args:
+        tag: debug
     expose:
       - '8080'
-      - '9000'
+      - '9090'
     environment:
       ENVIRONMENT: development
-      RPC_SERVICE: STORES=stores:9000,CUSTOMERS=customers:9000
+      RPC_SERVICE: STORES=stores:9090,CUSTOMERS=customers:9090
       PG_CONN: postgres://cosecdb_user:cosecdb_pass@postgres:5432/cosecdb?sslmode=disable
-      NATS_URL: nats:4222
+      NATS_URL: nats://nats_user:nats_pass@nats:4222
+      OTEL_SERVICE_NAME: cosec
+      CH_HOST: clickhouse
+      CH_PORT: "9000"
+      CH_DB: oteldb
+      CH_USER: oteldb_user
+      CH_PASS: oteldb_pass
     depends_on:
       - nats
       - postgres
+      - clickhouse
     command: ["./wait-for.sh", "postgres:5432", "--", "/app/cosec-service"]
+    profiles:
+      - microservices
   
   customers:
     container_name: customers
@@ -62,18 +90,29 @@ services:
     build:
       context: .
       dockerfile: customers/Dockerfile
+      args:
+        tag: debug
     expose:
       - '8080'
-      - '9000'
+      - '9090'
     environment:
       ENVIRONMENT: development
-      RPC_SERVICE: STORES=stores:9000,CUSTOMERS=customers:9000
+      RPC_SERVICE: STORES=stores:9090,CUSTOMERS=customers:9090 
       PG_CONN: postgres://customersdb_user:customersdb_pass@postgres:5432/customersdb?sslmode=disable
-      NATS_URL: nats:4222
+      NATS_URL: nats://nats_user:nats_pass@nats:4222
+      OTEL_SERVICE_NAME: customers
+      CH_HOST: clickhouse
+      CH_PORT: "9000"
+      CH_DB: oteldb
+      CH_USER: oteldb_user
+      CH_PASS: oteldb_pass
     depends_on:
       - nats
       - postgres
+      - clickhouse
     command: ["./wait-for.sh", "postgres:5432", "--", "/app/customers-service"]
+    profiles:
+      - microservices
 
   depot:
     container_name: depot
@@ -82,18 +121,29 @@ services:
     build:
       context: .
       dockerfile: depot/Dockerfile
+      args:
+        tag: debug
     expose:
       - '8080'
-      - '9000'
+      - '9090'
     environment:
       ENVIRONMENT: development
-      RPC_SERVICE: STORES=stores:9000,depot=depot:9000
+      RPC_SERVICE: STORES=stores:9090,CUSTOMERS=customers:9090
       PG_CONN: postgres://depotdb_user:depotdb_pass@postgres:5432/depotdb?sslmode=disable
-      NATS_URL: nats:4222
+      NATS_URL: nats://nats_user:nats_pass@nats:4222
+      OTEL_SERVICE_NAME: depot
+      CH_HOST: clickhouse
+      CH_PORT: "9000"
+      CH_DB: oteldb
+      CH_USER: oteldb_user
+      CH_PASS: oteldb_pass
     depends_on:
       - nats
       - postgres
+      - clickhouse
     command: ["./wait-for.sh", "postgres:5432", "--", "/app/depot-service"]
+    profiles:
+      - microservices
 
   notifications:
     container_name: notifications
@@ -102,18 +152,29 @@ services:
     build:
       context: .
       dockerfile: notifications/Dockerfile
+      args:
+        tag: debug
     expose:
       - '8080'
-      - '9000'
+      - '9090'
     environment:
       ENVIRONMENT: development
-      RPC_SERVICE: STORES=stores:9000,notifications=notifications:9000
+      RPC_SERVICE: STORES=stores:9090,CUSTOMERS=customers:9090
       PG_CONN: postgres://notificationsdb_user:notificationsdb_pass@postgres:5432/notificationsdb?sslmode=disable
-      NATS_URL: nats:4222
+      NATS_URL: nats://nats_user:nats_pass@nats:4222
+      OTEL_SERVICE_NAME: notifications
+      CH_HOST: clickhouse
+      CH_PORT: "9000"
+      CH_DB: oteldb
+      CH_USER: oteldb_user
+      CH_PASS: oteldb_pass
     depends_on:
       - nats
       - postgres
+      - clickhouse
     command: ["./wait-for.sh", "postgres:5432", "--", "/app/notifications-service"]
+    profiles:
+      - microservices
 
   ordering:
     container_name: ordering
@@ -122,18 +183,29 @@ services:
     build:
       context: .
       dockerfile: ordering/Dockerfile
+      args:
+        tag: debug
     expose:
       - '8080'
-      - '9000'
+      - '9090'
     environment:
       ENVIRONMENT: development
-      RPC_SERVICE: STORES=stores:9000,ordering=ordering:9000
+      RPC_SERVICE: STORES=stores:9090,CUSTOMERS=customers:9090
       PG_CONN: postgres://orderingdb_user:orderingdb_pass@postgres:5432/orderingdb?sslmode=disable
-      NATS_URL: nats:4222
+      NATS_URL: nats://nats_user:nats_pass@nats:4222
+      OTEL_SERVICE_NAME: ordering
+      CH_HOST: clickhouse
+      CH_PORT: "9000"
+      CH_DB: oteldb
+      CH_USER: oteldb_user
+      CH_PASS: oteldb_pass
     depends_on:
       - nats
       - postgres
+      - clickhouse
     command: ["./wait-for.sh", "postgres:5432", "--", "/app/ordering-service"]
+    profiles:
+      - microservices
 
   payments:
     container_name: payments
@@ -142,18 +214,29 @@ services:
     build:
       context: .
       dockerfile: payments/Dockerfile
+      args:
+        tag: debug
     expose:
       - '8080'
-      - '9000'
+      - '9090'
     environment:
       ENVIRONMENT: development
-      RPC_SERVICE: STORES=stores:9000,payments=payments:9000
+      RPC_SERVICE: STORES=stores:9090,CUSTOMERS=customers:9090
       PG_CONN: postgres://paymentsdb_user:paymentsdb_pass@postgres:5432/paymentsdb?sslmode=disable
-      NATS_URL: nats:4222
+      NATS_URL: nats://nats_user:nats_pass@nats:4222
+      OTEL_SERVICE_NAME: payments
+      CH_HOST: clickhouse
+      CH_PORT: "9000"
+      CH_DB: oteldb
+      CH_USER: oteldb_user
+      CH_PASS: oteldb_pass
     depends_on:
       - nats
       - postgres
+      - clickhouse
     command: ["./wait-for.sh", "postgres:5432", "--", "/app/payments-service"]
+    profiles:
+      - microservices
 
   stores:
     container_name: stores
@@ -162,18 +245,29 @@ services:
     build:
       context: .
       dockerfile: stores/Dockerfile
+      args:
+        tag: debug
     expose:
       - '8080'
-      - '9000'
+      - '9090'
     environment:
       ENVIRONMENT: development
-      RPC_SERVICE: STORES=stores:9000,stores=stores:9000
+      RPC_SERVICE: STORES=stores:9090,CUSTOMERS=customers:9090
       PG_CONN: postgres://storesdb_user:storesdb_pass@postgres:5432/storesdb?sslmode=disable
-      NATS_URL: nats:4222
+      NATS_URL: nats://nats_user:nats_pass@nats:4222
+      OTEL_SERVICE_NAME: stores
+      CH_HOST: clickhouse
+      CH_PORT: "9000"
+      CH_DB: oteldb
+      CH_USER: oteldb_user
+      CH_PASS: oteldb_pass
     depends_on:
       - nats
       - postgres
+      - clickhouse
     command: ["./wait-for.sh", "postgres:5432", "--", "/app/stores-service"]
+    profiles:
+      - microservices
 
   search:
     container_name: search
@@ -182,33 +276,42 @@ services:
     build:
       context: .
       dockerfile: search/Dockerfile
+      args:
+        tag: debug
     expose:
       - '8080'
-      - '9000'
+      - '9090'
     environment:
       ENVIRONMENT: development
-      RPC_SERVICE: STORES=stores:9000,search=search:9000
+      RPC_SERVICE: STORES=stores:9090,CUSTOMERS=customers:9090
       PG_CONN: postgres://searchdb_user:searchdb_pass@postgres:5432/searchdb?sslmode=disable
-      NATS_URL: nats:4222
+      NATS_URL: nats://nats_user:nats_pass@nats:4222
+      OTEL_SERVICE_NAME: search
+      CH_HOST: clickhouse
+      CH_PORT: "9000"
+      CH_DB: oteldb
+      CH_USER: oteldb_user
+      CH_PASS: oteldb_pass
     depends_on:
       - nats
       - postgres
+      - clickhouse
     command: ["./wait-for.sh", "postgres:5432", "--", "/app/search-service"]
+    profiles:
+      - microservices
 
-  postgres:
-    container_name: postgres
-    hostname: postgres
-    image: postgres:alpine
-    restart: always
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: postgres
+  haproxy:
+    container_name: haproxy
+    hostname: haproxy
+    image: haproxy:alpine
     ports:
-      - '5432:5432'
+      - '8080:8080'
     volumes:
-      - 'pgdata:/var/lib/postgresql/data'
-      - './database/scripts:/docker-entrypoint-initdb.d'
+     - './haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg'
+     - './scripts/wait-for.sh:/wait-for.sh'
+    command: ["/wait-for.sh", "postgres:5432", "--", "haproxy", "-f", "/usr/local/etc/haproxy/haproxy.cfg"]
+    profiles:
+      - microservices
 
   nats:
     container_name: nats
@@ -220,20 +323,49 @@ services:
       - -js
       - -sd
       - /var/lib/nats/data
+      - --user
+      - nats_user
+      - --pass
+      - nats_pass
     volumes:
       - 'jsdata:/var/lib/nats/data'
 
-  haproxy:
-    container_name: haproxy
-    hostname: haproxy
-    image: haproxy:alpine
+  postgres:
+    container_name: postgres
+    hostname: postgres
+    image: postgres:alpine
+    environment:
+      POSTGRES_PASSWORD: postgres
     ports:
-      - '8080:8080'
+      - '5432:5432'
     volumes:
-     - './haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg'
-     - './wait-for.sh:/wait-for.sh'
-    command: ["/wait-for.sh", "postgres:5432", "--", "haproxy", "-f", "/usr/local/etc/haproxy/haproxy.cfg"]
+      - 'pgdata:/var/lib/postgresql/data'
+      - './scripts/postgresql:/docker-entrypoint-initdb.d'
+      - './scripts/wait-for.sh:/wait-for.sh'
+    command: ["/wait-for.sh", "clickhouse:9000", "--", "docker-entrypoint.sh", "postgres"]
+  
+  clickhouse:
+    container_name: clickhouse
+    hostname: clickhouse
+    image: clickhouse/clickhouse-server:latest-alpine
+    environment:
+      CLICKHOUSE_PASSWORD: clickhouse
+    ports:
+      - '8123:8123'
+      - '9000:9000'
+    volumes:
+      - 'chdata:/var/lib/clickhouse'
+      - './users.xml:/etc/clickhouse-server/users.d/users.xml'
+      - './scripts/clickhouse:/docker-entrypoint-initdb.d'
+
+  hyperdx:
+    container_name: hyperdx
+    hostname: hyperdx
+    image: hyperdx/hyperdx-local:2-nightly-ui
+    ports:
+      - '8888:8080'
   
 volumes:
   jsdata:
   pgdata:
+  chdata:

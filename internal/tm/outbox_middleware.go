@@ -7,39 +7,22 @@ import (
 )
 
 type OutboxStore interface {
-	Save(ctx context.Context, msg am.RawMessage) error
-	FindUnpublished(ctx context.Context, limit int) ([]am.RawMessage, error)
+	Save(ctx context.Context, msg am.Message) error
+	FindUnpublished(ctx context.Context, limit int) ([]am.Message, error)
 	MarkPublished(ctx context.Context, ids ...string) error
 }
 
-type outbox struct {
-	am.RawMessageStream
-	store OutboxStore
-}
+func OutboxPublisher(store OutboxStore) am.MessagePublisherMiddleware {
+	return func(next am.MessagePublisher) am.MessagePublisher {
+		return am.MessagePublisherFunc(func(ctx context.Context, topicName string, msg am.Message) error {
+			var errDup ErrDuplicateMessage
 
-var _ am.RawMessageStream = (*outbox)(nil)
+			err := store.Save(ctx, msg)
+			if errors.As(err, &errDup) {
+				return nil
+			}
 
-func NewOutboxStreamMiddleware(store OutboxStore) am.RawMessageStreamMiddleware {
-	o := outbox{store: store}
-
-	return func(stream am.RawMessageStream) am.RawMessageStream {
-		o.RawMessageStream = stream
-
-		return o
+			return err
+		})
 	}
-}
-
-func (o outbox) Publish(ctx context.Context, topicName string, msg am.RawMessage) error {
-	err := o.store.Save(ctx, msg)
-
-	if err != nil {
-		var errDuplicate ErrDuplicateMessage
-		if errors.As(err, &errDuplicate) {
-			return nil
-		}
-
-		return err
-	}
-
-	return nil
 }

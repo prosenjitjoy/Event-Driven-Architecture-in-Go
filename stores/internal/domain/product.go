@@ -36,8 +36,6 @@ func NewProduct(id string) *Product {
 	}
 }
 
-func (Product) Key() string { return ProductAggregate }
-
 func CreateProduct(id, storeID, name, description, sku string, price float64) (*Product, error) {
 	if name == "" {
 		return nil, ErrProductNameIsBlank

@@ -18,7 +18,10 @@ type server struct {
 var _ depotpb.DepotServiceServer = (*server)(nil)
 
 func RegisterServer(app application.App, registrar grpc.ServiceRegistrar) error {
-	depotpb.RegisterDepotServiceServer(registrar, server{app: app})
+	depotpb.RegisterDepotServiceServer(registrar, server{
+		app: app,
+	})
+
 	return nil
 }
 

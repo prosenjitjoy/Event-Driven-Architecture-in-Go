@@ -1,15 +1,16 @@
+ARG tag
+
 # Build Stage
 FROM golang:alpine AS builder
 WORKDIR /mall
 COPY go.* ./
 RUN go mod download
 COPY . ./
-RUN go build -v -o monolith ./cmd/mall
+RUN go build -v -o mall-monolith ./cmd/monolith
 
 # Run Stage
-FROM alpine:latest AS runtime
+FROM gcr.io/distroless/static-debian13:${tag} AS runtime
 WORKDIR /app
-COPY --from=builder /mall/wait-for.sh .
-RUN chmod +x ./wait-for.sh
-COPY --from=builder /mall/monolith .
-CMD ["/app/monolith"]
+COPY --from=builder /mall/scripts/wait-for.sh .
+COPY --from=builder /mall/mall-monolith .
+CMD ["/app/mall-monolith"]

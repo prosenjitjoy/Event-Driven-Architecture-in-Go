@@ -12,7 +12,7 @@ type AggregateNamer interface {
 
 type Eventer interface {
 	AddEvent(string, EventPayload, ...EventOption)
-	Events() []AggregateEvent
+	GetEvents() []AggregateEvent
 	ClearEvents()
 }
 
@@ -49,9 +49,9 @@ func NewAggregate(id, name string) *aggregate {
 	}
 }
 
-func (a aggregate) AggregateName() string    { return a.EntityName() }
-func (a aggregate) Events() []AggregateEvent { return a.events }
-func (a *aggregate) ClearEvents()            { a.events = []AggregateEvent{} }
+func (a aggregate) AggregateName() string       { return a.EntityName() }
+func (a aggregate) GetEvents() []AggregateEvent { return a.events }
+func (a *aggregate) ClearEvents()               { a.events = []AggregateEvent{} }
 
 func (a *aggregate) AddEvent(name string, payload EventPayload, options ...EventOption) {
 	options = append(options, Metadata{
@@ -66,8 +66,20 @@ func (a *aggregate) AddEvent(name string, payload EventPayload, options ...Event
 
 func (a *aggregate) setEvents(events []AggregateEvent) { a.events = events }
 
-func (e aggregateEvent) AggregateID() string { return e.metadata.Get(AggregateIDKey).(string) }
+func (e aggregateEvent) AggregateID() string {
+	aggregateId := e.metadata.Get(AggregateIDKey)
 
-func (e aggregateEvent) AggregateName() string { return e.metadata.Get(AggregateNameKey).(string) }
+	return aggregateId.(string)
+}
 
-func (e aggregateEvent) AggregateVersion() int { return e.metadata.Get(AggregateVersionKey).(int) }
+func (e aggregateEvent) AggregateName() string {
+	aggregateName := e.metadata.Get(AggregateNameKey)
+
+	return aggregateName.(string)
+}
+
+func (e aggregateEvent) AggregateVersion() int {
+	aggregateVersion := e.metadata.Get(AggregateVersionKey)
+
+	return aggregateVersion.(int)
+}

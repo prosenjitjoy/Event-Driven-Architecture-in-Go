@@ -52,7 +52,7 @@ func (r aggregateRepository[T]) Save(ctx context.Context, aggregate T) error {
 		return nil
 	}
 
-	for _, event := range aggregate.Events() {
+	for _, event := range aggregate.GetEvents() {
 		if err := aggregate.ApplyEvent(event); err != nil {
 			return err
 		}

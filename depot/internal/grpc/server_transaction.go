@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"mall/depot/depotpb"
 	"mall/depot/internal/application"
+	"mall/depot/internal/constants"
 	"mall/internal/di"
 
 	"google.golang.org/grpc"
@@ -18,7 +19,9 @@ type serverTx struct {
 var _ depotpb.DepotServiceServer = (*serverTx)(nil)
 
 func RegisterServerTx(container di.Container, registrar grpc.ServiceRegistrar) error {
-	depotpb.RegisterDepotServiceServer(registrar, serverTx{c: container})
+	depotpb.RegisterDepotServiceServer(registrar, serverTx{
+		c: container,
+	})
 
 	return nil
 }
@@ -28,9 +31,9 @@ func (s serverTx) CreateShoppingList(ctx context.Context, request *depotpb.Creat
 
 	defer func(tx *sql.Tx) {
 		err = s.closeTx(tx, err)
-	}(di.Get(ctx, "tx").(*sql.Tx))
+	}(di.Get(ctx, constants.DatabaseTransactionKey).(*sql.Tx))
 
-	next := server{app: di.Get(ctx, "app").(application.App)}
+	next := server{app: di.Get(ctx, constants.ApplicationKey).(application.App)}
 
 	return next.CreateShoppingList(ctx, request)
 }
@@ -40,9 +43,9 @@ func (s serverTx) CancelShoppingList(ctx context.Context, request *depotpb.Cance
 
 	defer func(tx *sql.Tx) {
 		err = s.closeTx(tx, err)
-	}(di.Get(ctx, "tx").(*sql.Tx))
+	}(di.Get(ctx, constants.DatabaseTransactionKey).(*sql.Tx))
 
-	next := server{app: di.Get(ctx, "app").(application.App)}
+	next := server{app: di.Get(ctx, constants.ApplicationKey).(application.App)}
 
 	return next.CancelShoppingList(ctx, request)
 }
@@ -52,9 +55,9 @@ func (s serverTx) AssignShoppingList(ctx context.Context, request *depotpb.Assig
 
 	defer func(tx *sql.Tx) {
 		err = s.closeTx(tx, err)
-	}(di.Get(ctx, "tx").(*sql.Tx))
+	}(di.Get(ctx, constants.DatabaseTransactionKey).(*sql.Tx))
 
-	next := server{app: di.Get(ctx, "app").(application.App)}
+	next := server{app: di.Get(ctx, constants.ApplicationKey).(application.App)}
 
 	return next.AssignShoppingList(ctx, request)
 }
@@ -64,9 +67,9 @@ func (s serverTx) CompleteShoppingList(ctx context.Context, request *depotpb.Com
 
 	defer func(tx *sql.Tx) {
 		err = s.closeTx(tx, err)
-	}(di.Get(ctx, "tx").(*sql.Tx))
+	}(di.Get(ctx, constants.DatabaseTransactionKey).(*sql.Tx))
 
-	next := server{app: di.Get(ctx, "app").(application.App)}
+	next := server{app: di.Get(ctx, constants.ApplicationKey).(application.App)}
 
 	return next.CompleteShoppingList(ctx, request)
 }

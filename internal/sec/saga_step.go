@@ -2,17 +2,17 @@ package sec
 
 import (
 	"context"
-	"mall/internal/am"
 	"mall/internal/ddd"
 )
 
-type StepActionFunc[T any] func(ctx context.Context, data T) am.Command
+type StepActionFunc[T any] func(ctx context.Context, data T) (string, ddd.Command, error)
 type StepReplyHandlerFunc[T any] func(ctx context.Context, data T, reply ddd.Reply) error
 
 type stepResult[T any] struct {
-	ctx *SagaContext[T]
-	cmd am.Command
-	err error
+	ctx         *SagaContext[T]
+	destination string
+	cmd         ddd.Command
+	err         error
 }
 
 type SagaStep[T any] interface {
@@ -20,7 +20,6 @@ type SagaStep[T any] interface {
 	Compensation(fn StepActionFunc[T]) SagaStep[T]
 	OnActionReply(replyName string, fn StepReplyHandlerFunc[T]) SagaStep[T]
 	OnCompensationReply(replyName string, fn StepReplyHandlerFunc[T]) SagaStep[T]
-
 	isInvocable(compensating bool) bool
 	execute(ctx context.Context, sagaCtx *SagaContext[T]) stepResult[T]
 	handle(ctx context.Context, sagaCtx *SagaContext[T], reply ddd.Reply) error
@@ -60,9 +59,13 @@ func (s sagaStep[T]) isInvocable(compensating bool) bool {
 func (s sagaStep[T]) execute(ctx context.Context, sagaCtx *SagaContext[T]) stepResult[T] {
 	action := s.actions[sagaCtx.Compensating]
 	if action != nil {
+		destination, cmd, err := action(ctx, sagaCtx.Data)
+
 		return stepResult[T]{
-			ctx: sagaCtx,
-			cmd: action(ctx, sagaCtx.Data),
+			ctx:         sagaCtx,
+			destination: destination,
+			cmd:         cmd,
+			err:         err,
 		}
 	}
 

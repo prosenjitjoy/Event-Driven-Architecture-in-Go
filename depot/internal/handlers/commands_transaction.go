@@ -3,14 +3,13 @@ package handlers
 import (
 	"context"
 	"database/sql"
+	"mall/customers/constants"
 	"mall/internal/am"
-	"mall/internal/ddd"
 	"mall/internal/di"
-	"mall/internal/registry"
 )
 
 func RegisterCommandHandlersTx(container di.Container) error {
-	cmdMsgHandlers := am.RawMessageHandlerFunc(func(ctx context.Context, msg am.IncomingRawMessage) (err error) {
+	cmdMsgHandlers := am.MessageHandlerFunc(func(ctx context.Context, msg am.IncomingMessage) (err error) {
 		ctx = container.Scoped(ctx)
 
 		defer func(tx *sql.Tx) {
@@ -24,19 +23,12 @@ func RegisterCommandHandlersTx(container di.Container) error {
 			}
 		}(di.Get(ctx, "tx").(*sql.Tx))
 
-		reg := di.Get(ctx, "registry").(registry.Registry)
-		replyStream := di.Get(ctx, "replyStream").(am.ReplyStream)
-		commandhandlers := di.Get(ctx, "commandHandlers").(ddd.CommandHandler[ddd.Command])
-
-		cmdHandlers := am.RawMessageHandlerWithMiddleware(
-			am.NewCommandMessageHandler(reg, replyStream, commandhandlers),
-			di.Get(ctx, "inboxMiddleware").(am.RawMessageHandlerMiddleware),
-		)
+		cmdHandlers := di.Get(ctx, constants.CommandHandlersKey).(am.MessageHandler)
 
 		return cmdHandlers.HandleMessage(ctx, msg)
 	})
 
-	subscriber := container.Get("stream").(am.RawMessageStream)
+	subscriber := container.Get(constants.MessageSubscriberKey).(am.MessageStream)
 
 	return RegisterCommandHandlers(subscriber, cmdMsgHandlers)
 }

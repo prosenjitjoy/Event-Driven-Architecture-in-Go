@@ -3,25 +3,35 @@ package grpc
 import (
 	"context"
 	"mall/customers/customerspb"
+	"mall/internal/rpc"
 	"mall/notifications/internal/domain"
 
 	"google.golang.org/grpc"
 )
 
 type CustomerRepository struct {
-	client customerspb.CustomersServiceClient
+	endpoint string
 }
 
 var _ domain.CustomerRepository = (*CustomerRepository)(nil)
 
-func NewCustomerRepository(conn *grpc.ClientConn) CustomerRepository {
+func NewCustomerRepository(endpoint string) CustomerRepository {
 	return CustomerRepository{
-		client: customerspb.NewCustomersServiceClient(conn),
+		endpoint: endpoint,
 	}
 }
 
 func (r CustomerRepository) Find(ctx context.Context, customerID string) (*domain.Customer, error) {
-	resp, err := r.client.GetCustomer(ctx, &customerspb.GetCustomerRequest{Id: customerID})
+	conn, err := r.dial(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	defer func(conn *grpc.ClientConn) {
+		conn.Close()
+	}(conn)
+
+	resp, err := customerspb.NewCustomersServiceClient(conn).GetCustomer(ctx, &customerspb.GetCustomerRequest{Id: customerID})
 	if err != nil {
 		return nil, err
 	}
@@ -31,4 +41,8 @@ func (r CustomerRepository) Find(ctx context.Context, customerID string) (*domai
 		Name:      resp.GetCustomer().GetName(),
 		SmsNumber: resp.GetCustomer().GetSmsNumber(),
 	}, nil
+}
+
+func (r CustomerRepository) dial(ctx context.Context) (*grpc.ClientConn, error) {
+	return rpc.Dial(ctx, r.endpoint)
 }

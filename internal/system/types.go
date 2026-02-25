@@ -7,6 +7,7 @@ import (
 	"mall/internal/config"
 	"mall/internal/waiter"
 
+	"github.com/ClickHouse/ch-go"
 	"github.com/go-chi/chi/v5"
 	"github.com/nats-io/nats.go"
 	"google.golang.org/grpc"
@@ -15,6 +16,7 @@ import (
 type Service interface {
 	Config() *config.AppConfig
 	DB() *sql.DB
+	CH() *ch.Client
 	NC() *nats.Conn
 	JS() nats.JetStreamContext
 	Logger() *slog.Logger

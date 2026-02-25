@@ -22,12 +22,8 @@ func NewIntegrationEventHandlers(stores domain.StoreCacheRepository, products do
 	}
 }
 
-func RegisterIntegrationEventHandlers(subscriber am.EventSubscriber, handlers ddd.EventHandler[ddd.Event]) error {
-	eventMsgHandler := am.MessageHandlerFunc[am.IncomingEventMessage](func(ctx context.Context, eventMsg am.IncomingEventMessage) error {
-		return handlers.HandleEvent(ctx, eventMsg)
-	})
-
-	err := subscriber.Subscribe(storespb.StoreAggregateChannel, eventMsgHandler, am.MessageFilters{
+func RegisterIntegrationEventHandlers(subscriber am.MessageSubscriber, handlers am.MessageHandler) error {
+	_, err := subscriber.Subscribe(storespb.StoreAggregateChannel, handlers, am.MessageFilters{
 		storespb.StoreCreatedEvent,
 		storespb.StoreRebrandedEvent,
 	}, am.GroupName("depot-stores"))
@@ -35,7 +31,7 @@ func RegisterIntegrationEventHandlers(subscriber am.EventSubscriber, handlers dd
 		return err
 	}
 
-	err = subscriber.Subscribe(storespb.ProductAggregateChannel, eventMsgHandler, am.MessageFilters{
+	_, err = subscriber.Subscribe(storespb.ProductAggregateChannel, handlers, am.MessageFilters{
 		storespb.ProductAddedEvent,
 		storespb.ProductRebrandedEvent,
 		storespb.ProductPriceIncreasedEvent,

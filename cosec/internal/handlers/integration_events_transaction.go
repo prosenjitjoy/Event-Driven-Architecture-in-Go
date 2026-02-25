@@ -3,15 +3,13 @@ package handlers
 import (
 	"context"
 	"database/sql"
+	"mall/cosec/internal/constants"
 	"mall/internal/am"
-	"mall/internal/ddd"
 	"mall/internal/di"
-	"mall/internal/registry"
-	"mall/ordering/orderingpb"
 )
 
 func RegisterIntegrationEventHandlersTx(container di.Container) error {
-	eventMsgHandler := am.RawMessageHandlerFunc(func(ctx context.Context, msg am.IncomingRawMessage) (err error) {
+	eventMsgHandler := am.MessageHandlerFunc(func(ctx context.Context, msg am.IncomingMessage) (err error) {
 		ctx = container.Scoped(ctx)
 
 		defer func(tx *sql.Tx) {
@@ -23,27 +21,14 @@ func RegisterIntegrationEventHandlersTx(container di.Container) error {
 			} else {
 				err = tx.Commit()
 			}
-		}(di.Get(ctx, "tx").(*sql.Tx))
+		}(di.Get(ctx, constants.DatabaseTransactionKey).(*sql.Tx))
 
-		reg := di.Get(ctx, "registry").(registry.Registry)
-		integrationEventHandlers := di.Get(ctx, "integrationEventHandlers").(ddd.EventHandler[ddd.Event])
+		evtHandlers := di.Get(ctx, constants.IntegrationEventHandlersKey).(am.MessageHandler)
 
-		eventHandlers := am.RawMessageHandlerWithMiddleware(
-			am.NewEventMessageHandler(reg, integrationEventHandlers),
-			di.Get(ctx, "inboxMiddleware").(am.RawMessageHandlerMiddleware),
-		)
-
-		return eventHandlers.HandleMessage(ctx, msg)
+		return evtHandlers.HandleMessage(ctx, msg)
 	})
 
-	subscriber := container.Get("stream").(am.RawMessageStream)
+	subsriber := container.Get(constants.MessageSubscriberKey).(am.MessageSubscriber)
 
-	err := subscriber.Subscribe(orderingpb.OrderAggregateChannel, eventMsgHandler, am.MessageFilters{
-		orderingpb.OrderCreatedEvent,
-	}, am.GroupName("cosec-ordering"))
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return RegisterIntegrationEventHandlers(subsriber, eventMsgHandler)
 }

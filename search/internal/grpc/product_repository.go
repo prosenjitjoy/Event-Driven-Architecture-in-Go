@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+	"mall/internal/rpc"
 	"mall/search/internal/domain"
 	"mall/stores/storespb"
 
@@ -9,21 +10,28 @@ import (
 )
 
 type ProductRepository struct {
-	client storespb.StoresServiceClient
+	endpoint string
 }
 
 var _ domain.ProductRepository = (*ProductRepository)(nil)
 
-func NewProductRepository(conn *grpc.ClientConn) ProductRepository {
+func NewProductRepository(endpoint string) ProductRepository {
 	return ProductRepository{
-		client: storespb.NewStoresServiceClient(conn),
+		endpoint: endpoint,
 	}
 }
 
 func (r ProductRepository) Find(ctx context.Context, productID string) (*domain.Product, error) {
-	resp, err := r.client.GetProduct(ctx, &storespb.GetProductRequest{
-		Id: productID,
-	})
+	conn, err := r.dial(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	defer func(conn *grpc.ClientConn) {
+		conn.Close()
+	}(conn)
+
+	resp, err := storespb.NewStoresServiceClient(conn).GetProduct(ctx, &storespb.GetProductRequest{Id: productID})
 	if err != nil {
 		return nil, err
 	}
@@ -36,4 +44,8 @@ func (r ProductRepository) productToDomain(product *storespb.Product) *domain.Pr
 		ID:   product.GetId(),
 		Name: product.GetName(),
 	}
+}
+
+func (r ProductRepository) dial(ctx context.Context) (*grpc.ClientConn, error) {
+	return rpc.Dial(ctx, r.endpoint)
 }

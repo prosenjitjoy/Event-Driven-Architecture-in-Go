@@ -28,5 +28,5 @@ func (p EventPublisher) Save(ctx context.Context, aggregate EventSourcedAggregat
 		return err
 	}
 
-	return p.publisher.Publish(ctx, aggregate.Events()...)
+	return p.publisher.Publish(ctx, aggregate.GetEvents()...)
 }

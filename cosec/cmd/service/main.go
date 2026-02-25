@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"log"
 	"mall/cosec"
@@ -27,7 +28,7 @@ func run() error {
 	}
 
 	// add infrastructure
-	s, err := system.NewSystem(cfg)
+	s, err := system.NewSystem(context.Background(), cfg)
 	if err != nil {
 		return err
 	}
@@ -58,7 +59,7 @@ func run() error {
 	s.Logger().Info("started cosec service")
 	defer s.Logger().Info("stopped cosec service")
 
-	s.Waiter().Add(
+	s.Waiter().AddWaitFunc(
 		s.WaitForWeb,
 		s.WaitForRPC,
 		s.WaitForStream,

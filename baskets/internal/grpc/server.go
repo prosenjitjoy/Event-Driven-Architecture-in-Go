@@ -18,12 +18,16 @@ type server struct {
 var _ basketspb.BasketServiceServer = (*server)(nil)
 
 func RegisterServer(app application.App, registrar grpc.ServiceRegistrar) error {
-	basketspb.RegisterBasketServiceServer(registrar, server{app: app})
+	basketspb.RegisterBasketServiceServer(registrar, server{
+		app: app,
+	})
+
 	return nil
 }
 
 func (s server) StartBasket(ctx context.Context, request *basketspb.StartBasketRequest) (*basketspb.StartBasketResponse, error) {
 	basketID := uuid.New().String()
+
 	err := s.app.StartBasket(ctx, application.StartBasket{
 		ID:         basketID,
 		CustomerID: request.GetCustomerId(),

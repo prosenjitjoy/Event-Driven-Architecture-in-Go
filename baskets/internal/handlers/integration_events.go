@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"mall/baskets/internal/domain"
+	"mall/internal/am"
 	"mall/internal/ddd"
 	"mall/stores/storespb"
 )
@@ -19,6 +20,29 @@ func NewIntegrationEventHandlers(stores domain.StoreCacheRepository, products do
 		stores:   stores,
 		products: products,
 	}
+}
+
+func RegisterIntegrationEventHandlers(subscriber am.MessageSubscriber, handlers am.MessageHandler) error {
+	_, err := subscriber.Subscribe(storespb.StoreAggregateChannel, handlers, am.MessageFilters{
+		storespb.StoreCreatedEvent,
+		storespb.StoreRebrandedEvent,
+	}, am.GroupName("baskets-stores"))
+	if err != nil {
+		return err
+	}
+
+	_, err = subscriber.Subscribe(storespb.ProductAggregateChannel, handlers, am.MessageFilters{
+		storespb.ProductAddedEvent,
+		storespb.ProductRebrandedEvent,
+		storespb.ProductPriceIncreasedEvent,
+		storespb.ProductPriceDecreasedEvent,
+		storespb.ProductRemovedEvent,
+	}, am.GroupName("baskets-products"))
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (h integrationHandlers[T]) HandleEvent(ctx context.Context, event T) error {

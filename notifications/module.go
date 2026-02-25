@@ -6,9 +6,12 @@ import (
 	"mall/internal/am"
 	"mall/internal/ddd"
 	"mall/internal/jetstream"
+	pg "mall/internal/postgres"
 	"mall/internal/registry"
 	"mall/internal/system"
+	"mall/internal/tm"
 	"mall/notifications/internal/application"
+	"mall/notifications/internal/constants"
 	"mall/notifications/internal/grpc"
 	"mall/notifications/internal/handlers"
 	"mall/notifications/internal/logging"
@@ -36,14 +39,16 @@ func Root(ctx context.Context, service system.Service) error {
 
 	stream := jetstream.NewStream(service.Config().Nats.Stream, service.JS(), service.Logger())
 
-	eventStream := am.NewEventStream(reg, stream)
+	messageSubscriber := am.NewMessageSubscriber(
+		stream,
+	)
 
-	conn, err := grpc.Dial(ctx, service.Config().Rpc.Service("CUSTOMERS"))
-	if err != nil {
-		return err
-	}
-
-	customers := postgres.NewCustomerCacheRepository("notifications.customers_cache", service.DB(), grpc.NewCustomerRepository(conn))
+	customerFallback := grpc.NewCustomerRepository(service.Config().Rpc.Service(constants.CustomersServiceName))
+	customers := postgres.NewCustomerCacheRepository(
+		constants.CustomersCacheTableName,
+		service.DB(),
+		customerFallback,
+	)
 
 	// setup application
 	app := logging.LogApplicationAccess(
@@ -57,12 +62,17 @@ func Root(ctx context.Context, service system.Service) error {
 		service.Logger(),
 	)
 
+	inboxStore := pg.NewInboxStore(constants.InboxTableName, service.DB())
+	inboxHandler := tm.InboxHandler(inboxStore)
+
+	integrationEventMsgHandlers := am.NewEventHandler(reg, integrationEventHandlers, inboxHandler)
+
 	// setup driver adapters
 	if err := grpc.RegisterServer(app, service.RPC()); err != nil {
 		return err
 	}
 
-	if err := handlers.RegisterIntegrationEventHandlers(eventStream, integrationEventHandlers); err != nil {
+	if err := handlers.RegisterIntegrationEventHandlers(messageSubscriber, integrationEventMsgHandlers); err != nil {
 		return err
 	}
 

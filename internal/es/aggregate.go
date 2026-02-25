@@ -37,10 +37,10 @@ func (a *aggregate) AddEvent(name string, payload ddd.EventPayload, options ...d
 }
 
 func (a *aggregate) CommitEvents() {
-	a.version += len(a.Events())
+	a.version += len(a.GetEvents())
 	a.ClearEvents()
 }
 
 func (a aggregate) Version() int            { return a.version }
-func (a aggregate) PendingVersion() int     { return a.version + len(a.Events()) }
-func (a *aggregate) setVersion(version int) { a.version = version }
+func (a aggregate) PendingVersion() int     { return a.version + len(a.GetEvents()) }
+func (a *aggregate) SetVersion(version int) { a.version = version }

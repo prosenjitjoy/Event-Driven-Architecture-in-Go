@@ -15,6 +15,14 @@ const (
 	notCompensating = false
 )
 
+type SagaContext[T any] struct {
+	ID           string
+	Data         T
+	Step         int
+	Done         bool
+	Compensating bool
+}
+
 type Saga[T any] interface {
 	AddStep() SagaStep[T]
 	Name() string
@@ -52,14 +60,19 @@ func (s *saga[T]) AddStep() SagaStep[T] {
 	return step
 }
 
-func (s *saga[T]) Name() string {
-	return s.name
+func (s *saga[T]) Name() string            { return s.name }
+func (s *saga[T]) ReplyTopic() string      { return s.replyTopic }
+func (s *saga[T]) getSteps() []SagaStep[T] { return s.steps }
+
+func (s *SagaContext[T]) advance(steps int) {
+	var dir = 1
+
+	if s.Compensating {
+		dir = -1
+	}
+
+	s.Step = s.Step + (dir * steps)
 }
 
-func (s *saga[T]) ReplyTopic() string {
-	return s.replyTopic
-}
-
-func (s *saga[T]) getSteps() []SagaStep[T] {
-	return s.steps
-}
+func (s *SagaContext[T]) complete()   { s.Done = true }
+func (s *SagaContext[T]) compensate() { s.Compensating = true }

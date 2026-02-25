@@ -54,8 +54,7 @@ func (o orchestrator[T]) ReplyTopic() string {
 }
 
 func (o orchestrator[T]) HandleReply(ctx context.Context, reply ddd.Reply) error {
-	sagaID, _ := reply.Metadata().Get(SagaReplyIDHeader).(string)
-	sagaName, _ := reply.Metadata().Get(SagaReplyNameHeader).(string)
+	sagaID, sagaName := o.getSagaInfoFromReply(reply)
 
 	if sagaID == "" || sagaName == "" || sagaName != o.saga.Name() {
 		return nil
@@ -153,5 +152,20 @@ func (o orchestrator[T]) publishCommand(ctx context.Context, result stepResult[T
 	cmd.Metadata().Set(SagaCommandIDHeader, result.ctx.ID)
 	cmd.Metadata().Set(SagaCommandNameHeader, o.saga.Name())
 
-	return o.publisher.Publish(ctx, cmd.Destination(), cmd)
+	return o.publisher.Publish(ctx, result.destination, cmd)
+}
+
+func (o orchestrator[T]) getSagaInfoFromReply(reply ddd.Reply) (string, string) {
+	var ok bool
+	var sagaID, sagaName string
+
+	if sagaID, ok = reply.Metadata().Get(SagaReplyIDHeader).(string); !ok {
+		return "", ""
+	}
+
+	if sagaName, ok = reply.Metadata().Get(SagaReplyNameHeader).(string); !ok {
+		return "", ""
+	}
+
+	return sagaID, sagaName
 }

@@ -150,7 +150,7 @@ spec:
       serviceAccountName: haproxy-kubernetes-ingress
       containers:
       - name: haproxy-ingress
-        image: haproxytech/kubernetes-ingress
+        image: docker.io/haproxytech/kubernetes-ingress
         args:
           - --configmap=haproxy-controller/haproxy-kubernetes-ingress
           - --ingress.class=prod-controller

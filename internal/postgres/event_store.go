@@ -94,10 +94,10 @@ func (s EventStore) Save(ctx context.Context, aggregate es.EventSourcedAggregate
 	aggregateID := aggregate.ID()
 	aggregateName := aggregate.AggregateName()
 
-	placeholders := make([]string, len(aggregate.Events()))
-	values := make([]any, len(aggregate.Events())*7)
+	placeholders := make([]string, len(aggregate.GetEvents()))
+	values := make([]any, len(aggregate.GetEvents())*7)
 
-	for i, event := range aggregate.Events() {
+	for i, event := range aggregate.GetEvents() {
 		payloadData, err := s.registry.Serialize(event.EventName(), event.Payload())
 		if err != nil {
 			return err

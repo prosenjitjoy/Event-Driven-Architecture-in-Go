@@ -15,11 +15,11 @@ type OutboxProcessor interface {
 }
 
 type outboxProcessor struct {
-	publisher am.RawMessagePublisher
+	publisher am.MessagePublisher
 	store     OutboxStore
 }
 
-func NewOutboxProcessor(publisher am.RawMessagePublisher, store OutboxStore) OutboxProcessor {
+func NewOutboxProcessor(publisher am.MessagePublisher, store OutboxStore) OutboxProcessor {
 	return outboxProcessor{
 		publisher: publisher,
 		store:     store,
@@ -51,6 +51,7 @@ func (p outboxProcessor) processMessages(ctx context.Context) error {
 
 		if len(msgs) > 0 {
 			ids := make([]string, len(msgs))
+
 			for i, msg := range msgs {
 				ids[i] = msg.ID()
 
@@ -59,6 +60,7 @@ func (p outboxProcessor) processMessages(ctx context.Context) error {
 					return err
 				}
 			}
+
 			err = p.store.MarkPublished(ctx, ids...)
 			if err != nil {
 				return err

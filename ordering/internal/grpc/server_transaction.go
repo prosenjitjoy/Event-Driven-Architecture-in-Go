@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"mall/internal/di"
 	"mall/ordering/internal/application"
+	"mall/ordering/internal/constants"
 	"mall/ordering/orderingpb"
 
 	"google.golang.org/grpc"
@@ -18,7 +19,9 @@ type serverTx struct {
 var _ orderingpb.OrderingServiceServer = (*serverTx)(nil)
 
 func RegisterServerTx(container di.Container, registrar grpc.ServiceRegistrar) error {
-	orderingpb.RegisterOrderingServiceServer(registrar, serverTx{c: container})
+	orderingpb.RegisterOrderingServiceServer(registrar, serverTx{
+		c: container,
+	})
 
 	return nil
 }
@@ -28,9 +31,9 @@ func (s serverTx) CreateOrder(ctx context.Context, request *orderingpb.CreateOrd
 
 	defer func(tx *sql.Tx) {
 		err = s.closeTx(tx, err)
-	}(di.Get(ctx, "tx").(*sql.Tx))
+	}(di.Get(ctx, constants.DatabaseTransactionKey).(*sql.Tx))
 
-	next := server{app: di.Get(ctx, "app").(application.App)}
+	next := server{app: di.Get(ctx, constants.ApplicationKey).(application.App)}
 
 	return next.CreateOrder(ctx, request)
 }
@@ -40,9 +43,9 @@ func (s serverTx) GetOrder(ctx context.Context, request *orderingpb.GetOrderRequ
 
 	defer func(tx *sql.Tx) {
 		err = s.closeTx(tx, err)
-	}(di.Get(ctx, "tx").(*sql.Tx))
+	}(di.Get(ctx, constants.DatabaseTransactionKey).(*sql.Tx))
 
-	next := server{app: di.Get(ctx, "app").(application.App)}
+	next := server{app: di.Get(ctx, constants.ApplicationKey).(application.App)}
 
 	return next.GetOrder(ctx, request)
 }
@@ -52,9 +55,9 @@ func (s serverTx) CancelOrder(ctx context.Context, request *orderingpb.CancelOrd
 
 	defer func(tx *sql.Tx) {
 		err = s.closeTx(tx, err)
-	}(di.Get(ctx, "tx").(*sql.Tx))
+	}(di.Get(ctx, constants.DatabaseTransactionKey).(*sql.Tx))
 
-	next := server{app: di.Get(ctx, "app").(application.App)}
+	next := server{app: di.Get(ctx, constants.ApplicationKey).(application.App)}
 
 	return next.CancelOrder(ctx, request)
 }
@@ -64,9 +67,9 @@ func (s serverTx) ReadyOrder(ctx context.Context, request *orderingpb.ReadyOrder
 
 	defer func(tx *sql.Tx) {
 		err = s.closeTx(tx, err)
-	}(di.Get(ctx, "tx").(*sql.Tx))
+	}(di.Get(ctx, constants.DatabaseTransactionKey).(*sql.Tx))
 
-	next := server{app: di.Get(ctx, "app").(application.App)}
+	next := server{app: di.Get(ctx, constants.ApplicationKey).(application.App)}
 
 	return next.ReadyOrder(ctx, request)
 }
@@ -76,9 +79,9 @@ func (s serverTx) CompleteOrder(ctx context.Context, request *orderingpb.Complet
 
 	defer func(tx *sql.Tx) {
 		err = s.closeTx(tx, err)
-	}(di.Get(ctx, "tx").(*sql.Tx))
+	}(di.Get(ctx, constants.DatabaseTransactionKey).(*sql.Tx))
 
-	next := server{app: di.Get(ctx, "app").(application.App)}
+	next := server{app: di.Get(ctx, constants.ApplicationKey).(application.App)}
 
 	return next.CompleteOrder(ctx, request)
 }

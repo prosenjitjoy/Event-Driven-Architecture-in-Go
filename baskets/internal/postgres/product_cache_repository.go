@@ -29,7 +29,7 @@ func NewProductCacheRepository(tableName string, db postgres.DBTX, fallback doma
 }
 
 func (r ProductCacheRepository) Add(ctx context.Context, productID, storeID, name string, price float64) error {
-	const query = "INSERT INTO %s (id, store_id, name, price) VALUES ($1, $2, $3, $4)"
+	const query = "INSERT INTO %s (id, store_id, name, price) VALUES ($1, $2, $3, $4)" // can also join `... ON CONFLICT DO NOTHING` to end of the query
 
 	_, err := r.db.ExecContext(ctx, r.table(query), productID, storeID, name, price)
 	if err != nil {

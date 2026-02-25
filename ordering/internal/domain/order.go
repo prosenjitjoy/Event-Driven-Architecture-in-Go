@@ -41,8 +41,6 @@ func NewOrder(id string) *Order {
 	}
 }
 
-func (Order) Key() string { return OrderAggregate }
-
 func (o *Order) CreateOrder(id, customerID, paymentID string, items []Item) (ddd.Event, error) {
 	if o.Status != OrderUnknown {
 		return nil, ErrOrderAlreadyCreated

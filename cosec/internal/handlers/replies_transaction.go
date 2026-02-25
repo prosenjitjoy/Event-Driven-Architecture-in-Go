@@ -3,16 +3,13 @@ package handlers
 import (
 	"context"
 	"database/sql"
-	"mall/cosec/internal/application"
-	"mall/cosec/internal/domain"
+	"mall/cosec/internal/constants"
 	"mall/internal/am"
 	"mall/internal/di"
-	"mall/internal/registry"
-	"mall/internal/sec"
 )
 
 func RegisterReplyHandlersTx(container di.Container) error {
-	replyMsgHandler := am.RawMessageHandlerFunc(func(ctx context.Context, msg am.IncomingRawMessage) (err error) {
+	replyMsgHandler := am.MessageHandlerFunc(func(ctx context.Context, msg am.IncomingMessage) (err error) {
 		ctx = container.Scoped(ctx)
 
 		defer func(tx *sql.Tx) {
@@ -22,20 +19,14 @@ func RegisterReplyHandlersTx(container di.Container) error {
 			} else if err != nil {
 
 			}
-		}(di.Get(ctx, "tx").(*sql.Tx))
+		}(di.Get(ctx, constants.DatabaseTransactionKey).(*sql.Tx))
 
-		reg := di.Get(ctx, "registry").(registry.Registry)
-		orchestrator := di.Get(ctx, "orchestrator").(sec.Orchestrator[*domain.CreateOrderData])
-
-		replyHandlers := am.RawMessageHandlerWithMiddleware(
-			am.NewReplyMessageHandler(reg, orchestrator),
-			di.Get(ctx, "inboxMiddleware").(am.RawMessageHandlerMiddleware),
-		)
+		replyHandlers := di.Get(ctx, constants.ReplyHandlersKey).(am.MessageHandler)
 
 		return replyHandlers.HandleMessage(ctx, msg)
 	})
 
-	subscriber := container.Get("stream").(am.RawMessageStream)
+	subscriber := container.Get(constants.MessageSubscriberKey).(am.MessageSubscriber)
 
-	return subscriber.Subscribe(application.CreateOrderReplyChannel, replyMsgHandler, am.GroupName("cosec-replies"))
+	return RegisterReplyHandlers(subscriber, replyMsgHandler)
 }

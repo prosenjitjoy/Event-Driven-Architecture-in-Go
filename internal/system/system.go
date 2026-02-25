@@ -13,7 +13,9 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/ClickHouse/ch-go"
 	"github.com/go-chi/chi/v5"
+	_ "github.com/lib/pq"
 	"github.com/nats-io/nats.go"
 	"github.com/pressly/goose/v3"
 	"golang.org/x/sync/errgroup"
@@ -24,6 +26,7 @@ import (
 type System struct {
 	cfg    *config.AppConfig
 	db     *sql.DB
+	ch     *ch.Client
 	nc     *nats.Conn
 	js     nats.JetStreamContext
 	logger *slog.Logger
@@ -32,32 +35,74 @@ type System struct {
 	waiter waiter.Waiter
 }
 
-func NewSystem(cfg *config.AppConfig) (*System, error) {
-	// connect database
-	db, err := sql.Open("postgres", cfg.PG.Conn)
+func NewSystem(ctx context.Context, cfg *config.AppConfig) (*System, error) {
+	// connect postgres database
+	pgConn, err := sql.Open("postgres", cfg.PG.Conn)
 	if err != nil {
-		return nil, fmt.Errorf("db connection: %w", err)
+		return nil, fmt.Errorf("pg connection: %w", err)
+	}
+
+	// connect clickhouse database
+	chConn, err := ch.Dial(ctx, ch.Options{
+		Address:  cfg.CH.Address(),
+		Database: cfg.CH.Database,
+		User:     cfg.CH.Username,
+		Password: cfg.CH.Password,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("ch connection: %w", err)
 	}
 
 	// connect nats jetstream
-	nc, err := nats.Connect(cfg.Nats.URL)
+	ntConn, err := nats.Connect(cfg.Nats.URL)
 	if err != nil {
 		return nil, fmt.Errorf("nats connection: %w", err)
 	}
 
-	js, err := nc.JetStream()
+	jsc, err := ntConn.JetStream()
 	if err != nil {
 		return nil, err
 	}
 
 	// init jetstream
-	_, err = js.AddStream(&nats.StreamConfig{
+	_, err = jsc.AddStream(&nats.StreamConfig{
 		Name:     cfg.Nats.Stream,
 		Subjects: []string{fmt.Sprintf("%s.>", cfg.Nats.Stream)},
 	})
 	if err != nil {
 		return nil, err
 	}
+
+	// // init otel propagation
+	// textMapPropagator := propagation.NewCompositeTextMapPropagator(
+	// 	propagation.TraceContext{},
+	// 	propagation.Baggage{},
+	// )
+	// otel.SetTextMapPropagator(textMapPropagator)
+
+	// // init otel traces
+	// tracerProvider := trace.NewTracerProvider(trace.WithBatcher(
+	// 	clickhouse.NewTraceExporter(cfg.ServiceName, chConn),
+	// 	trace.WithBatchTimeout(time.Second),
+	// ))
+	// otel.SetTracerProvider(tracerProvider)
+
+	// // init otel metrics
+	// meterProvider := metric.NewMeterProvider(metric.WithReader(
+	// 	metric.NewPeriodicReader(
+	// 		clickhouse.NewMetricExporter(cfg.ServiceName, chConn),
+	// 		metric.WithInterval(3*time.Second),
+	// 	),
+	// ))
+	// otel.SetMeterProvider(meterProvider)
+
+	// // init otel logs
+	// loggerProvider := log.NewLoggerProvider(log.WithProcessor(
+	// 	log.NewBatchProcessor(
+	// 		clickhouse.NewLogExpoerter(cfg.ServiceName, chConn),
+	// 	),
+	// ))
+	// global.SetLoggerProvider(loggerProvider)
 
 	// init logger
 	logger := logger.New(logger.LogConfig{
@@ -66,26 +111,47 @@ func NewSystem(cfg *config.AppConfig) (*System, error) {
 	})
 
 	// init grpc
-	grpcServer := grpc.NewServer()
+	grpcServer := grpc.NewServer( /*grpc.StatsHandler(otelgrpc.NewServerHandler())*/ )
 	reflection.Register(grpcServer)
 
 	// init infrastructure
 	s := &System{
 		cfg:    cfg,
-		db:     db,
-		nc:     nc,
-		js:     js,
+		db:     pgConn,
+		ch:     chConn,
+		nc:     ntConn,
+		js:     jsc,
 		logger: logger,
 		mux:    chi.NewMux(),
 		rpc:    grpcServer,
 		waiter: waiter.New(waiter.CatchSignals()),
 	}
 
+	// // cleanup otel providers
+	// s.waiter.AddCleanupFunc(func() {
+	// 	if err := tracerProvider.Shutdown(ctx); err != nil {
+	// 		s.logger.ErrorContext(ctx, "error shutting down the tracer provider", "error", err.Error())
+	// 	}
+	// })
+
+	// s.waiter.AddCleanupFunc(func() {
+	// 	if err := meterProvider.Shutdown(ctx); err != nil {
+	// 		logger.ErrorContext(ctx, "error shutting down the metric provider", "error", err.Error())
+	// 	}
+	// })
+
+	// s.waiter.AddCleanupFunc(func() {
+	// 	if err := loggerProvider.Shutdown(ctx); err != nil {
+	// 		logger.ErrorContext(ctx, "error shutting down the logger provider", "error", err.Error())
+	// 	}
+	// })
+
 	return s, nil
 }
 
 func (s *System) Config() *config.AppConfig { return s.cfg }
 func (s *System) DB() *sql.DB               { return s.db }
+func (s *System) CH() *ch.Client            { return s.ch }
 func (s *System) NC() *nats.Conn            { return s.nc }
 func (s *System) JS() nats.JetStreamContext { return s.js }
 func (s *System) Logger() *slog.Logger      { return s.logger }
@@ -115,8 +181,8 @@ func (s *System) WaitForWeb(ctx context.Context) error {
 	group, gCtx := errgroup.WithContext(ctx)
 
 	group.Go(func() error {
-		s.logger.Info("web server started", "address", s.cfg.Web.Address())
-		defer s.logger.Info("web server shutdown")
+		s.logger.InfoContext(ctx, "web server started", "address", s.cfg.Web.Address())
+		defer s.logger.InfoContext(ctx, "web server shutdown")
 
 		if err := webServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			return err
@@ -127,7 +193,7 @@ func (s *System) WaitForWeb(ctx context.Context) error {
 
 	group.Go(func() error {
 		<-gCtx.Done()
-		s.logger.Info("web server to be shutdown")
+		s.logger.InfoContext(ctx, "web server to be shutdown")
 
 		ctx, cancel := context.WithTimeout(context.Background(), s.cfg.ShutdownTimeout)
 		defer cancel()
@@ -150,8 +216,8 @@ func (s *System) WaitForRPC(ctx context.Context) error {
 
 	group, gCtx := errgroup.WithContext(ctx)
 	group.Go(func() error {
-		s.logger.Info("rpc server started", "address", s.cfg.Rpc.Address())
-		defer s.logger.Info("rpc server shutdown")
+		s.logger.InfoContext(ctx, "rpc server started", "address", s.cfg.Rpc.Address())
+		defer s.logger.InfoContext(ctx, "rpc server shutdown")
 
 		if err := s.RPC().Serve(listener); err != nil && err != grpc.ErrServerStopped {
 			return err
@@ -162,7 +228,7 @@ func (s *System) WaitForRPC(ctx context.Context) error {
 
 	group.Go(func() error {
 		<-gCtx.Done()
-		s.logger.Info("rpc server to be shutdown")
+		s.logger.InfoContext(ctx, "rpc server to be shutdown")
 
 		stopped := make(chan struct{})
 		go func() {
@@ -191,8 +257,8 @@ func (s *System) WaitForStream(ctx context.Context) error {
 
 	group, gCtx := errgroup.WithContext(ctx)
 	group.Go(func() error {
-		s.logger.Info("message stream started")
-		defer s.logger.Info("message stream stopped")
+		s.logger.InfoContext(ctx, "message stream started")
+		defer s.logger.InfoContext(ctx, "message stream stopped")
 		<-closed
 		return nil
 	})

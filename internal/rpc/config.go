@@ -9,7 +9,7 @@ type Services map[string]string
 
 type RpcConfig struct {
 	Host     string `env:"RPC_HOST" env-default:"0.0.0.0"`
-	Port     string `env:"RPC_PORT" env-default:"9000"`
+	Port     string `env:"RPC_PORT" env-default:"9090"`
 	Services Services
 }
 

@@ -12,7 +12,7 @@ type CatalogHandlers[T ddd.AggregateEvent] struct {
 
 var _ ddd.EventHandler[ddd.AggregateEvent] = (*CatalogHandlers[ddd.AggregateEvent])(nil)
 
-func NewCatalogHandlers(catalog domain.CatalogRepository) *CatalogHandlers[ddd.AggregateEvent] {
+func NewCatalogHandlers(catalog domain.CatalogRepository) ddd.EventHandler[ddd.AggregateEvent] {
 	return &CatalogHandlers[ddd.AggregateEvent]{
 		catalog: catalog,
 	}

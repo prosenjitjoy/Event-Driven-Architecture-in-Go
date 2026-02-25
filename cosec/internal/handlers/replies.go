@@ -1,16 +1,21 @@
 package handlers
 
 import (
-	"context"
 	"mall/cosec/internal/domain"
 	"mall/internal/am"
+	"mall/internal/registry"
 	"mall/internal/sec"
 )
 
-func RegisterReplyHandlers(subscriber am.ReplySubscriber, orchestrator sec.Orchestrator[*domain.CreateOrderData]) error {
-	replyMsgHandler := am.MessageHandlerFunc[am.IncomingReplyMessage](func(ctx context.Context, replyMsg am.IncomingReplyMessage) error {
-		return orchestrator.HandleReply(ctx, replyMsg)
-	})
+func NewReplyHandlers(reg registry.Registry, orchestrator sec.Orchestrator[*domain.CreateOrderData], mws ...am.MessageHandlerMiddleware) am.MessageHandler {
+	return am.NewReplyHandler(reg, orchestrator, mws...)
+}
 
-	return subscriber.Subscribe(orchestrator.ReplyTopic(), replyMsgHandler, am.GroupName("cosec-replies"))
+func RegisterReplyHandlers(subscriber am.MessageSubscriber, handlers am.MessageHandler) error {
+	_, err := subscriber.Subscribe(domain.CreateOrderReplyChannel, handlers, am.GroupName("cosec-replies"))
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

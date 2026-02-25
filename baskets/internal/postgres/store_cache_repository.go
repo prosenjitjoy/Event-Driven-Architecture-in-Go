@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"mall/baskets/internal/domain"
 	"mall/internal/postgres"
+
+	"github.com/lib/pq"
 )
 
 type StoreCacheRepository struct {
@@ -26,10 +28,16 @@ func NewStoreCacheRepository(tableName string, db postgres.DBTX, fallback domain
 }
 
 func (r StoreCacheRepository) Add(ctx context.Context, storeID, name string) error {
-	const query = "INSERT INTO %s (id, name) VALUES ($1, $2)"
+	const query = "INSERT INTO %s (id, name) VALUES ($1, $2)" // can also join `... ON CONFLICT DO NOTHING` to end of the query
 
 	_, err := r.db.ExecContext(ctx, r.table(query), storeID, name)
 	if err != nil {
+		if pqErr, ok := err.(*pq.Error); ok {
+			// unique_violation error
+			if pqErr.Code == pq.ErrorCode("23505") {
+				return nil
+			}
+		}
 		return err
 	}
 

@@ -21,14 +21,15 @@ func NewIntegrationEventHandlers(saga sec.Orchestrator[*domain.CreateOrderData])
 	}
 }
 
-func RegisterIntegrationEventHandlers(subscriber am.EventSubscriber, handlers ddd.EventHandler[ddd.Event]) error {
-	eventMsgHandler := am.MessageHandlerFunc[am.IncomingEventMessage](func(ctx context.Context, eventMsg am.IncomingEventMessage) error {
-		return handlers.HandleEvent(ctx, eventMsg)
-	})
-
-	return subscriber.Subscribe(orderingpb.OrderAggregateChannel, eventMsgHandler, am.MessageFilters{
+func RegisterIntegrationEventHandlers(subscriber am.MessageSubscriber, handlers am.MessageHandler) error {
+	_, err := subscriber.Subscribe(orderingpb.OrderAggregateChannel, handlers, am.MessageFilters{
 		orderingpb.OrderCreatedEvent,
 	}, am.GroupName("cosec-ordering"))
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (h integrationHandlers[T]) HandleEvent(ctx context.Context, event T) error {

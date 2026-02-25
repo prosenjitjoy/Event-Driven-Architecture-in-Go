@@ -9,7 +9,6 @@ package am
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	structpb "google.golang.org/protobuf/types/known/structpb"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
 	sync "sync"
@@ -27,7 +26,6 @@ type EventMessageData struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Payload       []byte                 `protobuf:"bytes,1,opt,name=payload,proto3" json:"payload,omitempty"`
 	OccurredAt    *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=occurred_at,json=occurredAt,proto3" json:"occurred_at,omitempty"`
-	Metadata      *structpb.Struct       `protobuf:"bytes,3,opt,name=metadata,proto3" json:"metadata,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -76,18 +74,10 @@ func (x *EventMessageData) GetOccurredAt() *timestamppb.Timestamp {
 	return nil
 }
 
-func (x *EventMessageData) GetMetadata() *structpb.Struct {
-	if x != nil {
-		return x.Metadata
-	}
-	return nil
-}
-
 type CommandMessageData struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Payload       []byte                 `protobuf:"bytes,1,opt,name=payload,proto3" json:"payload,omitempty"`
 	OccurredAt    *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=occurred_at,json=occurredAt,proto3" json:"occurred_at,omitempty"`
-	Metadata      *structpb.Struct       `protobuf:"bytes,3,opt,name=metadata,proto3" json:"metadata,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -136,18 +126,10 @@ func (x *CommandMessageData) GetOccurredAt() *timestamppb.Timestamp {
 	return nil
 }
 
-func (x *CommandMessageData) GetMetadata() *structpb.Struct {
-	if x != nil {
-		return x.Metadata
-	}
-	return nil
-}
-
 type ReplyMessageData struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Payload       []byte                 `protobuf:"bytes,1,opt,name=payload,proto3" json:"payload,omitempty"`
 	OccuredAt     *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=occured_at,json=occuredAt,proto3" json:"occured_at,omitempty"`
-	Metadata      *structpb.Struct       `protobuf:"bytes,3,opt,name=metadata,proto3" json:"metadata,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -196,33 +178,23 @@ func (x *ReplyMessageData) GetOccuredAt() *timestamppb.Timestamp {
 	return nil
 }
 
-func (x *ReplyMessageData) GetMetadata() *structpb.Struct {
-	if x != nil {
-		return x.Metadata
-	}
-	return nil
-}
-
 var File_message_types_proto protoreflect.FileDescriptor
 
 const file_message_types_proto_rawDesc = "" +
 	"\n" +
-	"\x13message_types.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1cgoogle/protobuf/struct.proto\"\x9e\x01\n" +
+	"\x13message_types.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"i\n" +
 	"\x10EventMessageData\x12\x18\n" +
 	"\apayload\x18\x01 \x01(\fR\apayload\x12;\n" +
 	"\voccurred_at\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\n" +
-	"occurredAt\x123\n" +
-	"\bmetadata\x18\x03 \x01(\v2\x17.google.protobuf.StructR\bmetadata\"\xa0\x01\n" +
+	"occurredAt\"k\n" +
 	"\x12CommandMessageData\x12\x18\n" +
 	"\apayload\x18\x01 \x01(\fR\apayload\x12;\n" +
 	"\voccurred_at\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\n" +
-	"occurredAt\x123\n" +
-	"\bmetadata\x18\x03 \x01(\v2\x17.google.protobuf.StructR\bmetadata\"\x9c\x01\n" +
+	"occurredAt\"g\n" +
 	"\x10ReplyMessageData\x12\x18\n" +
 	"\apayload\x18\x01 \x01(\fR\apayload\x129\n" +
 	"\n" +
-	"occured_at\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\toccuredAt\x123\n" +
-	"\bmetadata\x18\x03 \x01(\v2\x17.google.protobuf.StructR\bmetadataB'B\x11MessageTypesProtoP\x01Z\x10mall/internal/amb\x06proto3"
+	"occured_at\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\toccuredAtB'B\x11MessageTypesProtoP\x01Z\x10mall/internal/amb\x06proto3"
 
 var (
 	file_message_types_proto_rawDescOnce sync.Once
@@ -242,20 +214,16 @@ var file_message_types_proto_goTypes = []any{
 	(*CommandMessageData)(nil),    // 1: CommandMessageData
 	(*ReplyMessageData)(nil),      // 2: ReplyMessageData
 	(*timestamppb.Timestamp)(nil), // 3: google.protobuf.Timestamp
-	(*structpb.Struct)(nil),       // 4: google.protobuf.Struct
 }
 var file_message_types_proto_depIdxs = []int32{
 	3, // 0: EventMessageData.occurred_at:type_name -> google.protobuf.Timestamp
-	4, // 1: EventMessageData.metadata:type_name -> google.protobuf.Struct
-	3, // 2: CommandMessageData.occurred_at:type_name -> google.protobuf.Timestamp
-	4, // 3: CommandMessageData.metadata:type_name -> google.protobuf.Struct
-	3, // 4: ReplyMessageData.occured_at:type_name -> google.protobuf.Timestamp
-	4, // 5: ReplyMessageData.metadata:type_name -> google.protobuf.Struct
-	6, // [6:6] is the sub-list for method output_type
-	6, // [6:6] is the sub-list for method input_type
-	6, // [6:6] is the sub-list for extension type_name
-	6, // [6:6] is the sub-list for extension extendee
-	0, // [0:6] is the sub-list for field type_name
+	3, // 1: CommandMessageData.occurred_at:type_name -> google.protobuf.Timestamp
+	3, // 2: ReplyMessageData.occured_at:type_name -> google.protobuf.Timestamp
+	3, // [3:3] is the sub-list for method output_type
+	3, // [3:3] is the sub-list for method input_type
+	3, // [3:3] is the sub-list for extension type_name
+	3, // [3:3] is the sub-list for extension extendee
+	0, // [0:3] is the sub-list for field type_name
 }
 
 func init() { file_message_types_proto_init() }

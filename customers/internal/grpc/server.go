@@ -18,7 +18,10 @@ type server struct {
 var _ customerspb.CustomersServiceServer = (*server)(nil)
 
 func RegisterServer(app application.App, registrar grpc.ServiceRegistrar) error {
-	customerspb.RegisterCustomersServiceServer(registrar, server{app: app})
+	customerspb.RegisterCustomersServiceServer(registrar, server{
+		app: app,
+	})
+
 	return nil
 }
 
@@ -45,7 +48,7 @@ func (s server) AuthorizeCustomer(ctx context.Context, request *customerspb.Auth
 		return nil, err
 	}
 
-	return &customerspb.AuthorizeCustomerResponse{}, err
+	return &customerspb.AuthorizeCustomerResponse{}, nil
 }
 
 func (s server) GetCustomer(ctx context.Context, request *customerspb.GetCustomerRequest) (*customerspb.GetCustomerResponse, error) {

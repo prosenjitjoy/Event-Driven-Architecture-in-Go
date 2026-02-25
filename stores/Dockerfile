@@ -1,3 +1,5 @@
+ARG tag
+
 # Build Stage
 FROM golang:alpine AS builder
 WORKDIR /mall
@@ -7,9 +9,8 @@ COPY . ./
 RUN go build -ldflags="-s -w" -v -o stores-service ./stores/cmd/service
 
 # Run Stage
-FROM alpine:latest AS runtime
+FROM gcr.io/distroless/static-debian13:${tag} AS runtime
 WORKDIR /app
-COPY --from=builder /mall/wait-for.sh .
-RUN chmod +x ./wait-for.sh
+COPY --from=builder /mall/scripts/wait-for.sh .
 COPY --from=builder /mall/stores-service .
 CMD ["/app/stores-service"]

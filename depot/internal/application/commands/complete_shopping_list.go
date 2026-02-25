@@ -36,7 +36,7 @@ func (h CompleteShoppingListHandler) CompleteShoppingList(ctx context.Context, c
 		return err
 	}
 
-	if err = h.domainPublisher.Publish(ctx, list.Events()...); err != nil {
+	if err = h.domainPublisher.Publish(ctx, list.GetEvents()...); err != nil {
 		return err
 	}
 

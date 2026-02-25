@@ -9,6 +9,8 @@ package jetstream
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	structpb "google.golang.org/protobuf/types/known/structpb"
+	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -26,6 +28,8 @@ type StreamMessage struct {
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	Data          []byte                 `protobuf:"bytes,3,opt,name=data,proto3" json:"data,omitempty"`
+	Metadata      *structpb.Struct       `protobuf:"bytes,4,opt,name=metadata,proto3" json:"metadata,omitempty"`
+	SentAt        *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=sent_at,json=sentAt,proto3" json:"sent_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -81,15 +85,31 @@ func (x *StreamMessage) GetData() []byte {
 	return nil
 }
 
+func (x *StreamMessage) GetMetadata() *structpb.Struct {
+	if x != nil {
+		return x.Metadata
+	}
+	return nil
+}
+
+func (x *StreamMessage) GetSentAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.SentAt
+	}
+	return nil
+}
+
 var File_stream_message_proto protoreflect.FileDescriptor
 
 const file_stream_message_proto_rawDesc = "" +
 	"\n" +
-	"\x14stream_message.proto\x12\tjetstream\"G\n" +
+	"\x14stream_message.proto\x12\tjetstream\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1cgoogle/protobuf/struct.proto\"\xb1\x01\n" +
 	"\rStreamMessage\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x12\n" +
-	"\x04data\x18\x03 \x01(\fR\x04dataB\x80\x01\n" +
+	"\x04data\x18\x03 \x01(\fR\x04data\x123\n" +
+	"\bmetadata\x18\x04 \x01(\v2\x17.google.protobuf.StructR\bmetadata\x123\n" +
+	"\asent_at\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\x06sentAtB\x80\x01\n" +
 	"\rcom.jetstreamB\x12StreamMessageProtoP\x01Z\x17mall/internal/jetstream\xa2\x02\x03JXX\xaa\x02\tJetstream\xca\x02\tJetstream\xe2\x02\x15Jetstream\\GPBMetadata\xea\x02\tJetstreamb\x06proto3"
 
 var (
@@ -106,14 +126,18 @@ func file_stream_message_proto_rawDescGZIP() []byte {
 
 var file_stream_message_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
 var file_stream_message_proto_goTypes = []any{
-	(*StreamMessage)(nil), // 0: jetstream.StreamMessage
+	(*StreamMessage)(nil),         // 0: jetstream.StreamMessage
+	(*structpb.Struct)(nil),       // 1: google.protobuf.Struct
+	(*timestamppb.Timestamp)(nil), // 2: google.protobuf.Timestamp
 }
 var file_stream_message_proto_depIdxs = []int32{
-	0, // [0:0] is the sub-list for method output_type
-	0, // [0:0] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	1, // 0: jetstream.StreamMessage.metadata:type_name -> google.protobuf.Struct
+	2, // 1: jetstream.StreamMessage.sent_at:type_name -> google.protobuf.Timestamp
+	2, // [2:2] is the sub-list for method output_type
+	2, // [2:2] is the sub-list for method input_type
+	2, // [2:2] is the sub-list for extension type_name
+	2, // [2:2] is the sub-list for extension extendee
+	0, // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_stream_message_proto_init() }

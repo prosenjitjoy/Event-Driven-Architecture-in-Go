@@ -3,15 +3,13 @@ package handlers
 import (
 	"context"
 	"database/sql"
+	"mall/customers/constants"
 	"mall/internal/am"
-	"mall/internal/ddd"
 	"mall/internal/di"
-	"mall/internal/registry"
-	"mall/stores/storespb"
 )
 
 func RegisterIntegrationEventHandlersTx(container di.Container) error {
-	eventMsgHandler := am.RawMessageHandlerFunc(func(ctx context.Context, msg am.IncomingRawMessage) (err error) {
+	eventMsgHandler := am.MessageHandlerFunc(func(ctx context.Context, msg am.IncomingMessage) (err error) {
 		ctx = container.Scoped(ctx)
 
 		defer func(tx *sql.Tx) {
@@ -25,35 +23,12 @@ func RegisterIntegrationEventHandlersTx(container di.Container) error {
 			}
 		}(di.Get(ctx, "tx").(*sql.Tx))
 
-		reg := di.Get(ctx, "registry").(registry.Registry)
-		integrationEventHandlers := di.Get(ctx, "integrationEventHandlers").(ddd.EventHandler[ddd.Event])
-
-		eventHandler := am.RawMessageHandlerWithMiddleware(
-			am.NewEventMessageHandler(reg, integrationEventHandlers),
-			di.Get(ctx, "inboxMiddleware").(am.RawMessageHandlerMiddleware),
-		)
+		eventHandler := di.Get(ctx, constants.IntegrationEventHandlersKey).(am.MessageHandler)
 
 		return eventHandler.HandleMessage(ctx, msg)
 	})
 
-	subscriber := container.Get("stream").(am.RawMessageStream)
+	subscriber := container.Get(constants.MessageSubscriberKey).(am.MessageSubscriber)
 
-	err := subscriber.Subscribe(storespb.StoreAggregateChannel, eventMsgHandler, am.MessageFilters{
-		storespb.StoreCreatedEvent,
-		storespb.StoreRebrandedEvent,
-	}, am.GroupName("depot-stores"))
-	if err != nil {
-		return err
-	}
-
-	err = subscriber.Subscribe(storespb.ProductAggregateChannel, eventMsgHandler, am.MessageFilters{
-		storespb.ProductAddedEvent,
-		storespb.ProductRebrandedEvent,
-		storespb.ProductRemovedEvent,
-	}, am.GroupName("depot-products"))
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return RegisterIntegrationEventHandlers(subscriber, eventMsgHandler)
 }

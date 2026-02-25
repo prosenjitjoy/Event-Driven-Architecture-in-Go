@@ -3,17 +3,17 @@ syntax = "proto3";
 package basketspb;
 
 message Basket {
-  string id = 1;
+  string        id    = 1;
   repeated Item items = 2;
 }
 
 message Item {
-  string store_id = 1;
-  string product_id = 2;
-  string store_name = 3;
-  string product_name = 4;
+  string store_id      = 1;
+  string product_id    = 2;
+  string store_name    = 3;
+  string product_name  = 4;
   double product_price = 5;
-  int32 quantity = 6;
+  int32  quantity      = 6;
 }
 
 service BasketService {
@@ -28,6 +28,7 @@ service BasketService {
 message StartBasketRequest {
   string customer_id = 1;
 }
+
 message StartBasketResponse {
   string id = 1;
 }
@@ -35,31 +36,36 @@ message StartBasketResponse {
 message CancelBasketRequest {
   string id = 1;
 }
+
 message CancelBasketResponse {}
 
 message CheckoutBasketRequest {
-  string id = 1;
+  string id         = 1;
   string payment_id = 2;
 }
+
 message CheckoutBasketResponse {}
 
 message AddItemRequest {
-  string id = 1;
+  string id         = 1;
   string product_id = 2;
-  int32 quantity = 3;
+  int32  quantity   = 3;
 }
+
 message AddItemResponse {}
 
 message RemoveItemRequest {
-  string id = 1;
+  string id         = 1;
   string product_id = 2;
-  int32 quantity = 3;
+  int32  quantity   = 3;
 }
+
 message RemoveItemResponse {}
 
 message GetBasketRequest {
   string id = 1;
 }
+
 message GetBasketResponse {
   Basket basket = 1;
 }

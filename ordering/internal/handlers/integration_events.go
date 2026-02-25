@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"mall/baskets/basketspb"
+	"mall/depot/depotpb"
 	"mall/internal/am"
 	"mall/internal/ddd"
 	"mall/ordering/internal/application"
@@ -20,14 +21,17 @@ func NewIntegrationEventHandlers(app application.App) ddd.EventHandler[ddd.Event
 	return integrationHandlers[ddd.Event]{app: app}
 }
 
-func RegisterIntegrationEventHandlers(subscriber am.EventSubscriber, handlers ddd.EventHandler[ddd.Event]) error {
-	eventMsgHandler := am.MessageHandlerFunc[am.IncomingEventMessage](func(ctx context.Context, eventMsg am.IncomingEventMessage) error {
-		return handlers.HandleEvent(ctx, eventMsg)
-	})
-
-	err := subscriber.Subscribe(basketspb.BasketAggregateChannel, eventMsgHandler, am.MessageFilters{
+func RegisterIntegrationEventHandlers(subscriber am.MessageSubscriber, handlers am.MessageHandler) error {
+	_, err := subscriber.Subscribe(basketspb.BasketAggregateChannel, handlers, am.MessageFilters{
 		basketspb.BasketCheckedOutEvent,
 	}, am.GroupName("ordering-baskets"))
+	if err != nil {
+		return err
+	}
+
+	_, err = subscriber.Subscribe(depotpb.ShoppingListAggregateChannel, handlers, am.MessageFilters{
+		depotpb.ShoppingListCompletedEvent,
+	}, am.GroupName("ordering-depot"))
 	if err != nil {
 		return err
 	}
@@ -39,6 +43,8 @@ func (h integrationHandlers[T]) HandleEvent(ctx context.Context, event T) error 
 	switch event.EventName() {
 	case basketspb.BasketCheckedOutEvent:
 		return h.onBasketCheckedOut(ctx, event)
+	case depotpb.ShoppingListCompletedEvent:
+		return h.onShoppingListCompleted(ctx, event)
 	}
 
 	return nil
@@ -71,4 +77,10 @@ func (h integrationHandlers[T]) onBasketCheckedOut(ctx context.Context, event dd
 	}
 
 	return nil
+}
+
+func (h integrationHandlers[T]) onShoppingListCompleted(ctx context.Context, event ddd.Event) error {
+	payload := event.Payload().(*depotpb.ShoppingListCompleted)
+
+	return h.app.ReadyOrder(ctx, commands.ReadyOrderRequest{ID: payload.GetOrderId()})
 }

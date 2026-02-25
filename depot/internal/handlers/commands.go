@@ -15,14 +15,14 @@ type commandHandlers struct {
 	app application.App
 }
 
+var _ ddd.CommandHandler[ddd.Command] = (*commandHandlers)(nil)
+
 func NewCommandHandlers(app application.App) ddd.CommandHandler[ddd.Command] {
-	return commandHandlers{
-		app: app,
-	}
+	return commandHandlers{app: app}
 }
 
-func RegisterCommandHandlers(subscriber am.RawMessageSubscriber, handlers am.RawMessageHandler) error {
-	err := subscriber.Subscribe(depotpb.CommandChannel, handlers, am.MessageFilters{
+func RegisterCommandHandlers(subscriber am.MessageSubscriber, handlers am.MessageHandler) error {
+	_, err := subscriber.Subscribe(depotpb.CommandChannel, handlers, am.MessageFilters{
 		depotpb.CreateShoppingListCommand,
 		depotpb.CancelShoppingListCommand,
 		depotpb.InitiateShoppingCommand,
@@ -40,8 +40,6 @@ func (h commandHandlers) HandleCommand(ctx context.Context, cmd ddd.Command) (dd
 		return h.doCreateShoppingList(ctx, cmd)
 	case depotpb.CancelShoppingListCommand:
 		return h.doCancelShoppingList(ctx, cmd)
-		// case depotpb.InitiateShoppingCommand:
-		// 	return h.doInitiateShoppingList(ctx, cmd)
 	}
 
 	return nil, nil

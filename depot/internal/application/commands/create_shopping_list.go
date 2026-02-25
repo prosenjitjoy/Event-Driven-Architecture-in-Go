@@ -51,7 +51,7 @@ func (h CreateShoppingListHandler) CreateShoppingList(ctx context.Context, cmd C
 		return fmt.Errorf("scheduling shopping: %w", err)
 	}
 
-	if err := h.domainPublisher.Publish(ctx, list.Events()...); err != nil {
+	if err := h.domainPublisher.Publish(ctx, list.GetEvents()...); err != nil {
 		return err
 	}
 

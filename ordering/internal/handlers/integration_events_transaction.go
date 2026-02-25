@@ -3,16 +3,13 @@ package handlers
 import (
 	"context"
 	"database/sql"
-	"mall/baskets/basketspb"
-	"mall/depot/depotpb"
 	"mall/internal/am"
-	"mall/internal/ddd"
 	"mall/internal/di"
-	"mall/internal/registry"
+	"mall/ordering/internal/constants"
 )
 
 func RegisterIntegrationEventHandlersTx(container di.Container) error {
-	eventMsgHandler := am.RawMessageHandlerFunc(func(ctx context.Context, msg am.IncomingRawMessage) (err error) {
+	eventMsgHandler := am.MessageHandlerFunc(func(ctx context.Context, msg am.IncomingMessage) (err error) {
 		ctx = container.Scoped(ctx)
 
 		defer func(tx *sql.Tx) {
@@ -24,34 +21,14 @@ func RegisterIntegrationEventHandlersTx(container di.Container) error {
 			} else {
 				err = tx.Commit()
 			}
-		}(di.Get(ctx, "tx").(*sql.Tx))
+		}(di.Get(ctx, constants.DatabaseTransactionKey).(*sql.Tx))
 
-		reg := di.Get(ctx, "registry").(registry.Registry)
-		integrationEventHandlers := di.Get(ctx, "integrationEventHandlers").(ddd.EventHandler[ddd.Event])
-
-		eventHandler := am.RawMessageHandlerWithMiddleware(
-			am.NewEventMessageHandler(reg, integrationEventHandlers),
-			di.Get(ctx, "inboxMiddleware").(am.RawMessageHandlerMiddleware),
-		)
+		eventHandler := di.Get(ctx, constants.IntegrationEventHandlersKey).(am.MessageHandler)
 
 		return eventHandler.HandleMessage(ctx, msg)
 	})
 
-	subscriber := container.Get("stream").(am.RawMessageStream)
+	subscriber := container.Get(constants.MessageSubscriberKey).(am.MessageSubscriber)
 
-	err := subscriber.Subscribe(basketspb.BasketAggregateChannel, eventMsgHandler, am.MessageFilters{
-		basketspb.BasketCheckedOutEvent,
-	}, am.GroupName("ordering-baskets"))
-	if err != nil {
-		return err
-	}
-
-	err = subscriber.Subscribe(depotpb.ShoppingListAggregateChannel, eventMsgHandler, am.MessageFilters{
-		depotpb.ShoppingListCompletedEvent,
-	}, am.GroupName("ordering-depot"))
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return RegisterIntegrationEventHandlers(subscriber, eventMsgHandler)
 }

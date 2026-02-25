@@ -36,7 +36,7 @@ func (h CancelShoppingListHandler) CancelShoppingList(ctx context.Context, cmd C
 		return err
 	}
 
-	if err = h.domainPublisher.Publish(ctx, list.Events()...); err != nil {
+	if err = h.domainPublisher.Publish(ctx, list.GetEvents()...); err != nil {
 		return err
 	}
 

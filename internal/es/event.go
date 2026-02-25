@@ -28,7 +28,7 @@ func LoadEvent(v any, event ddd.AggregateEvent) error {
 		return err
 	}
 
-	agg.setVersion(event.AggregateVersion())
+	agg.SetVersion(event.AggregateVersion())
 
 	return nil
 }

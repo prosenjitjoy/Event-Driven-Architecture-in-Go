@@ -3,6 +3,7 @@ package grpc
 import (
 	"context"
 	"database/sql"
+	"mall/customers/constants"
 	"mall/customers/customerspb"
 	"mall/customers/internal/application"
 	"mall/internal/di"
@@ -28,9 +29,9 @@ func (s serverTx) RegisterCustomer(ctx context.Context, request *customerspb.Reg
 
 	defer func(tx *sql.Tx) {
 		err = s.closeTx(tx, err)
-	}(di.Get(ctx, "tx").(*sql.Tx))
+	}(di.Get(ctx, constants.DatabaseTransactionKey).(*sql.Tx))
 
-	next := server{app: di.Get(ctx, "app").(application.App)}
+	next := server{app: di.Get(ctx, constants.ApplicationKey).(application.App)}
 
 	return next.RegisterCustomer(ctx, request)
 }
@@ -40,9 +41,9 @@ func (s serverTx) AuthorizeCustomer(ctx context.Context, request *customerspb.Au
 
 	defer func(tx *sql.Tx) {
 		err = s.closeTx(tx, err)
-	}(di.Get(ctx, "tx").(*sql.Tx))
+	}(di.Get(ctx, constants.DatabaseTransactionKey).(*sql.Tx))
 
-	next := server{app: di.Get(ctx, "app").(application.App)}
+	next := server{app: di.Get(ctx, constants.ApplicationKey).(application.App)}
 
 	return next.AuthorizeCustomer(ctx, request)
 
@@ -53,9 +54,9 @@ func (s serverTx) GetCustomer(ctx context.Context, request *customerspb.GetCusto
 
 	defer func(tx *sql.Tx) {
 		err = s.closeTx(tx, err)
-	}(di.Get(ctx, "tx").(*sql.Tx))
+	}(di.Get(ctx, constants.DatabaseTransactionKey).(*sql.Tx))
 
-	next := server{app: di.Get(ctx, "app").(application.App)}
+	next := server{app: di.Get(ctx, constants.ApplicationKey).(application.App)}
 
 	return next.GetCustomer(ctx, request)
 }
@@ -65,9 +66,9 @@ func (s serverTx) EnableCustomer(ctx context.Context, request *customerspb.Enabl
 
 	defer func(tx *sql.Tx) {
 		err = s.closeTx(tx, err)
-	}(di.Get(ctx, "tx").(*sql.Tx))
+	}(di.Get(ctx, constants.DatabaseTransactionKey).(*sql.Tx))
 
-	next := server{app: di.Get(ctx, "app").(application.App)}
+	next := server{app: di.Get(ctx, constants.ApplicationKey).(application.App)}
 
 	return next.EnableCustomer(ctx, request)
 }
@@ -77,9 +78,9 @@ func (s serverTx) DisableCustomer(ctx context.Context, request *customerspb.Disa
 
 	defer func(tx *sql.Tx) {
 		err = s.closeTx(tx, err)
-	}(di.Get(ctx, "tx").(*sql.Tx))
+	}(di.Get(ctx, constants.DatabaseTransactionKey).(*sql.Tx))
 
-	next := server{app: di.Get(ctx, "app").(application.App)}
+	next := server{app: di.Get(ctx, constants.ApplicationKey).(application.App)}
 
 	return next.DisableCustomer(ctx, request)
 }

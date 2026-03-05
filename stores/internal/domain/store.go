@@ -34,7 +34,7 @@ func NewStore(id string) *Store {
 	}
 }
 
-func CreateStore(id, name, location string) (*Store, error) {
+func (s *Store) InitStore(name, location string) (ddd.Event, error) {
 	if name == "" {
 		return nil, ErrStoreNameIsBlank
 	}
@@ -43,46 +43,46 @@ func CreateStore(id, name, location string) (*Store, error) {
 		return nil, ErrStoreLocationIsBlank
 	}
 
-	store := NewStore(id)
-
-	store.AddEvent(StoreCreatedEvent, &StoreCreated{
+	s.AddEvent(StoreCreatedEvent, &StoreCreated{
 		Name:     name,
 		Location: location,
 	})
 
-	return store, nil
+	return ddd.NewEvent(StoreCreatedEvent, s), nil
 }
 
-func (s *Store) EnableParticipation() error {
+func (s *Store) EnableParticipation() (ddd.Event, error) {
 	if s.Participating {
-		return ErrStoreIsAlreadyParticipating
+		return nil, ErrStoreIsAlreadyParticipating
 	}
 
 	s.AddEvent(StoreParticipationEnabledEvent, &StoreParticipationToggled{
 		Participation: true,
 	})
 
-	return nil
+	return ddd.NewEvent(StoreParticipationEnabledEvent, s), nil
 }
 
-func (s *Store) DisableParticipation() error {
+func (s *Store) DisableParticipation() (ddd.Event, error) {
 	if !s.Participating {
-		return ErrStoreIsAlreadyNotParticipating
+		return nil, ErrStoreIsAlreadyNotParticipating
 	}
 
 	s.AddEvent(StoreParticipationDisabledEvent, &StoreParticipationToggled{
 		Participation: false,
 	})
 
-	return nil
+	return ddd.NewEvent(StoreParticipationDisabledEvent, &StoreParticipationToggled{
+		Participation: false,
+	}), nil
 }
 
-func (s *Store) Rebrand(name string) error {
+func (s *Store) Rebrand(name string) (ddd.Event, error) {
 	s.AddEvent(StoreRebrandedEvent, &StoreRebranded{
 		Name: name,
 	})
 
-	return nil
+	return ddd.NewEvent(StoreRebrandedEvent, s), nil
 }
 
 func (s *Store) ApplyEvent(event ddd.Event) error {
@@ -90,10 +90,13 @@ func (s *Store) ApplyEvent(event ddd.Event) error {
 	case *StoreCreated:
 		s.Name = payload.Name
 		s.Location = payload.Location
+
 	case *StoreParticipationToggled:
 		s.Participating = payload.Participation
+
 	case *StoreRebranded:
 		s.Name = payload.Name
+
 	default:
 		return fmt.Errorf("%T received the event %s with unexpected payload %T", s, event.EventName(), payload)
 	}
@@ -107,6 +110,7 @@ func (s *Store) ApplySnapshot(snapshot es.Snapshot) error {
 		s.Name = ss.Name
 		s.Location = ss.Location
 		s.Participating = ss.Participation
+
 	default:
 		return fmt.Errorf("%T received the unexpected snapshot %T", s, snapshot)
 	}

@@ -7,6 +7,11 @@ import (
 	"mall/ordering/internal/application"
 	"mall/ordering/internal/application/commands"
 	"mall/ordering/orderingpb"
+	"time"
+
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
 )
 
 type commandHandlers struct {
@@ -29,7 +34,35 @@ func RegisterCommandHandlers(subscriber am.MessageSubscriber, handlers am.Messag
 	return nil
 }
 
-func (h commandHandlers) HandleCommand(ctx context.Context, cmd ddd.Command) (ddd.Reply, error) {
+func (h commandHandlers) HandleCommand(ctx context.Context, cmd ddd.Command) (reply ddd.Reply, err error) {
+	span := trace.SpanFromContext(ctx)
+
+	defer func(started time.Time) {
+		if err != nil {
+			span.AddEvent(
+				"Encountered an error handling command",
+				trace.WithAttributes(
+					attribute.String("error.message", err.Error()),
+				),
+			)
+			span.SetStatus(codes.Error, err.Error())
+		}
+
+		span.AddEvent(
+			"Handled command",
+			trace.WithAttributes(
+				attribute.Int64("TookMS", int64(time.Since(started).Milliseconds())),
+			),
+		)
+	}(time.Now())
+
+	span.AddEvent(
+		"Handling command",
+		trace.WithAttributes(
+			attribute.String("Command", cmd.CommandName()),
+		),
+	)
+
 	switch cmd.CommandName() {
 	case orderingpb.RejectOrderCommand:
 		return h.doRejectOrder(ctx, cmd)

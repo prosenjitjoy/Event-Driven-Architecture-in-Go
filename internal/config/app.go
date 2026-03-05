@@ -28,7 +28,7 @@ type AppConfig struct {
 	Web             web.WebConfig
 	Rpc             rpc.RpcConfig
 	ServiceName     string `env:"OTEL_SERVICE_NAME" env-required:"true"`
-	rpcServices     string `env:"RPC_SERVICES" env-default:""`
+	RpcServices     string `env:"RPC_SERVICES" env-required:"true"`
 }
 
 func InitConfig() (*AppConfig, error) {
@@ -39,7 +39,7 @@ func InitConfig() (*AppConfig, error) {
 		return nil, err
 	}
 
-	cfg.Rpc.Services.Decode(cfg.rpcServices)
+	cfg.Rpc.Services.Decode(cfg.RpcServices)
 
 	return &cfg, nil
 }

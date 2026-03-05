@@ -6,11 +6,13 @@ import (
 	"log/slog"
 
 	"mall/internal/am"
+	"mall/internal/amotel"
 	"mall/internal/ddd"
 	"mall/internal/di"
 	"mall/internal/es"
 	"mall/internal/jetstream"
 	pg "mall/internal/postgres"
+	"mall/internal/postgresotel"
 	"mall/internal/registry"
 	"mall/internal/system"
 	"mall/internal/tm"
@@ -41,6 +43,7 @@ func Root(ctx context.Context, service system.Service) (err error) {
 		if err := domain.Registrations(reg); err != nil {
 			return nil, err
 		}
+
 		if err := storespb.Registrations(reg); err != nil {
 			return nil, err
 		}
@@ -51,12 +54,14 @@ func Root(ctx context.Context, service system.Service) (err error) {
 	stream := jetstream.NewStream(service.Config().Nats.Stream, service.JS(), service.Logger())
 
 	container.AddSingleton(constants.DomainDispatcherKey, func(c di.Container) (any, error) {
-		return ddd.NewEventDispatcher[ddd.AggregateEvent](), nil
+		return ddd.NewEventDispatcher[ddd.Event](), nil
 	})
 
 	container.AddScoped(constants.DatabaseTransactionKey, func(c di.Container) (any, error) {
 		return service.DB().Begin()
 	})
+
+	sentCounter := amotel.SentMessagesCounter(service.Config().ServiceName)
 
 	container.AddScoped(constants.MessagePublisherKey, func(c di.Container) (any, error) {
 		tx := c.Get(constants.DatabaseTransactionKey).(*sql.Tx)
@@ -66,6 +71,8 @@ func Root(ctx context.Context, service system.Service) (err error) {
 
 		return am.NewMessagePublisher(
 			stream,
+			amotel.MessageContextInjector(),
+			sentCounter,
 			outboxHandler,
 		), nil
 	})
@@ -73,6 +80,8 @@ func Root(ctx context.Context, service system.Service) (err error) {
 	container.AddSingleton(constants.MessageSubscriberKey, func(c di.Container) (any, error) {
 		return am.NewMessageSubscriber(
 			stream,
+			amotel.MessageContextExtractor(),
+			amotel.ReceivedMessagesCounter(service.Config().ServiceName),
 		), nil
 	})
 
@@ -84,13 +93,13 @@ func Root(ctx context.Context, service system.Service) (err error) {
 	})
 
 	container.AddScoped(constants.InboxStoreKey, func(c di.Container) (any, error) {
-		tx := c.Get(constants.DatabaseTransactionKey).(*sql.Tx)
+		tx := postgresotel.Trace(c.Get(constants.DatabaseTransactionKey).(*sql.Tx))
 
 		return pg.NewInboxStore(constants.InboxTableName, tx), nil
 	})
 
 	container.AddScoped(constants.AggregateStoreKey, func(c di.Container) (any, error) {
-		tx := c.Get(constants.DatabaseTransactionKey).(*sql.Tx)
+		tx := postgresotel.Trace(c.Get(constants.DatabaseTransactionKey).(*sql.Tx))
 		reg := c.Get(constants.RegistryKey).(registry.Registry)
 
 		eventStore := pg.NewEventStore(constants.EventsTableName, tx, reg)
@@ -114,13 +123,13 @@ func Root(ctx context.Context, service system.Service) (err error) {
 	})
 
 	container.AddScoped(constants.CatalogRepoKey, func(c di.Container) (any, error) {
-		tx := c.Get(constants.DatabaseTransactionKey).(*sql.Tx)
+		tx := postgresotel.Trace(c.Get(constants.DatabaseTransactionKey).(*sql.Tx))
 
 		return postgres.NewCatalogRepository(constants.CatalogTableName, tx), nil
 	})
 
 	container.AddScoped(constants.MallRepoKey, func(c di.Container) (any, error) {
-		tx := c.Get(constants.DatabaseTransactionKey).(*sql.Tx)
+		tx := postgresotel.Trace(c.Get(constants.DatabaseTransactionKey).(*sql.Tx))
 
 		return postgres.NewMallRepository(constants.MallTableName, tx), nil
 	})
@@ -131,8 +140,9 @@ func Root(ctx context.Context, service system.Service) (err error) {
 		products := c.Get(constants.ProductsRepoKey).(domain.ProductRepository)
 		catalog := c.Get(constants.CatalogRepoKey).(domain.CatalogRepository)
 		mall := c.Get(constants.MallRepoKey).(domain.MallRepository)
+		domainDispatcherKey := c.Get(constants.DomainDispatcherKey).(ddd.EventPublisher[ddd.Event])
 
-		app := application.New(stores, products, catalog, mall)
+		app := application.New(stores, products, catalog, mall, domainDispatcherKey)
 
 		return logging.LogApplicationAccess(app, service.Logger()), nil
 	})
@@ -141,7 +151,7 @@ func Root(ctx context.Context, service system.Service) (err error) {
 		catalog := c.Get(constants.CatalogRepoKey).(domain.CatalogRepository)
 
 		catalogHandlers := handlers.NewCatalogHandlers(catalog)
-		catalogHandlers = logging.LogEventHandlerAccess[ddd.AggregateEvent](
+		catalogHandlers = logging.LogEventHandlerAccess[ddd.Event](
 			catalogHandlers,
 			"Catalog",
 			service.Logger(),
@@ -154,7 +164,7 @@ func Root(ctx context.Context, service system.Service) (err error) {
 		mall := c.Get(constants.MallRepoKey).(domain.MallRepository)
 
 		mallHandlers := handlers.NewMallHandlers(mall)
-		mallHandlers = logging.LogEventHandlerAccess[ddd.AggregateEvent](
+		mallHandlers = logging.LogEventHandlerAccess[ddd.Event](
 			mallHandlers,
 			"Mall",
 			service.Logger(),
@@ -167,7 +177,7 @@ func Root(ctx context.Context, service system.Service) (err error) {
 		eventPublisher := c.Get(constants.EventPublisherKey).(am.EventPublisher)
 
 		domainEventHandlers := handlers.NewDomainEventHandlers(eventPublisher)
-		domainEventHandlers = logging.LogEventHandlerAccess[ddd.AggregateEvent](
+		domainEventHandlers = logging.LogEventHandlerAccess[ddd.Event](
 			domainEventHandlers,
 			"DomainEvents",
 			service.Logger(),
@@ -203,7 +213,7 @@ func startOutboxProcessor(ctx context.Context, outboxProcessor tm.OutboxProcesso
 	go func() {
 		err := outboxProcessor.Start(ctx)
 		if err != nil {
-			logger.Error("stores outbox processor encountered an error", "error", err.Error())
+			logger.ErrorContext(ctx, "stores outbox processor encountered an error", "error", err.Error())
 		}
 	}()
 }

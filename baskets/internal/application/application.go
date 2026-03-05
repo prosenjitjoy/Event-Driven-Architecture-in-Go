@@ -55,7 +55,7 @@ type Application struct {
 
 var _ App = (*Application)(nil)
 
-func New(baskets domain.BasketRepository, stores domain.StoreRepository, products domain.ProductRepository, publisher ddd.EventPublisher[ddd.Event]) *Application {
+func New(baskets domain.BasketRepository, stores domain.StoreRepository, products domain.ProductRepository, publisher ddd.EventPublisher[ddd.Event]) App {
 	return &Application{
 		baskets:   baskets,
 		stores:    stores,

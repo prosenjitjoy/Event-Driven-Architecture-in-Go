@@ -7,6 +7,9 @@ import (
 	"mall/depot/internal/application/commands"
 
 	"github.com/google/uuid"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/grpc"
 )
 
@@ -26,7 +29,14 @@ func RegisterServer(app application.App, registrar grpc.ServiceRegistrar) error 
 }
 
 func (s server) CreateShoppingList(ctx context.Context, request *depotpb.CreateShoppingListRequest) (*depotpb.CreateShoppingListResponse, error) {
+	span := trace.SpanFromContext(ctx)
+
 	id := uuid.New().String()
+
+	span.SetAttributes(
+		attribute.String("ShoppingListID", id),
+		attribute.String("OrderID", request.GetOrderId()),
+	)
 
 	items := make([]commands.OrderItem, 0, len(request.GetItems()))
 	for _, item := range request.GetItems() {
@@ -39,6 +49,8 @@ func (s server) CreateShoppingList(ctx context.Context, request *depotpb.CreateS
 		Items:   items,
 	})
 	if err != nil {
+		span.RecordError(err, trace.WithAttributes(attribute.String("error.message", err.Error())))
+		span.SetStatus(codes.Error, err.Error())
 		return nil, err
 	}
 
@@ -46,10 +58,18 @@ func (s server) CreateShoppingList(ctx context.Context, request *depotpb.CreateS
 }
 
 func (s server) CancelShoppingList(ctx context.Context, request *depotpb.CancelShoppingListRequest) (*depotpb.CancelShoppingListResponse, error) {
+	span := trace.SpanFromContext(ctx)
+
+	span.SetAttributes(
+		attribute.String("ShoppingListID", request.GetId()),
+	)
+
 	err := s.app.CancelShoppingList(ctx, commands.CancelShoppingListRequest{
 		ID: request.GetId(),
 	})
 	if err != nil {
+		span.RecordError(err, trace.WithAttributes(attribute.String("error.message", err.Error())))
+		span.SetStatus(codes.Error, err.Error())
 		return nil, err
 	}
 
@@ -57,11 +77,20 @@ func (s server) CancelShoppingList(ctx context.Context, request *depotpb.CancelS
 }
 
 func (s server) AssignShoppingList(ctx context.Context, request *depotpb.AssignShoppingListRequest) (*depotpb.AssignShoppingListResponse, error) {
+	span := trace.SpanFromContext(ctx)
+
+	span.SetAttributes(
+		attribute.String("ShoppingListID", request.GetId()),
+		attribute.String("BotID", request.GetBotId()),
+	)
+
 	err := s.app.AssignShoppingList(ctx, commands.AssignShoppingListRequest{
 		ID:    request.GetId(),
 		BotID: request.GetBotId(),
 	})
 	if err != nil {
+		span.RecordError(err, trace.WithAttributes(attribute.String("error.message", err.Error())))
+		span.SetStatus(codes.Error, err.Error())
 		return nil, err
 	}
 
@@ -69,10 +98,18 @@ func (s server) AssignShoppingList(ctx context.Context, request *depotpb.AssignS
 }
 
 func (s server) CompleteShoppingList(ctx context.Context, request *depotpb.CompleteShoppingListRequest) (*depotpb.CompleteShoppingListResponse, error) {
+	span := trace.SpanFromContext(ctx)
+
+	span.SetAttributes(
+		attribute.String("ShoppingListID", request.GetId()),
+	)
+
 	err := s.app.CompleteShoppingList(ctx, commands.CompleteShoppingListRequest{
 		ID: request.GetId(),
 	})
 	if err != nil {
+		span.RecordError(err, trace.WithAttributes(attribute.String("error.message", err.Error())))
+		span.SetStatus(codes.Error, err.Error())
 		return nil, err
 	}
 

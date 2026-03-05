@@ -36,7 +36,7 @@ func NewProduct(id string) *Product {
 	}
 }
 
-func CreateProduct(id, storeID, name, description, sku string, price float64) (*Product, error) {
+func (p *Product) InitProduct(storeID, name, description, sku string, price float64) (ddd.Event, error) {
 	if name == "" {
 		return nil, ErrProductNameIsBlank
 	}
@@ -45,9 +45,7 @@ func CreateProduct(id, storeID, name, description, sku string, price float64) (*
 		return nil, ErrProductPriceIsNegative
 	}
 
-	product := NewProduct(id)
-
-	product.AddEvent(ProductAddedEvent, &ProductAdded{
+	p.AddEvent(ProductAddedEvent, &ProductAdded{
 		StoreID:     storeID,
 		Name:        name,
 		Description: description,
@@ -55,46 +53,56 @@ func CreateProduct(id, storeID, name, description, sku string, price float64) (*
 		Price:       price,
 	})
 
-	return product, nil
+	return ddd.NewEvent(ProductAddedEvent, p), nil
 }
 
-func (p *Product) Rebrand(name, description string) error {
+func (p *Product) Rebrand(name, description string) (ddd.Event, error) {
 	p.AddEvent(ProductRebrandedEvent, &ProductRebranded{
 		Name:        name,
 		Description: description,
 	})
 
-	return nil
+	return ddd.NewEvent(ProductRebrandedEvent, p), nil
 }
 
-func (p *Product) IncreasePrice(price float64) error {
+func (p *Product) IncreasePrice(price float64) (ddd.Event, error) {
 	if price < p.Price {
-		return ErrNotAPriceIncrease
+		return nil, ErrNotAPriceIncrease
 	}
+
+	delta := price - p.Price
 
 	p.AddEvent(ProductPriceIncreasedEvent, &ProductPriceChanged{
-		Delta: price - p.Price,
+		Delta: delta,
 	})
 
-	return nil
+	return ddd.NewEvent(ProductPriceIncreasedEvent, ProductPriceDelta{
+		Product: p,
+		Delta:   delta,
+	}), nil
 }
 
-func (p *Product) DecreasePrice(price float64) error {
+func (p *Product) DecreasePrice(price float64) (ddd.Event, error) {
 	if price > p.Price {
-		return ErrNotAPriceDecrease
+		return nil, ErrNotAPriceDecrease
 	}
+
+	delta := price - p.Price
 
 	p.AddEvent(ProductPriceDecreasedEvent, &ProductPriceChanged{
 		Delta: price - p.Price,
 	})
 
-	return nil
+	return ddd.NewEvent(ProductPriceDecreasedEvent, ProductPriceDelta{
+		Product: p,
+		Delta:   delta,
+	}), nil
 }
 
-func (p *Product) Remove() error {
+func (p *Product) Remove() (ddd.Event, error) {
 	p.AddEvent(ProductRemovedEvent, &ProductRemoved{})
 
-	return nil
+	return ddd.NewEvent(ProductRemovedEvent, p), nil
 }
 
 func (p *Product) ApplyEvent(event ddd.Event) error {
@@ -105,13 +113,17 @@ func (p *Product) ApplyEvent(event ddd.Event) error {
 		p.Description = payload.Description
 		p.SKU = payload.SKU
 		p.Price = payload.Price
+
 	case *ProductRebranded:
 		p.Name = payload.Name
 		p.Description = payload.Description
+
 	case *ProductPriceChanged:
 		p.Price = p.Price + payload.Delta
+
 	case *ProductRemoved:
 		// no operation
+
 	default:
 		return fmt.Errorf("%T received the event %s with unexpected payload %T", p, event.EventName(), payload)
 	}

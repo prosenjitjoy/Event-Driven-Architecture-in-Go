@@ -14,15 +14,19 @@ import (
 	"mall/baskets/internal/postgres"
 	"mall/baskets/internal/rest"
 	"mall/internal/am"
+	"mall/internal/amotel"
 	"mall/internal/ddd"
 	"mall/internal/di"
 	"mall/internal/es"
 	"mall/internal/jetstream"
 	pg "mall/internal/postgres"
+	"mall/internal/postgresotel"
 	"mall/internal/registry"
 	"mall/internal/system"
 	"mall/internal/tm"
 	"mall/stores/storespb"
+
+	"go.opentelemetry.io/otel"
 )
 
 type Module struct{}
@@ -57,18 +61,22 @@ func Root(ctx context.Context, service system.Service) error {
 		return ddd.NewEventDispatcher[ddd.Event](), nil
 	})
 
-	container.AddSingleton(constants.DatabaseTransactionKey, func(c di.Container) (any, error) {
+	container.AddScoped(constants.DatabaseTransactionKey, func(c di.Container) (any, error) {
 		return service.DB().Begin()
 	})
 
+	sentCounter := amotel.SentMessagesCounter(service.Config().ServiceName)
+
 	container.AddScoped(constants.MessagePublisherKey, func(c di.Container) (any, error) {
-		tx := c.Get(constants.DatabaseTransactionKey).(*sql.Tx)
+		tx := postgresotel.Trace(c.Get(constants.DatabaseTransactionKey).(*sql.Tx))
 
 		outboxStore := pg.NewOutboxStore(constants.OutboxTableName, tx)
 		outboxPublisher := tm.OutboxPublisher(outboxStore)
 
 		return am.NewMessagePublisher(
 			stream,
+			amotel.MessageContextInjector(),
+			sentCounter,
 			outboxPublisher,
 		), nil
 	})
@@ -76,6 +84,8 @@ func Root(ctx context.Context, service system.Service) error {
 	container.AddSingleton(constants.MessageSubscriberKey, func(c di.Container) (any, error) {
 		return am.NewMessageSubscriber(
 			stream,
+			amotel.MessageContextExtractor(),
+			amotel.ReceivedMessagesCounter(service.Config().ServiceName),
 		), nil
 	})
 
@@ -87,13 +97,13 @@ func Root(ctx context.Context, service system.Service) error {
 	})
 
 	container.AddScoped(constants.InboxStoreKey, func(c di.Container) (any, error) {
-		tx := c.Get(constants.DatabaseTransactionKey).(*sql.Tx)
+		tx := postgresotel.Trace(c.Get(constants.DatabaseTransactionKey).(*sql.Tx))
 
 		return pg.NewInboxStore(constants.InboxTableName, tx), nil
 	})
 
 	container.AddScoped(constants.BasketsRepoKey, func(c di.Container) (any, error) {
-		tx := c.Get(constants.DatabaseTransactionKey).(*sql.Tx)
+		tx := postgresotel.Trace(c.Get(constants.DatabaseTransactionKey).(*sql.Tx))
 		reg := c.Get(constants.RegistryKey).(registry.Registry)
 
 		eventStore := pg.NewEventStore(constants.EventsTableName, tx, reg)
@@ -104,7 +114,7 @@ func Root(ctx context.Context, service system.Service) error {
 	})
 
 	container.AddScoped(constants.StoresRepoKey, func(c di.Container) (any, error) {
-		tx := c.Get(constants.DatabaseTransactionKey).(*sql.Tx)
+		tx := postgresotel.Trace(c.Get(constants.DatabaseTransactionKey).(*sql.Tx))
 
 		fallback := grpc.NewStoreRepository(service.Config().Rpc.Service(constants.StoresServiceName))
 
@@ -112,12 +122,28 @@ func Root(ctx context.Context, service system.Service) error {
 	})
 
 	container.AddScoped(constants.ProductsRepoKey, func(c di.Container) (any, error) {
-		tx := c.Get(constants.DatabaseTransactionKey).(*sql.Tx)
+		tx := postgresotel.Trace(c.Get(constants.DatabaseTransactionKey).(*sql.Tx))
 
 		fallback := grpc.NewProductRepository(service.Config().Rpc.Service(constants.StoresServiceName))
 
 		return postgres.NewProductCacheRepository(constants.ProductsCacheTableName, tx, fallback), nil
 	})
+
+	// metric counters
+	meter := otel.Meter(service.Config().ServiceName)
+
+	basketsStarted, err := meter.Int64Counter(constants.BasketsStartedCount)
+	if err != nil {
+		return err
+	}
+	basketsCheckedOut, err := meter.Int64Counter(constants.BasketsCheckedOutCount)
+	if err != nil {
+		return err
+	}
+	basketsCanceled, err := meter.Int64Counter(constants.BasketsCanceledCount)
+	if err != nil {
+		return err
+	}
 
 	// setup application
 	container.AddScoped(constants.ApplicationKey, func(c di.Container) (any, error) {
@@ -127,8 +153,9 @@ func Root(ctx context.Context, service system.Service) error {
 		domainDispatcher := c.Get(constants.DomainDispatcherKey).(*ddd.EventDispatcher[ddd.Event])
 
 		app := application.New(baskets, stores, products, domainDispatcher)
+		app = logging.LogApplicationAccess(app, service.Logger()) // logging wrapper
 
-		return logging.LogApplicationAccess(app, service.Logger()), nil
+		return application.NewInstrumentedApp(app, basketsStarted, basketsCheckedOut, basketsCanceled), nil
 	})
 
 	container.AddScoped(constants.DomainEventHandlersKey, func(c di.Container) (any, error) {
@@ -145,7 +172,7 @@ func Root(ctx context.Context, service system.Service) error {
 	})
 
 	container.AddScoped(constants.IntegrationEventHandlersKey, func(c di.Container) (any, error) {
-		reg := di.Get(ctx, constants.RegistryKey).(registry.Registry)
+		reg := c.Get(constants.RegistryKey).(registry.Registry)
 		stores := c.Get(constants.StoresRepoKey).(domain.StoreCacheRepository)
 		products := c.Get(constants.ProductsRepoKey).(domain.ProductCacheRepository)
 
@@ -156,7 +183,7 @@ func Root(ctx context.Context, service system.Service) error {
 			service.Logger(),
 		) // logging wrapper
 
-		inboxStore := di.Get(ctx, constants.InboxStoreKey).(tm.InboxStore)
+		inboxStore := c.Get(constants.InboxStoreKey).(tm.InboxStore)
 		inboxHandler := tm.InboxHandler(inboxStore)
 
 		return am.NewEventHandler(reg, integrationEventHandlers, inboxHandler), nil
@@ -177,8 +204,8 @@ func Root(ctx context.Context, service system.Service) error {
 	}
 
 	handlers.RegisterDomainEventHandlersTx(container)
-	err := handlers.RegisterIntegrationEventHandlersTx(container)
-	if err != nil {
+
+	if err := handlers.RegisterIntegrationEventHandlersTx(container); err != nil {
 		return err
 	}
 
@@ -191,7 +218,7 @@ func startOutboxProcessor(ctx context.Context, outboxProcessor tm.OutboxProcesso
 	go func() {
 		err := outboxProcessor.Start(ctx)
 		if err != nil {
-			logger.Error("baskets outbox processor encountered an error", "error", err.Error())
+			logger.ErrorContext(ctx, "baskets outbox processor encountered an error", "error", err.Error())
 		}
 	}()
 }

@@ -5,10 +5,16 @@ metadata:
   labels:
     app: search
 data:
-  ENVIRONMENT: "development"
+  ENVIRONMENT: "production"
   WEB_PORT: "8080"
   RPC_PORT: "9000"
   RPC_SERVICES: "STORES=stores-service:9000,CUSTOMERS=customers-service:9000"
   PG_CONN: "postgres://searchdb_user:searchdb_pass@postgres-service:5432/searchdb?sslmode=disable"
-  NATS_URL: "nats://nats-service:4222"
+  NATS_URL: "nats://nats_user:nats_pass@nats-service:4222"
+  OTEL_SERVICE_NAME: "search"
+  CH_HOST: "clickhouse-service"
+  CH_PORT: "9000"
+  CH_DB: "oteldb"
+  CH_USER: "oteldb_user"
+  CH_PASS: "oteldb_pass"
 

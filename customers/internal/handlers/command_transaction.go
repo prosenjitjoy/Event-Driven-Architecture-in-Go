@@ -3,7 +3,7 @@ package handlers
 import (
 	"context"
 	"database/sql"
-	"mall/customers/constants"
+	"mall/customers/internal/constants"
 	"mall/internal/am"
 	"mall/internal/di"
 )

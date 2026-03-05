@@ -3,7 +3,7 @@ package handlers
 import (
 	"context"
 	"database/sql"
-	"mall/customers/constants"
+	"mall/depot/internal/constants"
 	"mall/internal/am"
 	"mall/internal/di"
 )
@@ -28,7 +28,7 @@ func RegisterCommandHandlersTx(container di.Container) error {
 		return cmdHandlers.HandleMessage(ctx, msg)
 	})
 
-	subscriber := container.Get(constants.MessageSubscriberKey).(am.MessageStream)
+	subscriber := container.Get(constants.MessageSubscriberKey).(am.MessageSubscriber)
 
 	return RegisterCommandHandlers(subscriber, cmdMsgHandlers)
 }

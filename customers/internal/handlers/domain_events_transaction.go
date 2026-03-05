@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"context"
-	"mall/customers/constants"
+	"mall/customers/internal/constants"
 	"mall/internal/ddd"
 	"mall/internal/di"
 )

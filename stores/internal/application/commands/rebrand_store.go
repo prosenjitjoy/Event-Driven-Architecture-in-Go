@@ -2,6 +2,7 @@ package commands
 
 import (
 	"context"
+	"mall/internal/ddd"
 	"mall/stores/internal/domain"
 )
 
@@ -11,12 +12,14 @@ type RebrandStoreRequest struct {
 }
 
 type RebrandStoreHandler struct {
-	stores domain.StoreRepository
+	stores    domain.StoreRepository
+	publisher ddd.EventPublisher[ddd.Event]
 }
 
-func NewRebrandStoreHandler(stores domain.StoreRepository) RebrandStoreHandler {
+func NewRebrandStoreHandler(stores domain.StoreRepository, publisher ddd.EventPublisher[ddd.Event]) RebrandStoreHandler {
 	return RebrandStoreHandler{
-		stores: stores,
+		stores:    stores,
+		publisher: publisher,
 	}
 }
 
@@ -26,9 +29,18 @@ func (h RebrandStoreHandler) RebrandStore(ctx context.Context, cmd RebrandStoreR
 		return err
 	}
 
-	if err = store.Rebrand(cmd.Name); err != nil {
+	event, err := store.Rebrand(cmd.Name)
+	if err != nil {
 		return err
 	}
 
-	return h.stores.Save(ctx, store)
+	if err := h.stores.Save(ctx, store); err != nil {
+		return err
+	}
+
+	if err := h.publisher.Publish(ctx, event); err != nil {
+		return err
+	}
+
+	return nil
 }

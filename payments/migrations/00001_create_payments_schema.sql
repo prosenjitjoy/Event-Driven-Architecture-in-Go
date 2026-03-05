@@ -16,10 +16,12 @@ CREATE TABLE payments (
 );
 
 CREATE TRIGGER created_at_payments_trgr BEFORE
-UPDATE ON payments FOR EACH ROW EXECUTE PROCEDURE created_at_trigger ();
+UPDATE
+  ON payments FOR EACH ROW EXECUTE PROCEDURE created_at_trigger ();
 
 CREATE TRIGGER updated_at_payments_trgr BEFORE
-UPDATE ON payments FOR EACH ROW EXECUTE PROCEDURE updated_at_trigger ();
+UPDATE
+  ON payments FOR EACH ROW EXECUTE PROCEDURE updated_at_trigger ();
 
 CREATE TABLE invoices (
   id text NOT NULL,
@@ -34,16 +36,20 @@ CREATE TABLE invoices (
 CREATE INDEX invoices_order_id_idx ON invoices (order_id);
 
 CREATE TRIGGER created_at_invoices_trgr BEFORE
-UPDATE ON invoices FOR EACH ROW EXECUTE PROCEDURE created_at_trigger ();
+UPDATE
+  ON invoices FOR EACH ROW EXECUTE PROCEDURE created_at_trigger ();
 
 CREATE TRIGGER updated_at_invoices_trgr BEFORE
-UPDATE ON invoices FOR EACH ROW EXECUTE PROCEDURE updated_at_trigger ();
+UPDATE
+  ON invoices FOR EACH ROW EXECUTE PROCEDURE updated_at_trigger ();
 
 CREATE TABLE inbox (
   id text NOT NULL,
   name text NOT NULL,
   subject text NOT NULL,
   data bytea NOT NULL,
+  metadata bytea NOT NULL,
+  sent_at timestamptz NOT NULL,
   received_at timestamptz NOT NULL,
   PRIMARY KEY (id)
 );
@@ -53,6 +59,8 @@ CREATE TABLE outbox (
   name text NOT NULL,
   subject text NOT NULL,
   data bytea NOT NULL,
+  metadata bytea NOT NULL,
+  sent_at timestamptz NOT NULL,
   published_at timestamptz,
   PRIMARY KEY (id)
 );

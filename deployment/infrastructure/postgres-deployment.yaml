@@ -1,10 +1,9 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
-  name: postgres-deployment
-  labels:
-    app: postgres
+  name: postgres
 spec:
+  serviceName: postgres-deployment
   replicas: 1
   selector:
     matchLabels:
@@ -16,23 +15,29 @@ spec:
     spec:
       containers:
         - name: postgres
-          image: 'postgres:alpine'
+          image: docker.io/library/postgres:alpine
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 5432
-          envFrom:
-            - configMapRef:
-                name: postgres-secret
+          env:
+            - name: POSTGRES_PASSWORD
+              value: postgres
           volumeMounts:
             - name: postgres-storage
-              mountPath: /var/lib/postgresql/data
+              mountPath: /var/lib/postgresql
             - name: postgres-initdb
               mountPath: /docker-entrypoint-initdb.d
       volumes:
-        - name: postgres-storage
-          persistentVolumeClaim:
-            claimName: postgres-pvc
         - name: postgres-initdb
           configMap:
             name: postgres-initdb
             defaultMode: 0755
+  volumeClaimTemplates:
+    - metadata:
+        name: postgres-storage
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: postgres-sc
+        resources:
+          requests:
+            storage: 2Gi

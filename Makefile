@@ -29,10 +29,11 @@ build_images:
 	podman build -t quay.io/prosenjitjoy/mall-stores -f ./stores/Dockerfile --build-arg tag=latest .
 
 pg_configmap:
-	kubectl create configmap pg-initdb --from-file=./scripts/postgresql
+	kubectl create configmap postgres-initdb --from-file=./scripts/postgresql
 
 ch_configmap:
-	kubectl create configmap ch-initdb --from-file=./scripts/clickhouse
+	kubectl create configmap clickhouse-config --from-file=./users.xml
+	kubectl create configmap clickhouse-initdb --from-file=./scripts/clickhouse
 
 access_postgresql:
 	# podman exec -it postgres psql -U <db-user> -d <db-name>
@@ -40,7 +41,7 @@ access_postgresql:
 
 access_clickhouse:
 	# podman exec -it clickhouse clickhouse-client --user <db-user> --password <db-pass>
-	# TODO
+	# kubectl exec -it <pod-name> -- clickhouse-client --user <db-user> --password <db-pass>
 
 kubectl_host:
 	# kubectl port-forward service/<service-name> <local-port>:<service-port>

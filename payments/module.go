@@ -5,10 +5,12 @@ import (
 	"database/sql"
 	"log/slog"
 	"mall/internal/am"
+	"mall/internal/amotel"
 	"mall/internal/ddd"
 	"mall/internal/di"
 	"mall/internal/jetstream"
 	pg "mall/internal/postgres"
+	"mall/internal/postgresotel"
 	"mall/internal/registry"
 	"mall/internal/system"
 	"mall/internal/tm"
@@ -40,6 +42,7 @@ func Root(ctx context.Context, service system.Service) error {
 		if err := orderingpb.Registrations(reg); err != nil {
 			return nil, err
 		}
+
 		if err := paymentspb.Registrations(reg); err != nil {
 			return nil, err
 		}
@@ -57,6 +60,8 @@ func Root(ctx context.Context, service system.Service) error {
 		return service.DB().Begin()
 	})
 
+	sentCounter := amotel.SentMessagesCounter(service.Config().ServiceName)
+
 	container.AddScoped(constants.MessagePublisherKey, func(c di.Container) (any, error) {
 		tx := c.Get(constants.DatabaseTransactionKey).(*sql.Tx)
 
@@ -65,6 +70,8 @@ func Root(ctx context.Context, service system.Service) error {
 
 		return am.NewMessagePublisher(
 			stream,
+			amotel.MessageContextInjector(),
+			sentCounter,
 			outboxPublisher,
 		), nil
 	})
@@ -72,6 +79,8 @@ func Root(ctx context.Context, service system.Service) error {
 	container.AddSingleton(constants.MessageSubscriberKey, func(c di.Container) (any, error) {
 		return am.NewMessageSubscriber(
 			stream,
+			amotel.MessageContextExtractor(),
+			amotel.ReceivedMessagesCounter(service.Config().ServiceName),
 		), nil
 	})
 
@@ -90,19 +99,19 @@ func Root(ctx context.Context, service system.Service) error {
 	})
 
 	container.AddScoped(constants.InboxStoreKey, func(c di.Container) (any, error) {
-		tx := c.Get(constants.DatabaseTransactionKey).(*sql.Tx)
+		tx := postgresotel.Trace(c.Get(constants.DatabaseTransactionKey).(*sql.Tx))
 
 		return pg.NewInboxStore(constants.InboxTableName, tx), nil
 	})
 
 	container.AddScoped(constants.InvoicesRepoKey, func(c di.Container) (any, error) {
-		tx := c.Get(constants.DatabaseTransactionKey).(*sql.Tx)
+		tx := postgresotel.Trace(c.Get(constants.DatabaseTransactionKey).(*sql.Tx))
 
 		return postgres.NewInvoiceRepository(constants.InvoicesTableName, tx), nil
 	})
 
 	container.AddScoped(constants.PaymentsRepoKey, func(c di.Container) (any, error) {
-		tx := c.Get(constants.DatabaseTransactionKey).(*sql.Tx)
+		tx := postgresotel.Trace(c.Get(constants.DatabaseTransactionKey).(*sql.Tx))
 
 		return postgres.NewPaymentRepository(constants.PaymentsTableName, tx), nil
 	})
@@ -193,7 +202,7 @@ func startOutboxProcessor(ctx context.Context, outboxProcessor tm.OutboxProcesso
 	go func() {
 		err := outboxProcessor.Start(ctx)
 		if err != nil {
-			logger.Error("payments outbox processor encountered an error", "error", err.Error())
+			logger.ErrorContext(ctx, "payments outbox processor encountered an error", "error", err.Error())
 		}
 	}()
 }

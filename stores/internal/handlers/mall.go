@@ -4,19 +4,24 @@ import (
 	"context"
 	"mall/internal/ddd"
 	"mall/stores/internal/domain"
+	"time"
+
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
 )
 
-type mallHandlers[T ddd.AggregateEvent] struct {
+type mallHandlers[T ddd.Event] struct {
 	mall domain.MallRepository
 }
 
-var _ ddd.EventHandler[ddd.AggregateEvent] = (*mallHandlers[ddd.AggregateEvent])(nil)
+var _ ddd.EventHandler[ddd.Event] = (*mallHandlers[ddd.Event])(nil)
 
-func NewMallHandlers(mall domain.MallRepository) ddd.EventHandler[ddd.AggregateEvent] {
-	return mallHandlers[ddd.AggregateEvent]{mall: mall}
+func NewMallHandlers(mall domain.MallRepository) ddd.EventHandler[ddd.Event] {
+	return mallHandlers[ddd.Event]{mall: mall}
 }
 
-func RegisterMallHandlers(subscriber ddd.EventSubscriber[ddd.AggregateEvent], mallHandlers ddd.EventHandler[ddd.AggregateEvent]) {
+func RegisterMallHandlers(subscriber ddd.EventSubscriber[ddd.Event], mallHandlers ddd.EventHandler[ddd.Event]) {
 	subscriber.Subscribe(mallHandlers,
 		domain.StoreCreatedEvent,
 		domain.StoreParticipationEnabledEvent,
@@ -25,7 +30,35 @@ func RegisterMallHandlers(subscriber ddd.EventSubscriber[ddd.AggregateEvent], ma
 	)
 }
 
-func (h mallHandlers[T]) HandleEvent(ctx context.Context, event T) error {
+func (h mallHandlers[T]) HandleEvent(ctx context.Context, event T) (err error) {
+	span := trace.SpanFromContext(ctx)
+
+	defer func(started time.Time) {
+		if err != nil {
+			span.AddEvent(
+				"Encountered an error handling mall event",
+				trace.WithAttributes(
+					attribute.String("error.message", err.Error()),
+				),
+			)
+			span.SetStatus(codes.Error, err.Error())
+		}
+
+		span.AddEvent(
+			"Handled mall event",
+			trace.WithAttributes(
+				attribute.Int64("TookMS", int64(time.Since(started).Milliseconds())),
+			),
+		)
+	}(time.Now())
+
+	span.AddEvent(
+		"Handling mall event",
+		trace.WithAttributes(
+			attribute.String("Event", event.EventName()),
+		),
+	)
+
 	switch event.EventName() {
 	case domain.StoreCreatedEvent:
 		return h.onStoreCreated(ctx, event)
@@ -40,22 +73,26 @@ func (h mallHandlers[T]) HandleEvent(ctx context.Context, event T) error {
 	return nil
 }
 
-func (h mallHandlers[T]) onStoreCreated(ctx context.Context, event ddd.AggregateEvent) error {
-	payload := event.Payload().(*domain.StoreCreated)
+func (h mallHandlers[T]) onStoreCreated(ctx context.Context, event ddd.Event) error {
+	payload := event.Payload().(*domain.Store)
 
-	return h.mall.AddStore(ctx, event.AggregateID(), payload.Name, payload.Location)
+	return h.mall.AddStore(ctx, payload.ID(), payload.Name, payload.Location)
 }
 
-func (h mallHandlers[T]) onStoreParticipationEnabled(ctx context.Context, event ddd.AggregateEvent) error {
-	return h.mall.SetStoreParticipation(ctx, event.AggregateID(), true)
+func (h mallHandlers[T]) onStoreParticipationEnabled(ctx context.Context, event ddd.Event) error {
+	payload := event.Payload().(*domain.Store)
+
+	return h.mall.SetStoreParticipation(ctx, payload.ID(), true)
 }
 
-func (h mallHandlers[T]) onStoreParticipationDisabled(ctx context.Context, event ddd.AggregateEvent) error {
-	return h.mall.SetStoreParticipation(ctx, event.AggregateID(), false)
+func (h mallHandlers[T]) onStoreParticipationDisabled(ctx context.Context, event ddd.Event) error {
+	payload := event.Payload().(*domain.Store)
+
+	return h.mall.SetStoreParticipation(ctx, payload.ID(), false)
 }
 
-func (h mallHandlers[T]) onStoreRebranded(ctx context.Context, event ddd.AggregateEvent) error {
-	payload := event.Payload().(*domain.StoreRebranded)
+func (h mallHandlers[T]) onStoreRebranded(ctx context.Context, event ddd.Event) error {
+	payload := event.Payload().(*domain.Store)
 
-	return h.mall.RenameStore(ctx, event.AggregateID(), payload.Name)
+	return h.mall.RenameStore(ctx, payload.ID(), payload.Name)
 }

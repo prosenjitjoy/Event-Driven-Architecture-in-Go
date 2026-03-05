@@ -3,9 +3,9 @@ package handlers
 import (
 	"context"
 	"database/sql"
-	"mall/customers/constants"
 	"mall/internal/am"
 	"mall/internal/di"
+	"mall/search/internal/constants"
 )
 
 func RegisterIntegrationEventHandlersTx(container di.Container) error {

@@ -3,9 +3,9 @@ package grpc
 import (
 	"context"
 	"database/sql"
-	"mall/customers/constants"
 	"mall/customers/customerspb"
 	"mall/customers/internal/application"
+	"mall/customers/internal/constants"
 	"mall/internal/di"
 
 	"google.golang.org/grpc"

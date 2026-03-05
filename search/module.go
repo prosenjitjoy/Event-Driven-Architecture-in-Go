@@ -5,9 +5,11 @@ import (
 	"database/sql"
 	"mall/customers/customerspb"
 	"mall/internal/am"
+	"mall/internal/amotel"
 	"mall/internal/di"
 	"mall/internal/jetstream"
 	pg "mall/internal/postgres"
+	"mall/internal/postgresotel"
 	"mall/internal/registry"
 	"mall/internal/system"
 	"mall/internal/tm"
@@ -39,9 +41,11 @@ func Root(ctx context.Context, service system.Service) error {
 		if err := orderingpb.Registrations(reg); err != nil {
 			return nil, err
 		}
+
 		if err := customerspb.Registrations(reg); err != nil {
 			return nil, err
 		}
+
 		if err := storespb.Registrations(reg); err != nil {
 			return nil, err
 		}
@@ -58,17 +62,19 @@ func Root(ctx context.Context, service system.Service) error {
 	container.AddScoped(constants.MessageSubscriberKey, func(c di.Container) (any, error) {
 		return am.NewMessageSubscriber(
 			stream,
+			amotel.MessageContextExtractor(),
+			amotel.ReceivedMessagesCounter(service.Config().ServiceName),
 		), nil
 	})
 
 	container.AddScoped(constants.InboxStoreKey, func(c di.Container) (any, error) {
-		tx := c.Get(constants.DatabaseTransactionKey).(*sql.Tx)
+		tx := postgresotel.Trace(c.Get(constants.DatabaseTransactionKey).(*sql.Tx))
 
 		return pg.NewInboxStore(constants.InboxTableName, tx), nil
 	})
 
 	container.AddScoped(constants.CustomersRepoKey, func(c di.Container) (any, error) {
-		tx := c.Get(constants.DatabaseTransactionKey).(*sql.Tx)
+		tx := postgresotel.Trace(c.Get(constants.DatabaseTransactionKey).(*sql.Tx))
 
 		fallback := grpc.NewCustomerRepository(service.Config().Rpc.Service(constants.CustomersServiceName))
 
@@ -76,7 +82,7 @@ func Root(ctx context.Context, service system.Service) error {
 	})
 
 	container.AddScoped(constants.StoresRepoKey, func(c di.Container) (any, error) {
-		tx := c.Get(constants.DatabaseTransactionKey).(*sql.Tx)
+		tx := postgresotel.Trace(c.Get(constants.DatabaseTransactionKey).(*sql.Tx))
 
 		fallback := grpc.NewStoreRepository(service.Config().Rpc.Service(constants.StoresServiceName))
 
@@ -84,7 +90,7 @@ func Root(ctx context.Context, service system.Service) error {
 	})
 
 	container.AddScoped(constants.ProductsRepoKey, func(c di.Container) (any, error) {
-		tx := c.Get(constants.DatabaseTransactionKey).(*sql.Tx)
+		tx := postgresotel.Trace(c.Get(constants.DatabaseTransactionKey).(*sql.Tx))
 
 		fallback := grpc.NewProductRepository(service.Config().Rpc.Service(constants.StoresServiceName))
 
@@ -92,7 +98,7 @@ func Root(ctx context.Context, service system.Service) error {
 	})
 
 	container.AddScoped(constants.OrdersRepoKey, func(c di.Container) (any, error) {
-		tx := c.Get(constants.DatabaseTransactionKey).(*sql.Tx)
+		tx := postgresotel.Trace(c.Get(constants.DatabaseTransactionKey).(*sql.Tx))
 
 		return postgres.NewOrderRepository(constants.OrdersTableName, tx), nil
 	})

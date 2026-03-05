@@ -22,72 +22,72 @@ func LogApplicationAccess(application application.App, logger *slog.Logger) Appl
 }
 
 func (a Application) StartBasket(ctx context.Context, start application.StartBasket) (err error) {
-	a.logger.Info("--> Baskets.StartBasket")
+	a.logger.InfoContext(ctx, "--> Baskets.StartBasket")
 	defer func() {
 		if err != nil {
-			a.logger.Error(err.Error())
+			a.logger.ErrorContext(ctx, err.Error())
 		}
-		a.logger.Info("<-- Baskets.StartBasket")
+		a.logger.InfoContext(ctx, "<-- Baskets.StartBasket")
 	}()
 
 	return a.App.StartBasket(ctx, start)
 }
 
 func (a Application) CancelBasket(ctx context.Context, cancel application.CancelBasket) (err error) {
-	a.logger.Info("--> Baskets.CancelBasket")
+	a.logger.InfoContext(ctx, "--> Baskets.CancelBasket")
 	defer func() {
 		if err != nil {
-			a.logger.Error(err.Error())
+			a.logger.ErrorContext(ctx, err.Error())
 		}
-		a.logger.Info("<-- Baskets.CancelBasket")
+		a.logger.InfoContext(ctx, "<-- Baskets.CancelBasket")
 	}()
 
 	return a.App.CancelBasket(ctx, cancel)
 }
 
 func (a Application) CheckoutBasket(ctx context.Context, checkout application.CheckoutBasket) (err error) {
-	a.logger.Info("--> Baskets.CheckoutBasket")
+	a.logger.InfoContext(ctx, "--> Baskets.CheckoutBasket")
 	defer func() {
 		if err != nil {
-			a.logger.Error(err.Error())
+			a.logger.ErrorContext(ctx, err.Error())
 		}
-		a.logger.Info("<-- Baskets.CheckoutBasket")
+		a.logger.InfoContext(ctx, "<-- Baskets.CheckoutBasket")
 	}()
 
 	return a.App.CheckoutBasket(ctx, checkout)
 }
 
 func (a Application) AddItem(ctx context.Context, add application.AddItem) (err error) {
-	a.logger.Info("--> Baskets.AddItem")
+	a.logger.InfoContext(ctx, "--> Baskets.AddItem")
 	defer func() {
 		if err != nil {
-			a.logger.Error(err.Error())
+			a.logger.ErrorContext(ctx, err.Error())
 		}
-		a.logger.Info("<-- Baskets.AddItem")
+		a.logger.InfoContext(ctx, "<-- Baskets.AddItem")
 	}()
 
 	return a.App.AddItem(ctx, add)
 }
 
 func (a Application) RemoveItem(ctx context.Context, remove application.RemoveItem) (err error) {
-	a.logger.Info("--> Baskets.RemoveItem")
+	a.logger.InfoContext(ctx, "--> Baskets.RemoveItem")
 	defer func() {
 		if err != nil {
-			a.logger.Error(err.Error())
+			a.logger.ErrorContext(ctx, err.Error())
 		}
-		a.logger.Info("<-- Baskets.RemoveItem")
+		a.logger.InfoContext(ctx, "<-- Baskets.RemoveItem")
 	}()
 
 	return a.App.RemoveItem(ctx, remove)
 }
 
 func (a Application) GetBasket(ctx context.Context, get application.GetBasket) (basket *domain.Basket, err error) {
-	a.logger.Info("--> Baskets.GetBasket")
+	a.logger.InfoContext(ctx, "--> Baskets.GetBasket")
 	defer func() {
 		if err != nil {
-			a.logger.Error(err.Error())
+			a.logger.ErrorContext(ctx, err.Error())
 		}
-		a.logger.Info("<-- Baskets.GetBasket")
+		a.logger.InfoContext(ctx, "<-- Baskets.GetBasket")
 	}()
 
 	return a.App.GetBasket(ctx, get)

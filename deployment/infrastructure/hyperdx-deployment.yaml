@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hyperdx-deployment
+  labels:
+    app: hyperdx
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hyperdx
+  template:
+    metadata:
+      labels:
+        app: hyperdx
+    spec:
+      containers:
+        - name: hyperdx
+          image: docker.io/hyperdx/hyperdx-local:2-nightly-ui
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080

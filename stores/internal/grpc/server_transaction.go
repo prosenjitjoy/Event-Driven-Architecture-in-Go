@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"mall/internal/di"
 	"mall/stores/internal/application"
+	"mall/stores/internal/constants"
 	"mall/stores/storespb"
 
 	"google.golang.org/grpc"
@@ -28,9 +29,9 @@ func (s serverTx) CreateStore(ctx context.Context, request *storespb.CreateStore
 
 	defer func(tx *sql.Tx) {
 		err = s.closeTx(tx, err)
-	}(di.Get(ctx, "tx").(*sql.Tx))
+	}(di.Get(ctx, constants.DatabaseTransactionKey).(*sql.Tx))
 
-	next := server{app: di.Get(ctx, "app").(application.App)}
+	next := server{app: di.Get(ctx, constants.ApplicationKey).(application.App)}
 
 	return next.CreateStore(ctx, request)
 }
@@ -40,9 +41,9 @@ func (s serverTx) EnableParticipation(ctx context.Context, request *storespb.Ena
 
 	defer func(tx *sql.Tx) {
 		err = s.closeTx(tx, err)
-	}(di.Get(ctx, "tx").(*sql.Tx))
+	}(di.Get(ctx, constants.DatabaseTransactionKey).(*sql.Tx))
 
-	next := server{app: di.Get(ctx, "app").(application.App)}
+	next := server{app: di.Get(ctx, constants.ApplicationKey).(application.App)}
 
 	return next.EnableParticipation(ctx, request)
 }
@@ -52,9 +53,9 @@ func (s serverTx) DisableParticipation(ctx context.Context, request *storespb.Di
 
 	defer func(tx *sql.Tx) {
 		err = s.closeTx(tx, err)
-	}(di.Get(ctx, "tx").(*sql.Tx))
+	}(di.Get(ctx, constants.DatabaseTransactionKey).(*sql.Tx))
 
-	next := server{app: di.Get(ctx, "app").(application.App)}
+	next := server{app: di.Get(ctx, constants.ApplicationKey).(application.App)}
 
 	return next.DisableParticipation(ctx, request)
 }
@@ -64,9 +65,9 @@ func (s serverTx) RebrandStore(ctx context.Context, request *storespb.RebrandSto
 
 	defer func(tx *sql.Tx) {
 		err = s.closeTx(tx, err)
-	}(di.Get(ctx, "tx").(*sql.Tx))
+	}(di.Get(ctx, constants.DatabaseTransactionKey).(*sql.Tx))
 
-	next := server{app: di.Get(ctx, "app").(application.App)}
+	next := server{app: di.Get(ctx, constants.ApplicationKey).(application.App)}
 
 	return next.RebrandStore(ctx, request)
 }
@@ -76,9 +77,9 @@ func (s serverTx) GetStore(ctx context.Context, request *storespb.GetStoreReques
 
 	defer func(tx *sql.Tx) {
 		err = s.closeTx(tx, err)
-	}(di.Get(ctx, "tx").(*sql.Tx))
+	}(di.Get(ctx, constants.DatabaseTransactionKey).(*sql.Tx))
 
-	next := server{app: di.Get(ctx, "app").(application.App)}
+	next := server{app: di.Get(ctx, constants.ApplicationKey).(application.App)}
 
 	return next.GetStore(ctx, request)
 }
@@ -88,9 +89,9 @@ func (s serverTx) GetStores(ctx context.Context, request *storespb.GetStoresRequ
 
 	defer func(tx *sql.Tx) {
 		err = s.closeTx(tx, err)
-	}(di.Get(ctx, "tx").(*sql.Tx))
+	}(di.Get(ctx, constants.DatabaseTransactionKey).(*sql.Tx))
 
-	next := server{app: di.Get(ctx, "app").(application.App)}
+	next := server{app: di.Get(ctx, constants.ApplicationKey).(application.App)}
 
 	return next.GetStores(ctx, request)
 }
@@ -100,9 +101,9 @@ func (s serverTx) GetParticipatingStores(ctx context.Context, request *storespb.
 
 	defer func(tx *sql.Tx) {
 		err = s.closeTx(tx, err)
-	}(di.Get(ctx, "tx").(*sql.Tx))
+	}(di.Get(ctx, constants.DatabaseTransactionKey).(*sql.Tx))
 
-	next := server{app: di.Get(ctx, "app").(application.App)}
+	next := server{app: di.Get(ctx, constants.ApplicationKey).(application.App)}
 
 	return next.GetParticipatingStores(ctx, request)
 }
@@ -112,9 +113,9 @@ func (s serverTx) AddProduct(ctx context.Context, request *storespb.AddProductRe
 
 	defer func(tx *sql.Tx) {
 		err = s.closeTx(tx, err)
-	}(di.Get(ctx, "tx").(*sql.Tx))
+	}(di.Get(ctx, constants.DatabaseTransactionKey).(*sql.Tx))
 
-	next := server{app: di.Get(ctx, "app").(application.App)}
+	next := server{app: di.Get(ctx, constants.ApplicationKey).(application.App)}
 
 	return next.AddProduct(ctx, request)
 }
@@ -124,9 +125,9 @@ func (s serverTx) RebrandProduct(ctx context.Context, request *storespb.RebrandP
 
 	defer func(tx *sql.Tx) {
 		err = s.closeTx(tx, err)
-	}(di.Get(ctx, "tx").(*sql.Tx))
+	}(di.Get(ctx, constants.DatabaseTransactionKey).(*sql.Tx))
 
-	next := server{app: di.Get(ctx, "app").(application.App)}
+	next := server{app: di.Get(ctx, constants.ApplicationKey).(application.App)}
 
 	return next.RebrandProduct(ctx, request)
 }
@@ -136,9 +137,9 @@ func (s serverTx) IncreaseProductPrice(ctx context.Context, request *storespb.In
 
 	defer func(tx *sql.Tx) {
 		err = s.closeTx(tx, err)
-	}(di.Get(ctx, "tx").(*sql.Tx))
+	}(di.Get(ctx, constants.DatabaseTransactionKey).(*sql.Tx))
 
-	next := server{app: di.Get(ctx, "app").(application.App)}
+	next := server{app: di.Get(ctx, constants.ApplicationKey).(application.App)}
 
 	return next.IncreaseProductPrice(ctx, request)
 }
@@ -148,9 +149,9 @@ func (s serverTx) DecreaseProductPrice(ctx context.Context, request *storespb.De
 
 	defer func(tx *sql.Tx) {
 		err = s.closeTx(tx, err)
-	}(di.Get(ctx, "tx").(*sql.Tx))
+	}(di.Get(ctx, constants.DatabaseTransactionKey).(*sql.Tx))
 
-	next := server{app: di.Get(ctx, "app").(application.App)}
+	next := server{app: di.Get(ctx, constants.ApplicationKey).(application.App)}
 
 	return next.DecreaseProductPrice(ctx, request)
 }
@@ -160,9 +161,9 @@ func (s serverTx) RemoveProduct(ctx context.Context, request *storespb.RemovePro
 
 	defer func(tx *sql.Tx) {
 		err = s.closeTx(tx, err)
-	}(di.Get(ctx, "tx").(*sql.Tx))
+	}(di.Get(ctx, constants.DatabaseTransactionKey).(*sql.Tx))
 
-	next := server{app: di.Get(ctx, "app").(application.App)}
+	next := server{app: di.Get(ctx, constants.ApplicationKey).(application.App)}
 
 	return next.RemoveProduct(ctx, request)
 }
@@ -172,9 +173,9 @@ func (s serverTx) GetProduct(ctx context.Context, request *storespb.GetProductRe
 
 	defer func(tx *sql.Tx) {
 		err = s.closeTx(tx, err)
-	}(di.Get(ctx, "tx").(*sql.Tx))
+	}(di.Get(ctx, constants.DatabaseTransactionKey).(*sql.Tx))
 
-	next := server{app: di.Get(ctx, "app").(application.App)}
+	next := server{app: di.Get(ctx, constants.ApplicationKey).(application.App)}
 
 	return next.GetProduct(ctx, request)
 }
@@ -184,9 +185,9 @@ func (s serverTx) GetCatalog(ctx context.Context, request *storespb.GetCatalogRe
 
 	defer func(tx *sql.Tx) {
 		err = s.closeTx(tx, err)
-	}(di.Get(ctx, "tx").(*sql.Tx))
+	}(di.Get(ctx, constants.DatabaseTransactionKey).(*sql.Tx))
 
-	next := server{app: di.Get(ctx, "app").(application.App)}
+	next := server{app: di.Get(ctx, constants.ApplicationKey).(application.App)}
 
 	return next.GetCatalog(ctx, request)
 }

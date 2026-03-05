@@ -24,60 +24,60 @@ func LogApplicationAccess(application application.App, logger *slog.Logger) Appl
 }
 
 func (a Application) CreateOrder(ctx context.Context, cmd commands.CreateOrderRequest) (err error) {
-	a.logger.Info("--> Ordering.CreateOrder")
+	a.logger.InfoContext(ctx, "--> Ordering.CreateOrder")
 	defer func() {
 		if err != nil {
-			a.logger.Error(err.Error())
+			a.logger.ErrorContext(ctx, err.Error())
 		}
-		a.logger.Info("<-- Ordering.CreateOrder")
+		a.logger.InfoContext(ctx, "<-- Ordering.CreateOrder")
 	}()
 
 	return a.App.CreateOrder(ctx, cmd)
 }
 
 func (a Application) CancelOrder(ctx context.Context, cmd commands.CancelOrderRequest) (err error) {
-	a.logger.Info("--> Ordering.CancelOrder")
+	a.logger.InfoContext(ctx, "--> Ordering.CancelOrder")
 	defer func() {
 		if err != nil {
-			a.logger.Error(err.Error())
+			a.logger.ErrorContext(ctx, err.Error())
 		}
-		a.logger.Info("<-- Ordering.CancelOrder")
+		a.logger.InfoContext(ctx, "<-- Ordering.CancelOrder")
 	}()
 
 	return a.App.CancelOrder(ctx, cmd)
 }
 
 func (a Application) ReadyOrder(ctx context.Context, cmd commands.ReadyOrderRequest) (err error) {
-	a.logger.Info("--> Ordering.ReadyOrder")
+	a.logger.InfoContext(ctx, "--> Ordering.ReadyOrder")
 	defer func() {
 		if err != nil {
-			a.logger.Error(err.Error())
+			a.logger.ErrorContext(ctx, err.Error())
 		}
-		a.logger.Info("<-- Ordering.ReadyOrder")
+		a.logger.InfoContext(ctx, "<-- Ordering.ReadyOrder")
 	}()
 
 	return a.App.ReadyOrder(ctx, cmd)
 }
 
 func (a Application) CompleteOrder(ctx context.Context, cmd commands.CompleteOrderRequest) (err error) {
-	a.logger.Info("--> Ordering.CompleteOrder")
+	a.logger.InfoContext(ctx, "--> Ordering.CompleteOrder")
 	defer func() {
 		if err != nil {
-			a.logger.Error(err.Error())
+			a.logger.ErrorContext(ctx, err.Error())
 		}
-		a.logger.Info("<-- Ordering.CompleteOrder")
+		a.logger.InfoContext(ctx, "<-- Ordering.CompleteOrder")
 	}()
 
 	return a.App.CompleteOrder(ctx, cmd)
 }
 
 func (a Application) GetOrder(ctx context.Context, query queries.GetOrderRequest) (order *domain.Order, err error) {
-	a.logger.Info("--> Ordering.GetOrder")
+	a.logger.InfoContext(ctx, "--> Ordering.GetOrder")
 	defer func() {
 		if err != nil {
-			a.logger.Error(err.Error())
+			a.logger.ErrorContext(ctx, err.Error())
 		}
-		a.logger.Info("<-- Ordering.GetOrder")
+		a.logger.InfoContext(ctx, "<-- Ordering.GetOrder")
 	}()
 
 	return a.App.GetOrder(ctx, query)

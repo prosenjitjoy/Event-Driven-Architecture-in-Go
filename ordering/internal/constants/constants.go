@@ -32,6 +32,6 @@ const (
 	OutboxTableName    = "ordering.outbox"
 	InboxTableName     = "ordering.inbox"
 	EventsTableName    = "ordering.events"
-	SnapshotsTableName = "ordeirng.snapshots"
+	SnapshotsTableName = "ordering.snapshots"
 	SagasTableName     = "ordering.sagas"
 )

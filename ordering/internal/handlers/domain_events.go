@@ -6,6 +6,11 @@ import (
 	"mall/internal/ddd"
 	"mall/ordering/internal/domain"
 	"mall/ordering/orderingpb"
+	"time"
+
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
 )
 
 type domainHandlers[T ddd.Event] struct {
@@ -29,7 +34,35 @@ func RegisterDomainEventHandlers(subscriber ddd.EventSubscriber[ddd.Event], hand
 	)
 }
 
-func (h domainHandlers[T]) HandleEvent(ctx context.Context, event T) error {
+func (h domainHandlers[T]) HandleEvent(ctx context.Context, event T) (err error) {
+	span := trace.SpanFromContext(ctx)
+
+	defer func(started time.Time) {
+		if err != nil {
+			span.AddEvent(
+				"Encountered an error handling domain event",
+				trace.WithAttributes(
+					attribute.String("error.message", err.Error()),
+				),
+			)
+			span.SetStatus(codes.Error, err.Error())
+		}
+
+		span.AddEvent(
+			"Handled domain event",
+			trace.WithAttributes(
+				attribute.Int64("TookMS", int64(time.Since(started).Milliseconds())),
+			),
+		)
+	}(time.Now())
+
+	span.AddEvent(
+		"Handling domain event",
+		trace.WithAttributes(
+			attribute.String("Event", event.EventName()),
+		),
+	)
+
 	switch event.EventName() {
 	case domain.OrderCreatedEvent:
 		return h.onOrderCreated(ctx, event)

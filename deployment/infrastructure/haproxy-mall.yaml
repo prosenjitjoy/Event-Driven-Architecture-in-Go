@@ -5,8 +5,26 @@ metadata:
 spec:
   ingressClassName: prod
   rules:
-  - http:
+  - host: hyperdx.mall.local
+    http:
       paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: hyperdx-service
+            port:
+              number: 8080
+  - host: mall.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: baskets-service
+            port:
+              number: 8080
       - path: /api/baskets
         pathType: Prefix
         backend:
@@ -103,12 +121,5 @@ spec:
         backend:
           service:
             name: search-service
-            port:
-              number: 8080
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: baskets-service
             port:
               number: 8080

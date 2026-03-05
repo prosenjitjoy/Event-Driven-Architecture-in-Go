@@ -7,6 +7,9 @@ import (
 	"mall/baskets/internal/domain"
 
 	"github.com/google/uuid"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/grpc"
 )
 
@@ -26,13 +29,22 @@ func RegisterServer(app application.App, registrar grpc.ServiceRegistrar) error 
 }
 
 func (s server) StartBasket(ctx context.Context, request *basketspb.StartBasketRequest) (*basketspb.StartBasketResponse, error) {
+	span := trace.SpanFromContext(ctx)
+
 	basketID := uuid.New().String()
+
+	span.SetAttributes(
+		attribute.String("BasketID", basketID),
+		attribute.String("CustomerID", request.GetCustomerId()),
+	)
 
 	err := s.app.StartBasket(ctx, application.StartBasket{
 		ID:         basketID,
 		CustomerID: request.GetCustomerId(),
 	})
 	if err != nil {
+		span.RecordError(err, trace.WithAttributes(attribute.String("error.message", err.Error())))
+		span.SetStatus(codes.Error, err.Error())
 		return nil, err
 	}
 
@@ -40,10 +52,16 @@ func (s server) StartBasket(ctx context.Context, request *basketspb.StartBasketR
 }
 
 func (s server) CancelBasket(ctx context.Context, request *basketspb.CancelBasketRequest) (*basketspb.CancelBasketResponse, error) {
+	span := trace.SpanFromContext(ctx)
+
+	span.SetAttributes(attribute.String("BasketID", request.GetId()))
+
 	err := s.app.CancelBasket(ctx, application.CancelBasket{
 		ID: request.GetId(),
 	})
 	if err != nil {
+		span.RecordError(err, trace.WithAttributes(attribute.String("error.message", err.Error())))
+		span.SetStatus(codes.Error, err.Error())
 		return nil, err
 	}
 
@@ -51,11 +69,20 @@ func (s server) CancelBasket(ctx context.Context, request *basketspb.CancelBaske
 }
 
 func (s server) CheckoutBasket(ctx context.Context, request *basketspb.CheckoutBasketRequest) (*basketspb.CheckoutBasketResponse, error) {
+	span := trace.SpanFromContext(ctx)
+
+	span.SetAttributes(
+		attribute.String("BasketID", request.GetId()),
+		attribute.String("PaymentID", request.GetPaymentId()),
+	)
+
 	err := s.app.CheckoutBasket(ctx, application.CheckoutBasket{
 		ID:        request.GetId(),
 		PaymentID: request.GetPaymentId(),
 	})
 	if err != nil {
+		span.RecordError(err, trace.WithAttributes(attribute.String("error.message", err.Error())))
+		span.SetStatus(codes.Error, err.Error())
 		return nil, err
 	}
 
@@ -63,12 +90,22 @@ func (s server) CheckoutBasket(ctx context.Context, request *basketspb.CheckoutB
 }
 
 func (s server) AddItem(ctx context.Context, request *basketspb.AddItemRequest) (*basketspb.AddItemResponse, error) {
+	span := trace.SpanFromContext(ctx)
+
+	span.SetAttributes(
+		attribute.String("BasketID", request.GetId()),
+		attribute.String("ProductID", request.GetProductId()),
+		attribute.Int64("Quantity", int64(request.GetQuantity())),
+	)
+
 	err := s.app.AddItem(ctx, application.AddItem{
 		ID:        request.GetId(),
 		ProductID: request.GetProductId(),
 		Quantity:  int(request.GetQuantity()),
 	})
 	if err != nil {
+		span.RecordError(err, trace.WithAttributes(attribute.String("error.message", err.Error())))
+		span.SetStatus(codes.Error, err.Error())
 		return nil, err
 	}
 
@@ -76,12 +113,22 @@ func (s server) AddItem(ctx context.Context, request *basketspb.AddItemRequest) 
 }
 
 func (s server) RemoveItem(ctx context.Context, request *basketspb.RemoveItemRequest) (*basketspb.RemoveItemResponse, error) {
+	span := trace.SpanFromContext(ctx)
+
+	span.SetAttributes(
+		attribute.String("BasketID", request.GetId()),
+		attribute.String("ProductID", request.GetProductId()),
+		attribute.Int64("Quantity", int64(request.GetQuantity())),
+	)
+
 	err := s.app.RemoveItem(ctx, application.RemoveItem{
 		ID:        request.GetId(),
 		ProductID: request.GetProductId(),
 		Quantity:  int(request.GetQuantity()),
 	})
 	if err != nil {
+		span.RecordError(err, trace.WithAttributes(attribute.String("error.message", err.Error())))
+		span.SetStatus(codes.Error, err.Error())
 		return nil, err
 	}
 
@@ -89,10 +136,16 @@ func (s server) RemoveItem(ctx context.Context, request *basketspb.RemoveItemReq
 }
 
 func (s server) GetBasket(ctx context.Context, request *basketspb.GetBasketRequest) (*basketspb.GetBasketResponse, error) {
+	span := trace.SpanFromContext(ctx)
+
+	span.SetAttributes(attribute.String("BasketID", request.GetId()))
+
 	basket, err := s.app.GetBasket(ctx, application.GetBasket{
 		ID: request.GetId(),
 	})
 	if err != nil {
+		span.RecordError(err, trace.WithAttributes(attribute.String("error.message", err.Error())))
+		span.SetStatus(codes.Error, err.Error())
 		return nil, err
 	}
 

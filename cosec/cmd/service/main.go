@@ -21,6 +21,8 @@ func main() {
 }
 
 func run() error {
+	ctx := context.Background()
+
 	// parse configuration
 	cfg, err := config.InitConfig()
 	if err != nil {
@@ -28,7 +30,7 @@ func run() error {
 	}
 
 	// add infrastructure
-	s, err := system.NewSystem(context.Background(), cfg)
+	s, err := system.NewSystem(ctx, cfg)
 	if err != nil {
 		return err
 	}
@@ -56,8 +58,8 @@ func run() error {
 		return err
 	}
 
-	s.Logger().Info("started cosec service")
-	defer s.Logger().Info("stopped cosec service")
+	s.Logger().InfoContext(ctx, "started cosec service")
+	defer s.Logger().InfoContext(ctx, "stopped cosec service")
 
 	s.Waiter().AddWaitFunc(
 		s.WaitForWeb,

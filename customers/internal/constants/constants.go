@@ -36,3 +36,8 @@ const (
 	SagasTableName     = "customers.sagas"
 	CustomersTableName = "customers.customers"
 )
+
+// metric names
+const (
+	CustomersRegisteredCount = "customers_registered_count"
+)

@@ -65,6 +65,8 @@ CREATE TABLE inbox (
   name text NOT NULL,
   subject text NOT NULL,
   data bytea NOT NULL,
+  metadata bytea NOT NULL,
+  sent_at timestamptz NOT NULL,
   received_at timestamptz NOT NULL,
   PRIMARY KEY (id)
 );
@@ -74,6 +76,8 @@ CREATE TABLE outbox (
   name text NOT NULL,
   subject text NOT NULL,
   data bytea NOT NULL,
+  metadata bytea NOT NULL,
+  sent_at timestamptz NOT NULL,
   published_at timestamptz,
   PRIMARY KEY (id)
 );

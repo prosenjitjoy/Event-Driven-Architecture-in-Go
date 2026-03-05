@@ -7,4 +7,6 @@ clickhouse-client -n <<-EOSQL
   CREATE USER oteldb_user IDENTIFIED WITH sha256_password BY 'oteldb_pass';
   
   GRANT SELECT, INSERT, CREATE DATABASE, CREATE TABLE, CREATE VIEW ON oteldb.* TO oteldb_user;
+
+  GRANT SELECT ON system.* TO oteldb_user;
 EOSQL

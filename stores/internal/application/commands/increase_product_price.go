@@ -2,6 +2,7 @@ package commands
 
 import (
 	"context"
+	"mall/internal/ddd"
 	"mall/stores/internal/domain"
 )
 
@@ -11,11 +12,15 @@ type IncreaseProductPriceRequest struct {
 }
 
 type IncreaseProductPriceHandler struct {
-	products domain.ProductRepository
+	products  domain.ProductRepository
+	publisher ddd.EventPublisher[ddd.Event]
 }
 
-func NewIncreaseProductPriceHandler(products domain.ProductRepository) IncreaseProductPriceHandler {
-	return IncreaseProductPriceHandler{products: products}
+func NewIncreaseProductPriceHandler(products domain.ProductRepository, publisher ddd.EventPublisher[ddd.Event]) IncreaseProductPriceHandler {
+	return IncreaseProductPriceHandler{
+		products:  products,
+		publisher: publisher,
+	}
 }
 
 func (h IncreaseProductPriceHandler) IncreaseProductPrice(ctx context.Context, cmd IncreaseProductPriceRequest) error {
@@ -24,9 +29,18 @@ func (h IncreaseProductPriceHandler) IncreaseProductPrice(ctx context.Context, c
 		return err
 	}
 
-	if err = product.IncreasePrice(cmd.Price); err != nil {
+	event, err := product.IncreasePrice(cmd.Price)
+	if err != nil {
 		return err
 	}
 
-	return h.products.Save(ctx, product)
+	if err := h.products.Save(ctx, product); err != nil {
+		return err
+	}
+
+	if err := h.publisher.Publish(ctx, event); err != nil {
+		return err
+	}
+
+	return nil
 }

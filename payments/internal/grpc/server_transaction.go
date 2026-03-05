@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"mall/internal/di"
 	"mall/payments/internal/application"
+	"mall/payments/internal/constants"
 	"mall/payments/paymentspb"
 
 	"google.golang.org/grpc"
@@ -28,9 +29,9 @@ func (s serverTx) AuthorizePayment(ctx context.Context, request *paymentspb.Auth
 
 	defer func(tx *sql.Tx) {
 		err = s.closeTx(tx, err)
-	}(di.Get(ctx, "tx").(*sql.Tx))
+	}(di.Get(ctx, constants.DatabaseTransactionKey).(*sql.Tx))
 
-	next := server{app: di.Get(ctx, "app").(application.App)}
+	next := server{app: di.Get(ctx, constants.ApplicationKey).(application.App)}
 
 	return next.AuthorizePayment(ctx, request)
 }
@@ -39,9 +40,9 @@ func (s serverTx) ConfirmPayment(ctx context.Context, request *paymentspb.Confir
 
 	defer func(tx *sql.Tx) {
 		err = s.closeTx(tx, err)
-	}(di.Get(ctx, "tx").(*sql.Tx))
+	}(di.Get(ctx, constants.DatabaseTransactionKey).(*sql.Tx))
 
-	next := server{app: di.Get(ctx, "app").(application.App)}
+	next := server{app: di.Get(ctx, constants.ApplicationKey).(application.App)}
 
 	return next.ConfirmPayment(ctx, request)
 }
@@ -50,9 +51,9 @@ func (s serverTx) CreateInvoice(ctx context.Context, request *paymentspb.CreateI
 
 	defer func(tx *sql.Tx) {
 		err = s.closeTx(tx, err)
-	}(di.Get(ctx, "tx").(*sql.Tx))
+	}(di.Get(ctx, constants.DatabaseTransactionKey).(*sql.Tx))
 
-	next := server{app: di.Get(ctx, "app").(application.App)}
+	next := server{app: di.Get(ctx, constants.ApplicationKey).(application.App)}
 
 	return next.CreateInvoice(ctx, request)
 }
@@ -61,9 +62,9 @@ func (s serverTx) AdjustInvoice(ctx context.Context, request *paymentspb.AdjustI
 
 	defer func(tx *sql.Tx) {
 		err = s.closeTx(tx, err)
-	}(di.Get(ctx, "tx").(*sql.Tx))
+	}(di.Get(ctx, constants.DatabaseTransactionKey).(*sql.Tx))
 
-	next := server{app: di.Get(ctx, "app").(application.App)}
+	next := server{app: di.Get(ctx, constants.ApplicationKey).(application.App)}
 
 	return next.AdjustInvoice(ctx, request)
 }
@@ -73,9 +74,9 @@ func (s serverTx) PayInvoice(ctx context.Context, request *paymentspb.PayInvoice
 
 	defer func(tx *sql.Tx) {
 		err = s.closeTx(tx, err)
-	}(di.Get(ctx, "tx").(*sql.Tx))
+	}(di.Get(ctx, constants.DatabaseTransactionKey).(*sql.Tx))
 
-	next := server{app: di.Get(ctx, "app").(application.App)}
+	next := server{app: di.Get(ctx, constants.ApplicationKey).(application.App)}
 
 	return next.PayInvoice(ctx, request)
 }
@@ -85,9 +86,9 @@ func (s serverTx) CancelInvoice(ctx context.Context, request *paymentspb.CancelI
 
 	defer func(tx *sql.Tx) {
 		err = s.closeTx(tx, err)
-	}(di.Get(ctx, "tx").(*sql.Tx))
+	}(di.Get(ctx, constants.DatabaseTransactionKey).(*sql.Tx))
 
-	next := server{app: di.Get(ctx, "app").(application.App)}
+	next := server{app: di.Get(ctx, constants.ApplicationKey).(application.App)}
 
 	return next.CancelInvoice(ctx, request)
 }

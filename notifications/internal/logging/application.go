@@ -21,36 +21,36 @@ func LogApplicationAccess(application application.App, logger *slog.Logger) Appl
 }
 
 func (a Application) NotifyOrderCreated(ctx context.Context, notify application.OrderCreated) (err error) {
-	a.logger.Info("--> Notifications.NotifyOrderCreated")
+	a.logger.InfoContext(ctx, "--> Notifications.NotifyOrderCreated")
 	defer func() {
 		if err != nil {
-			a.logger.Error(err.Error())
+			a.logger.ErrorContext(ctx, err.Error())
 		}
-		a.logger.Info("<-- Notifications.NotifyOrderCreated")
+		a.logger.InfoContext(ctx, "<-- Notifications.NotifyOrderCreated")
 	}()
 
 	return a.App.NotifyOrderCreated(ctx, notify)
 }
 
 func (a Application) NotifyOrderCanceled(ctx context.Context, notify application.OrderCanceled) (err error) {
-	a.logger.Info("--> Notifications.NoitfyOrderCanceled")
+	a.logger.InfoContext(ctx, "--> Notifications.NoitfyOrderCanceled")
 	defer func() {
 		if err != nil {
-			a.logger.Error(err.Error())
+			a.logger.ErrorContext(ctx, err.Error())
 		}
-		a.logger.Info("<-- Notifications.NoitfyOrderCanceled")
+		a.logger.InfoContext(ctx, "<-- Notifications.NoitfyOrderCanceled")
 	}()
 
 	return a.App.NotifyOrderCanceled(ctx, notify)
 }
 
 func (a Application) NotifyOrderReady(ctx context.Context, notify application.OrderReady) (err error) {
-	a.logger.Info("--> Notifications.NotifyOrderReady")
+	a.logger.InfoContext(ctx, "--> Notifications.NotifyOrderReady")
 	defer func() {
 		if err != nil {
-			a.logger.Error(err.Error())
+			a.logger.ErrorContext(ctx, err.Error())
 		}
-		a.logger.Info("<-- Notifications.NotifyOrderReady")
+		a.logger.InfoContext(ctx, "<-- Notifications.NotifyOrderReady")
 	}()
 
 	return a.App.NotifyOrderReady(ctx, notify)

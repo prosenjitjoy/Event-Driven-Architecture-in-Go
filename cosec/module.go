@@ -12,10 +12,12 @@ import (
 	"mall/customers/customerspb"
 	"mall/depot/depotpb"
 	"mall/internal/am"
+	"mall/internal/amotel"
 	"mall/internal/ddd"
 	"mall/internal/di"
 	"mall/internal/jetstream"
 	pg "mall/internal/postgres"
+	"mall/internal/postgresotel"
 	"mall/internal/registry"
 	"mall/internal/sec"
 	"mall/internal/system"
@@ -62,14 +64,18 @@ func Root(ctx context.Context, service system.Service) error {
 		return service.DB().Begin()
 	})
 
+	sentCounter := amotel.SentMessagesCounter(service.Config().ServiceName)
+
 	container.AddScoped(constants.MessagePublisherKey, func(c di.Container) (any, error) {
-		tx := c.Get(constants.DatabaseTransactionKey).(*sql.Tx)
+		tx := postgresotel.Trace(c.Get(constants.DatabaseTransactionKey).(*sql.Tx))
 
 		outboxStore := pg.NewOutboxStore(constants.OutboxTableName, tx)
 		outboxPublisher := tm.OutboxPublisher(outboxStore)
 
 		return am.NewMessagePublisher(
 			stream,
+			amotel.MessageContextInjector(),
+			sentCounter,
 			outboxPublisher,
 		), nil
 	})
@@ -77,6 +83,8 @@ func Root(ctx context.Context, service system.Service) error {
 	container.AddSingleton(constants.MessageSubscriberKey, func(c di.Container) (any, error) {
 		return am.NewMessageSubscriber(
 			stream,
+			amotel.MessageContextExtractor(),
+			amotel.ReceivedMessagesCounter(service.Config().ServiceName),
 		), nil
 	})
 
@@ -88,14 +96,14 @@ func Root(ctx context.Context, service system.Service) error {
 	})
 
 	container.AddScoped(constants.InboxStoreKey, func(c di.Container) (any, error) {
-		tx := c.Get(constants.DatabaseTransactionKey).(*sql.Tx)
+		tx := postgresotel.Trace(c.Get(constants.DatabaseTransactionKey).(*sql.Tx))
 
 		return pg.NewInboxStore(constants.InboxTableName, tx), nil
 	})
 
 	container.AddScoped(constants.SagaStoreKey, func(c di.Container) (any, error) {
-		tx := c.Get(constants.DatabaseTransactionKey).(*sql.Tx)
-		reg := c.Get("registry").(registry.Registry)
+		tx := postgresotel.Trace(c.Get(constants.DatabaseTransactionKey).(*sql.Tx))
+		reg := c.Get(constants.RegistryKey).(registry.Registry)
 
 		sagaStore := pg.NewSagaStore(constants.SagasTableName, tx, reg)
 
@@ -169,7 +177,7 @@ func startOutboxProcessor(ctx context.Context, outboxProcessor tm.OutboxProcesso
 	go func() {
 		err := outboxProcessor.Start(ctx)
 		if err != nil {
-			logger.Error("cosec outbox processor encountered an error", "error", err.Error())
+			logger.ErrorContext(ctx, "cosec outbox processor encountered an error", "error", err.Error())
 		}
 	}()
 }

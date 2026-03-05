@@ -3,7 +3,8 @@ package handlers
 import (
 	"context"
 	"database/sql"
-	"mall/customers/constants"
+
+	"mall/depot/internal/constants"
 	"mall/internal/am"
 	"mall/internal/di"
 )
@@ -21,7 +22,7 @@ func RegisterIntegrationEventHandlersTx(container di.Container) error {
 			} else {
 				err = tx.Commit()
 			}
-		}(di.Get(ctx, "tx").(*sql.Tx))
+		}(di.Get(ctx, constants.DatabaseTransactionKey).(*sql.Tx))
 
 		eventHandler := di.Get(ctx, constants.IntegrationEventHandlersKey).(am.MessageHandler)
 

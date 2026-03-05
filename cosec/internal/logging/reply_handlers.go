@@ -25,12 +25,12 @@ func LogReplyHandlerAccess[T any](orchestrator sec.Orchestrator[T], label string
 }
 
 func (h ReplyHandlers[T]) HandleReply(ctx context.Context, reply ddd.Reply) (err error) {
-	h.logger.Info(fmt.Sprintf("--> COSEC.%s.On(%s)", h.label, reply.ReplyName()))
+	h.logger.InfoContext(ctx, fmt.Sprintf("--> COSEC.%s.On(%s)", h.label, reply.ReplyName()))
 	defer func() {
 		if err != nil {
-			h.logger.Error(err.Error())
+			h.logger.ErrorContext(ctx, err.Error())
 		}
-		h.logger.Info(fmt.Sprintf("<-- COSEC.%s.On(%s)", h.label, reply.ReplyName()))
+		h.logger.InfoContext(ctx, fmt.Sprintf("<-- COSEC.%s.On(%s)", h.label, reply.ReplyName()))
 	}()
 
 	return h.Orchestrator.HandleReply(ctx, reply)

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/fs"
 	"log/slog"
+	"mall/internal/clickhouse"
 	"mall/internal/config"
 	"mall/internal/logger"
 	"mall/internal/waiter"
@@ -15,9 +16,17 @@ import (
 
 	"github.com/ClickHouse/ch-go"
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	_ "github.com/lib/pq"
 	"github.com/nats-io/nats.go"
 	"github.com/pressly/goose/v3"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/log/global"
+	"go.opentelemetry.io/otel/propagation"
+	"go.opentelemetry.io/otel/sdk/log"
+	"go.opentelemetry.io/otel/sdk/metric"
+	"go.opentelemetry.io/otel/sdk/trace"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -73,36 +82,36 @@ func NewSystem(ctx context.Context, cfg *config.AppConfig) (*System, error) {
 		return nil, err
 	}
 
-	// // init otel propagation
-	// textMapPropagator := propagation.NewCompositeTextMapPropagator(
-	// 	propagation.TraceContext{},
-	// 	propagation.Baggage{},
-	// )
-	// otel.SetTextMapPropagator(textMapPropagator)
+	// init otel propagation
+	textMapPropagator := propagation.NewCompositeTextMapPropagator(
+		propagation.TraceContext{},
+		propagation.Baggage{},
+	)
+	otel.SetTextMapPropagator(textMapPropagator)
 
-	// // init otel traces
-	// tracerProvider := trace.NewTracerProvider(trace.WithBatcher(
-	// 	clickhouse.NewTraceExporter(cfg.ServiceName, chConn),
-	// 	trace.WithBatchTimeout(time.Second),
-	// ))
-	// otel.SetTracerProvider(tracerProvider)
+	// init otel traces
+	tracerProvider := trace.NewTracerProvider(trace.WithBatcher(
+		clickhouse.NewTraceExporter(cfg.ServiceName, chConn),
+		trace.WithBatchTimeout(time.Second),
+	))
+	otel.SetTracerProvider(tracerProvider)
 
-	// // init otel metrics
-	// meterProvider := metric.NewMeterProvider(metric.WithReader(
-	// 	metric.NewPeriodicReader(
-	// 		clickhouse.NewMetricExporter(cfg.ServiceName, chConn),
-	// 		metric.WithInterval(3*time.Second),
-	// 	),
-	// ))
-	// otel.SetMeterProvider(meterProvider)
+	// init otel metrics
+	meterProvider := metric.NewMeterProvider(metric.WithReader(
+		metric.NewPeriodicReader(
+			clickhouse.NewMetricExporter(cfg.ServiceName, chConn),
+			metric.WithInterval(3*time.Second),
+		),
+	))
+	otel.SetMeterProvider(meterProvider)
 
-	// // init otel logs
-	// loggerProvider := log.NewLoggerProvider(log.WithProcessor(
-	// 	log.NewBatchProcessor(
-	// 		clickhouse.NewLogExpoerter(cfg.ServiceName, chConn),
-	// 	),
-	// ))
-	// global.SetLoggerProvider(loggerProvider)
+	// init otel logs
+	loggerProvider := log.NewLoggerProvider(log.WithProcessor(
+		log.NewBatchProcessor(
+			clickhouse.NewLogExpoerter(cfg.ServiceName, chConn),
+		),
+	))
+	global.SetLoggerProvider(loggerProvider)
 
 	// init logger
 	logger := logger.New(logger.LogConfig{
@@ -110,8 +119,12 @@ func NewSystem(ctx context.Context, cfg *config.AppConfig) (*System, error) {
 		LogLevel:    cfg.LogLevel,
 	})
 
+	// init mux
+	mux := chi.NewMux()
+	mux.Use(middleware.Heartbeat("/health"))
+
 	// init grpc
-	grpcServer := grpc.NewServer( /*grpc.StatsHandler(otelgrpc.NewServerHandler())*/ )
+	grpcServer := grpc.NewServer(grpc.StatsHandler(otelgrpc.NewServerHandler()))
 	reflection.Register(grpcServer)
 
 	// init infrastructure
@@ -122,29 +135,29 @@ func NewSystem(ctx context.Context, cfg *config.AppConfig) (*System, error) {
 		nc:     ntConn,
 		js:     jsc,
 		logger: logger,
-		mux:    chi.NewMux(),
+		mux:    mux,
 		rpc:    grpcServer,
 		waiter: waiter.New(waiter.CatchSignals()),
 	}
 
-	// // cleanup otel providers
-	// s.waiter.AddCleanupFunc(func() {
-	// 	if err := tracerProvider.Shutdown(ctx); err != nil {
-	// 		s.logger.ErrorContext(ctx, "error shutting down the tracer provider", "error", err.Error())
-	// 	}
-	// })
+	// cleanup otel providers
+	s.waiter.AddCleanupFunc(func() {
+		if err := tracerProvider.Shutdown(ctx); err != nil {
+			s.logger.ErrorContext(ctx, "error shutting down the tracer provider", "error", err.Error())
+		}
+	})
 
-	// s.waiter.AddCleanupFunc(func() {
-	// 	if err := meterProvider.Shutdown(ctx); err != nil {
-	// 		logger.ErrorContext(ctx, "error shutting down the metric provider", "error", err.Error())
-	// 	}
-	// })
+	s.waiter.AddCleanupFunc(func() {
+		if err := meterProvider.Shutdown(ctx); err != nil {
+			logger.ErrorContext(ctx, "error shutting down the metric provider", "error", err.Error())
+		}
+	})
 
-	// s.waiter.AddCleanupFunc(func() {
-	// 	if err := loggerProvider.Shutdown(ctx); err != nil {
-	// 		logger.ErrorContext(ctx, "error shutting down the logger provider", "error", err.Error())
-	// 	}
-	// })
+	s.waiter.AddCleanupFunc(func() {
+		if err := loggerProvider.Shutdown(ctx); err != nil {
+			logger.ErrorContext(ctx, "error shutting down the logger provider", "error", err.Error())
+		}
+	})
 
 	return s, nil
 }

@@ -7,6 +7,10 @@ import (
 	"mall/internal/ddd"
 	"mall/internal/sec"
 	"mall/ordering/orderingpb"
+	"time"
+
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 )
 
 type integrationHandlers[T ddd.Event] struct {
@@ -32,7 +36,34 @@ func RegisterIntegrationEventHandlers(subscriber am.MessageSubscriber, handlers 
 	return nil
 }
 
-func (h integrationHandlers[T]) HandleEvent(ctx context.Context, event T) error {
+func (h integrationHandlers[T]) HandleEvent(ctx context.Context, event T) (err error) {
+	span := trace.SpanFromContext(ctx)
+
+	defer func(started time.Time) {
+		if err != nil {
+			span.AddEvent(
+				"Encountered an error handling integration event",
+				trace.WithAttributes(
+					attribute.String("error.message", err.Error()),
+				),
+			)
+		}
+
+		span.AddEvent(
+			"Handled integration event",
+			trace.WithAttributes(
+				attribute.Int64("TookMS", time.Since(started).Milliseconds()),
+			),
+		)
+	}(time.Now())
+
+	span.AddEvent(
+		"Handling integration event",
+		trace.WithAttributes(
+			attribute.String("Event", event.EventName()),
+		),
+	)
+
 	switch event.EventName() {
 	case orderingpb.OrderCreatedEvent:
 		return h.onOrderCreated(ctx, event)

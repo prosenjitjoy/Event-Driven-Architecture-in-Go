@@ -13,7 +13,9 @@ type GetParticipatingStoreHandler struct {
 }
 
 func NewGetParticipatingStoreHandler(mall domain.MallRepository) GetParticipatingStoreHandler {
-	return GetParticipatingStoreHandler{mall: mall}
+	return GetParticipatingStoreHandler{
+		mall: mall,
+	}
 }
 
 func (h GetParticipatingStoreHandler) GetParticipatingStores(ctx context.Context, _ GetParticipatingStoreRequest) ([]*domain.MallStore, error) {

@@ -21,10 +21,12 @@ WHERE
   participating;
 
 CREATE TRIGGER created_at_stores_trgr BEFORE
-UPDATE ON stores FOR EACH ROW EXECUTE PROCEDURE created_at_trigger ();
+UPDATE
+  ON stores FOR EACH ROW EXECUTE PROCEDURE created_at_trigger ();
 
 CREATE TRIGGER updated_at_stores_trgr BEFORE
-UPDATE ON stores FOR EACH ROW EXECUTE PROCEDURE updated_at_trigger ();
+UPDATE
+  ON stores FOR EACH ROW EXECUTE PROCEDURE updated_at_trigger ();
 
 CREATE TABLE products (
   id text NOT NULL,
@@ -41,10 +43,12 @@ CREATE TABLE products (
 CREATE INDEX store_products_idx ON products (store_id);
 
 CREATE TRIGGER created_at_products_trgr BEFORE
-UPDATE ON products FOR EACH ROW EXECUTE PROCEDURE created_at_trigger ();
+UPDATE
+  ON products FOR EACH ROW EXECUTE PROCEDURE created_at_trigger ();
 
 CREATE TRIGGER updated_at_products_trgr BEFORE
-UPDATE ON products FOR EACH ROW EXECUTE PROCEDURE updated_at_trigger ();
+UPDATE
+  ON products FOR EACH ROW EXECUTE PROCEDURE updated_at_trigger ();
 
 CREATE TABLE events (
   stream_id text NOT NULL,
@@ -68,13 +72,16 @@ CREATE TABLE snapshots (
 );
 
 CREATE TRIGGER updated_at_snapshots_trgr BEFORE
-UPDATE ON snapshots FOR EACH ROW EXECUTE PROCEDURE updated_at_trigger ();
+UPDATE
+  ON snapshots FOR EACH ROW EXECUTE PROCEDURE updated_at_trigger ();
 
 CREATE TABLE inbox (
   id text NOT NULL,
   name text NOT NULL,
   subject text NOT NULL,
   data bytea NOT NULL,
+  metadata bytea NOT NULL,
+  sent_at timestamptz NOT NULL,
   received_at timestamptz NOT NULL,
   PRIMARY KEY (id)
 );
@@ -84,6 +91,8 @@ CREATE TABLE outbox (
   name text NOT NULL,
   subject text NOT NULL,
   data bytea NOT NULL,
+  metadata bytea NOT NULL,
+  sent_at timestamptz NOT NULL,
   published_at timestamptz,
   PRIMARY KEY (id)
 );

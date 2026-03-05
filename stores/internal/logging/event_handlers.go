@@ -24,12 +24,12 @@ func LogEventHandlerAccess[T ddd.Event](handlers ddd.EventHandler[T], label stri
 }
 
 func (h EventHandlers[T]) HandleEvent(ctx context.Context, event T) (err error) {
-	h.logger.Info(fmt.Sprintf("--> Stores.%s.On(%s)", h.label, event.EventName()))
+	h.logger.InfoContext(ctx, fmt.Sprintf("--> Stores.%s.On(%s)", h.label, event.EventName()))
 	defer func() {
 		if err != nil {
-			h.logger.Error(err.Error())
+			h.logger.ErrorContext(ctx, err.Error())
 		}
-		h.logger.Info(fmt.Sprintf("<-- Stores.%s.On(%s)", h.label, event.EventName()))
+		h.logger.InfoContext(ctx, fmt.Sprintf("<-- Stores.%s.On(%s)", h.label, event.EventName()))
 	}()
 
 	return h.EventHandler.HandleEvent(ctx, event)

@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"mall/internal/es"
 	"mall/internal/registry"
 	"mall/internal/registry/serdes"
 )
@@ -19,6 +20,7 @@ func Registrations(reg registry.Registry) error {
 	// basket
 	if err := serde.Register(Basket{}, func(v any) error {
 		basket := v.(*Basket)
+		basket.Aggregate = es.NewAggregate("", BasketAggregate)
 		basket.Items = make(map[string]Item)
 		return nil
 	}); err != nil {

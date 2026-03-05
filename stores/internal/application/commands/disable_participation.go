@@ -2,6 +2,7 @@ package commands
 
 import (
 	"context"
+	"mall/internal/ddd"
 	"mall/stores/internal/domain"
 )
 
@@ -10,12 +11,14 @@ type DisableParticipationRequest struct {
 }
 
 type DisableParticipationHandler struct {
-	stores domain.StoreRepository
+	stores    domain.StoreRepository
+	publisher ddd.EventPublisher[ddd.Event]
 }
 
-func NewDisableParticipationHandler(stores domain.StoreRepository) DisableParticipationHandler {
+func NewDisableParticipationHandler(stores domain.StoreRepository, publisher ddd.EventPublisher[ddd.Event]) DisableParticipationHandler {
 	return DisableParticipationHandler{
-		stores: stores,
+		stores:    stores,
+		publisher: publisher,
 	}
 }
 
@@ -25,9 +28,18 @@ func (h DisableParticipationHandler) DisableParticipation(ctx context.Context, c
 		return err
 	}
 
-	if err = store.DisableParticipation(); err != nil {
+	event, err := store.DisableParticipation()
+	if err != nil {
 		return err
 	}
 
-	return h.stores.Save(ctx, store)
+	if err := h.stores.Save(ctx, store); err != nil {
+		return err
+	}
+
+	if err := h.publisher.Publish(ctx, event); err != nil {
+		return err
+	}
+
+	return nil
 }

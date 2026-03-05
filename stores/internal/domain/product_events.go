@@ -18,3 +18,9 @@ type ProductPriceChanged struct {
 }
 
 type ProductRemoved struct{}
+
+// domain events
+type ProductPriceDelta struct {
+	Product *Product
+	Delta   float64
+}

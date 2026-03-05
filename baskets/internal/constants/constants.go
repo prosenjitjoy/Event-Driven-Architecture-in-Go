@@ -41,6 +41,7 @@ const (
 	ProductsCacheTableName = "baskets.products_cache"
 )
 
+// metric names
 const (
 	BasketsStartedCount    = "baskets_started_count"
 	BasketsCheckedOutCount = "baskets_checked_out_count"

@@ -4,9 +4,9 @@ import (
 	"context"
 	"database/sql"
 	"log/slog"
-	"mall/customers/constants"
 	"mall/customers/customerspb"
 	"mall/customers/internal/application"
+	"mall/customers/internal/constants"
 	"mall/customers/internal/domain"
 	"mall/customers/internal/grpc"
 	"mall/customers/internal/handlers"
@@ -15,13 +15,17 @@ import (
 
 	"mall/customers/internal/rest"
 	"mall/internal/am"
+	"mall/internal/amotel"
 	"mall/internal/ddd"
 	"mall/internal/di"
 	"mall/internal/jetstream"
 	pg "mall/internal/postgres"
+	"mall/internal/postgresotel"
 	"mall/internal/registry"
 	"mall/internal/system"
 	"mall/internal/tm"
+
+	"go.opentelemetry.io/otel"
 )
 
 type Module struct{}
@@ -60,6 +64,8 @@ func Root(ctx context.Context, service system.Service) error {
 		return postgres.NewCustomerRepository(constants.CustomersTableName, tx), nil
 	})
 
+	sentCounter := amotel.SentMessagesCounter(service.Config().ServiceName)
+
 	container.AddScoped(constants.MessagePublisherKey, func(c di.Container) (any, error) {
 		tx := c.Get(constants.DatabaseTransactionKey).(*sql.Tx)
 
@@ -68,6 +74,8 @@ func Root(ctx context.Context, service system.Service) error {
 
 		return am.NewMessagePublisher(
 			stream,
+			amotel.MessageContextInjector(),
+			sentCounter,
 			outboxPublisher,
 		), nil
 	})
@@ -75,6 +83,8 @@ func Root(ctx context.Context, service system.Service) error {
 	container.AddSingleton(constants.MessageSubscriberKey, func(c di.Container) (any, error) {
 		return am.NewMessageSubscriber(
 			stream,
+			amotel.MessageContextExtractor(),
+			amotel.ReceivedMessagesCounter(service.Config().ServiceName),
 		), nil
 	})
 
@@ -93,10 +103,18 @@ func Root(ctx context.Context, service system.Service) error {
 	})
 
 	container.AddScoped(constants.InboxStoreKey, func(c di.Container) (any, error) {
-		tx := c.Get(constants.DatabaseTransactionKey).(*sql.Tx)
+		tx := postgresotel.Trace(c.Get(constants.DatabaseTransactionKey).(*sql.Tx))
 
 		return pg.NewInboxStore(constants.InboxTableName, tx), nil
 	})
+
+	// metric counters
+	meter := otel.Meter(service.Config().ServiceName)
+
+	customersRegistered, err := meter.Int64Counter(constants.CustomersRegisteredCount)
+	if err != nil {
+		return err
+	}
 
 	// setup application
 	container.AddScoped(constants.ApplicationKey, func(c di.Container) (any, error) {
@@ -104,8 +122,9 @@ func Root(ctx context.Context, service system.Service) error {
 		domainDispatcher := c.Get(constants.DomainDispatcherKey).(*ddd.EventDispatcher[ddd.AggregateEvent])
 
 		app := application.New(customers, domainDispatcher)
+		app = logging.LogApplicationAccess(app, service.Logger()) // logging wrapper
 
-		return logging.LogApplicationAccess(app, service.Logger()), nil
+		return application.NewInstrumentedApp(app, customersRegistered), nil
 	})
 
 	container.AddScoped(constants.DomainEventHandlersKey, func(c di.Container) (any, error) {
@@ -122,7 +141,7 @@ func Root(ctx context.Context, service system.Service) error {
 	})
 
 	container.AddScoped(constants.CommandHandlersKey, func(c di.Container) (any, error) {
-		reg := c.Get(constants.CommandHandlersKey).(registry.Registry)
+		reg := c.Get(constants.RegistryKey).(registry.Registry)
 		app := c.Get(constants.ApplicationKey).(application.App)
 
 		commandHandlers := handlers.NewCommandHandlers(app)
@@ -169,7 +188,7 @@ func startOutboxProcessor(ctx context.Context, outboxProcessor tm.OutboxProcesso
 	go func() {
 		err := outboxProcessor.Start(ctx)
 		if err != nil {
-			logger.Error("customers outbox processor encountered an error", "error", err.Error())
+			logger.ErrorContext(ctx, "customers outbox processor encountered an error", "error", err.Error())
 		}
 	}()
 }

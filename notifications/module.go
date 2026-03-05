@@ -4,9 +4,11 @@ import (
 	"context"
 	"mall/customers/customerspb"
 	"mall/internal/am"
+	"mall/internal/amotel"
 	"mall/internal/ddd"
 	"mall/internal/jetstream"
 	pg "mall/internal/postgres"
+	"mall/internal/postgresotel"
 	"mall/internal/registry"
 	"mall/internal/system"
 	"mall/internal/tm"
@@ -41,13 +43,16 @@ func Root(ctx context.Context, service system.Service) error {
 
 	messageSubscriber := am.NewMessageSubscriber(
 		stream,
+		amotel.MessageContextExtractor(),
+		amotel.ReceivedMessagesCounter(service.Config().ServiceName),
 	)
 
-	customerFallback := grpc.NewCustomerRepository(service.Config().Rpc.Service(constants.CustomersServiceName))
+	fallback := grpc.NewCustomerRepository(service.Config().Rpc.Service(constants.CustomersServiceName))
+
 	customers := postgres.NewCustomerCacheRepository(
 		constants.CustomersCacheTableName,
-		service.DB(),
-		customerFallback,
+		postgresotel.Trace(service.DB()),
+		fallback,
 	)
 
 	// setup application

@@ -24,60 +24,60 @@ func LogApplicationAccess(application application.App, logger *slog.Logger) Appl
 }
 
 func (a Application) CreateShoppingList(ctx context.Context, cmd commands.CreateShoppingListRequest) (err error) {
-	a.logger.Info("--> Depot.CreateShoppingList")
+	a.logger.InfoContext(ctx, "--> Depot.CreateShoppingList")
 	defer func() {
 		if err != nil {
-			a.logger.Error(err.Error())
+			a.logger.ErrorContext(ctx, err.Error())
 		}
-		a.logger.Info("<-- Depot.CreateShoppingList")
+		a.logger.InfoContext(ctx, "<-- Depot.CreateShoppingList")
 	}()
 
 	return a.App.CreateShoppingList(ctx, cmd)
 }
 
 func (a Application) CancelShoppingList(ctx context.Context, cmd commands.CancelShoppingListRequest) (err error) {
-	a.logger.Info("--> Depot.CancelShoppingList")
+	a.logger.InfoContext(ctx, "--> Depot.CancelShoppingList")
 	defer func() {
 		if err != nil {
-			a.logger.Error(err.Error())
+			a.logger.ErrorContext(ctx, err.Error())
 		}
-		a.logger.Info("<-- Depot.CancelShoppingList")
+		a.logger.InfoContext(ctx, "<-- Depot.CancelShoppingList")
 	}()
 
 	return a.App.CancelShoppingList(ctx, cmd)
 }
 
 func (a Application) AssignShoppingList(ctx context.Context, cmd commands.AssignShoppingListRequest) (err error) {
-	a.logger.Info("--> Depot.AssignShoppingList")
+	a.logger.InfoContext(ctx, "--> Depot.AssignShoppingList")
 	defer func() {
 		if err != nil {
-			a.logger.Error(err.Error())
+			a.logger.ErrorContext(ctx, err.Error())
 		}
-		a.logger.Info("<-- Depot.AssignShoppingList")
+		a.logger.InfoContext(ctx, "<-- Depot.AssignShoppingList")
 	}()
 
 	return a.App.AssignShoppingList(ctx, cmd)
 }
 
 func (a Application) CompleteShoppingList(ctx context.Context, cmd commands.CompleteShoppingListRequest) (err error) {
-	a.logger.Info("--> Depot.CompleteShoppingList")
+	a.logger.InfoContext(ctx, "--> Depot.CompleteShoppingList")
 	defer func() {
 		if err != nil {
-			a.logger.Error(err.Error())
+			a.logger.ErrorContext(ctx, err.Error())
 		}
-		a.logger.Info("<-- Depot.CompleteShoppingList")
+		a.logger.InfoContext(ctx, "<-- Depot.CompleteShoppingList")
 	}()
 
 	return a.App.CompleteShoppingList(ctx, cmd)
 }
 
 func (a Application) GetShoppingList(ctx context.Context, query queries.GetShoppingListRequest) (list *domain.ShoppingList, err error) {
-	a.logger.Info("--> Depot.GetShoppingList")
+	a.logger.InfoContext(ctx, "--> Depot.GetShoppingList")
 	defer func() {
 		if err != nil {
-			a.logger.Error(err.Error())
+			a.logger.ErrorContext(ctx, err.Error())
 		}
-		a.logger.Info("<-- Depot.GetShoppingList")
+		a.logger.InfoContext(ctx, "<-- Depot.GetShoppingList")
 	}()
 
 	return a.App.GetShoppingList(ctx, query)

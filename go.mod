@@ -1,6 +1,6 @@
 module mall
 
-go 1.25.0
+go 1.26.0
 
 require (
 	github.com/ClickHouse/ch-go v0.71.0
@@ -13,6 +13,7 @@ require (
 	github.com/pressly/goose/v3 v3.27.0
 	github.com/stretchr/testify v1.11.1
 	go.opentelemetry.io/contrib/bridges/otelslog v0.15.0
+	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.65.0
 	go.opentelemetry.io/otel v1.40.0
 	go.opentelemetry.io/otel/log v0.16.0
 	go.opentelemetry.io/otel/metric v1.40.0
